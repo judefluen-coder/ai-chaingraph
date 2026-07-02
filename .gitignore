@@ -1,0 +1,13 @@
+node_modules/
+dist/
+/data/
+/feedbacks/
+/logs/
+/secrets/
+/public/snapshots/
+.DS_Store
+*.log
+*.sqlite
+*.db
+*.sqlite-shm
+*.sqlite-wal
