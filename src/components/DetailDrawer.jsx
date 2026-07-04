@@ -7,6 +7,8 @@ import {
   Search,
   Send,
   ShieldAlert,
+  Star,
+  Trash2,
 } from "lucide-react";
 import {
   edgeTypeLabels,
@@ -43,6 +45,11 @@ export function DetailDrawer({
   reviewRecords,
   onResolveReview,
   onExportFeedback,
+  watchlistRecords,
+  watchlistIds,
+  onToggleWatchlist,
+  onRemoveWatchlist,
+  onExportWatchlist,
   notice,
 }) {
   return (
@@ -77,6 +84,16 @@ export function DetailDrawer({
         notice={notice}
         evidenceFilter={evidenceFilter}
         marketFilter={marketFilter}
+        watchlistIds={watchlistIds}
+        onToggleWatchlist={onToggleWatchlist}
+      />
+
+      <WatchlistPanel
+        data={data}
+        records={watchlistRecords}
+        onSelect={onSelect}
+        onRemove={onRemoveWatchlist}
+        onExport={onExportWatchlist}
       />
 
       <FeedbackPanel
@@ -137,7 +154,7 @@ function DataStatusPanel({ data, status }) {
   );
 }
 
-function DetailPanel({ data, active, notice, evidenceFilter, marketFilter }) {
+function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watchlistIds, onToggleWatchlist }) {
   if (active?.node_type === "overview") {
     const evidenceCounts = data.edges.reduce((acc, edge) => {
       acc[edge.evidence_level] = (acc[edge.evidence_level] || 0) + 1;
@@ -168,9 +185,14 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter }) {
     const firstScore = firstMapping ? getAdjustedRelevance(firstMapping, firstRecency.recencyFactor) : null;
     const market = getCompanyMarket(active);
     const marketCapUnit = market === "us" ? "亿美元" : "亿元";
+    const isWatched = watchlistIds?.has(active.id);
     return (
       <section className="sideCard detailPanel">
         <PanelTitle icon={<CheckCircle2 size={17} />} title={active.name} label={active.stock_code} />
+        <button className={`watchButton ${isWatched ? "isActive" : ""}`} aria-pressed={isWatched} onClick={() => onToggleWatchlist(active)}>
+          <Star size={15} />
+          {isWatched ? "已加入观察" : "加入观察"}
+        </button>
         <div className="quoteBox">
           <span>市场：{getMarketLabel(market)}</span>
           <span>行业：{quote?.industry || active.industry || "待补"}</span>
@@ -212,6 +234,43 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter }) {
       <EvidenceList items={evidenceItems} />
       <RiskNote />
       {notice && <p className="noticeText">{notice}</p>}
+    </section>
+  );
+}
+
+function WatchlistPanel({ data, records, onSelect, onRemove, onExport }) {
+  return (
+    <section className="sideCard watchlistPanel">
+      <div className="queueHead">
+        <PanelTitle icon={<Star size={17} />} title="观察列表" label={`${records.length} 家公司`} />
+      </div>
+      <p className="smallNote">只保存在当前浏览器，用于整理待跟踪公司。</p>
+      <div className="exportActions">
+        <button disabled={records.length === 0} onClick={() => onExport("json")}>导出 JSON</button>
+        <button disabled={records.length === 0} onClick={() => onExport("csv")}>导出 CSV</button>
+      </div>
+      {records.length === 0 ? <p className="muted">暂无观察公司。进入公司详情后可加入观察。</p> : (
+        <div className="watchList">
+          {records.slice().reverse().map((record) => {
+            const company = data.companies.find((item) => item.id === record.company_id);
+            const name = record.name || company?.name || record.company_id;
+            const stockCode = record.stock_code || company?.stock_code || "代码待补";
+            const market = record.market || getCompanyMarket(company);
+            return (
+              <article className="watchItem" key={record.company_id}>
+                <button className="watchInfo" onClick={() => onSelect(record.company_id)}>
+                  <strong>{name}</strong>
+                  <span>{stockCode} · {getMarketLabel(market)}</span>
+                  <small>{record.industry || company?.industry || "行业待补"}</small>
+                </button>
+                <button className="iconButton" aria-label={`移除 ${name}`} onClick={() => onRemove(record.company_id)}>
+                  <Trash2 size={15} />
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
