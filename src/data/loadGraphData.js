@@ -1,6 +1,6 @@
 import demoGraph from "./demoGraph.json";
 
-const PUBLIC_SNAPSHOT_PATH = "/snapshots/current.json";
+const PUBLIC_SNAPSHOT_PATH = `${import.meta.env.BASE_URL}snapshots/current.json`;
 
 function normalizeGraphData(data, source) {
   return {

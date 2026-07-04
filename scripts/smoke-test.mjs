@@ -71,6 +71,9 @@ assert.match(readme, /git rev-parse --show-toplevel/, "README 需要包含 Git r
 assert.match(readme, /L1.*L2.*L3/s, "README 需要解释 L1/L2/L3 证据等级");
 
 const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
+const loadGraphData = await readFile(new URL("../src/data/loadGraphData.js", import.meta.url), "utf8");
+const viteConfig = await readFile(new URL("../vite.config.js", import.meta.url), "utf8");
+const pagesWorkflow = await readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8");
 const companyMapList = await readFile(new URL("../src/components/CompanyMapList.jsx", import.meta.url), "utf8");
 const chainSidebar = await readFile(new URL("../src/components/ChainSidebar.jsx", import.meta.url), "utf8");
 const detailDrawer = await readFile(new URL("../src/components/DetailDrawer.jsx", import.meta.url), "utf8");
@@ -82,6 +85,9 @@ assert.match(companyMapList, /为什么相关/, "列表视图需要突出相关�
 assert.match(chainSidebar, /产业链导航/, "UI 需要保留产业链导航入口");
 assert.match(detailDrawer, /人工校正/, "UI 需要保留人工校正入口");
 assert.match(detailDrawer, /record\.payload\?\.url/, "本地审核队列需要展示反馈来源 URL");
+assert.match(viteConfig, /VITE_BASE_PATH/, "Vite 需要支持 GitHub Pages 子路径构建");
+assert.match(loadGraphData, /import\.meta\.env\.BASE_URL/, "public snapshot 路径需要跟随 Vite base");
+assert.match(pagesWorkflow, /VITE_BASE_PATH: \/ai-chaingraph\//, "Pages workflow 需要使用仓库子路径构建");
 
 const companyIds = new Set(graph.companies.map((company) => company.id));
 const nodeIds = new Set(graph.nodes.map((node) => node.id));

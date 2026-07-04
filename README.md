@@ -96,6 +96,20 @@ npm run import:snapshot -- data/local-only/ai-chain.snapshot.json --write
 
 这些文件不会进入 Git 跟踪。若要让前端直接读取本地 current snapshot，可在本地开发时自行把已脱敏 snapshot 复制到被忽略的 `public/snapshots/current.json`，或启动本地 API 并设置 `VITE_CHAINGRAPH_API_BASE`。
 
+## GitHub Pages 预览
+
+仓库包含 `.github/workflows/pages.yml`，合并到 `main` 后可用 GitHub Pages 部署静态预览。启用步骤：
+
+1. 在 GitHub 仓库 Settings -> Pages 中，将 Source 设为 GitHub Actions。
+2. 如果仓库仍是 private，请确认当前账号/组织计划支持 private Pages，或在准备公开发布时将仓库改为 public。
+3. 推送到 `main` 后，workflow 会用 `VITE_BASE_PATH=/ai-chaingraph/` 构建并部署 `dist/`。
+
+本地构建仍使用默认根路径：
+
+```bash
+npm run build
+```
+
 ## 技术栈
 
 - React + Vite
@@ -132,6 +146,8 @@ ai-chaingraph/
 │   └── fictional-ai-chain.snapshot.json
 ├── docs/assets/
 ├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   └── workflows/
 ├── public/
 ├── CONTRIBUTING.md
 ├── index.html
