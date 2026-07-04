@@ -1,0 +1,51 @@
+name: Data or schema request
+description: Propose a data model, import, evidence, or review workflow improvement.
+title: "[Data] "
+labels:
+  - data
+  - schema
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for schema, import, evidence-level, or data-quality improvements. Do not paste real proprietary data, paid data-source output, private research notes, or copyrighted report excerpts.
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should the data model or workflow support?
+      placeholder: "Example: Add an evidence conflict state when two sources map the same company to different segments."
+    validations:
+      required: true
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: Affected area
+      options:
+        - Canonical JSON snapshot
+        - JSON Schema
+        - SQLite schema
+        - Import script
+        - Evidence levels
+        - Review queue
+        - Demo data
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: safe_example
+    attributes:
+      label: Safe example
+      description: Provide a fictional or fully anonymized example.
+      placeholder: |
+        company: DEMO
+        segment: AI server
+        evidence_level: L2
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How would we know this is done?
+      placeholder: |
+        - npm run smoke validates the new field.
+        - README documents the new rule.

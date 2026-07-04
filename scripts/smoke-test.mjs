@@ -1,5 +1,13 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import {
+  buildFlow,
+  buildListRows,
+  buildScopedData,
+  getDataStatus,
+  getMarketOptions,
+  searchItems,
+} from "../src/lib/graphViewModel.js";
 
 const graph = JSON.parse(await readFile(new URL("../src/data/demoGraph.json", import.meta.url)));
 const schema = JSON.parse(await readFile(new URL("../schemas/chaingraph.schema.json", import.meta.url)));
@@ -10,6 +18,36 @@ assert.ok(graph.companies.length >= 8, "需要示例公司数据");
 assert.ok(graph.edges.some((edge) => edge.edge_type === "company_maps_to_industry_node"), "需要公司映射边");
 assert.ok(graph.evidences.every((item) => ["L1", "L2", "L3"].includes(item.level)), "证据等级必须合法");
 assert.ok(graph.quote_snapshots.every((quote) => "latest_price" in quote && "pe" in quote && "pb" in quote), "行情字段缺失");
+const exchanges = new Set(graph.companies.map((company) => company.exchange));
+assert.ok(["SH", "SZ", "BJ"].some((exchange) => exchanges.has(exchange)), "demo 需要包含 A股公司");
+assert.ok(["NASDAQ", "NYSE", "AMEX", "OTC"].some((exchange) => exchanges.has(exchange)), "demo 需要包含美股公司");
+assert.ok(schema.$defs.company.properties.exchange.enum.includes("NASDAQ"), "schema 需要允许美股交易所");
+
+const mappingEdges = graph.edges.filter((edge) => edge.edge_type === "company_maps_to_industry_node");
+assert.deepEqual(getMarketOptions(graph), ["all", "a_share", "us"], "市场筛选需要识别 A股和美股");
+assert.equal(buildListRows(graph, "all", null, "", "all").length, mappingEdges.length, "全部市场列表需要展示所有公司映射");
+const usRows = buildListRows(graph, "all", null, "", "us");
+assert.equal(usRows.length, 2, "美股筛选需要保留 demo 中的两条映射");
+assert.ok(usRows.every((row) => ["NASDAQ", "NYSE", "AMEX", "OTC"].includes(row.company.exchange)), "美股筛选不能混入 A股公司");
+const opticalRows = buildListRows(graph, "all", null, "光模块", "all");
+assert.ok(opticalRows.some((row) => row.company.name === "光桥通信"), "搜索光模块需要命中 A股光模块公司");
+assert.ok(opticalRows.some((row) => row.company.name === "PhotonMesh Networks"), "搜索光模块需要命中美股光模块公司");
+const scopedUs = buildScopedData(graph, null, "us");
+assert.ok(scopedUs.companies.every((company) => ["NASDAQ", "NYSE", "AMEX", "OTC"].includes(company.exchange)), "美股 scoped graph 只能包含美股公司");
+assert.ok(
+  scopedUs.edges
+    .filter((edge) => edge.edge_type === "company_maps_to_industry_node")
+    .every((edge) => scopedUs.companies.some((company) => company.id === edge.to_id)),
+  "美股 scoped graph 的公司映射边必须指向可见公司",
+);
+const l1UsFlow = buildFlow(scopedUs, "overview", "", "L1");
+assert.ok(l1UsFlow.nodes.some((node) => node.id === "company:VRCK"), "L1 美股图谱需要展示 L1 美股公司");
+assert.ok(!l1UsFlow.nodes.some((node) => node.id === "company:PMN"), "L1 美股图谱不能展示 L2 美股公司");
+assert.ok(searchItems(graph, "光模块").some((item) => item.id === "ev_demo_l2_us_optical"), "搜索需要覆盖证据摘要文本");
+const status = getDataStatus(graph);
+assert.equal(status.datasetType, "demo", "demo 数据状态需要保持 demo 类型");
+assert.equal(status.mappingReviewCount, 2, "数据状态需要统计待审核映射");
+
 assert.ok(schema.$defs.market_signal, "schema 需要保留市场情报接口字段");
 assert.ok(schema.$defs.review_queue_item, "schema 需要保留人工校正字段");
 assert.ok(schema.$defs.import_job, "schema 需要保留导入任务字段");
@@ -26,15 +64,24 @@ for (const ignoredPath of ["data/", "feedbacks/", "logs/", "secrets/", "public/s
 }
 
 const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
-assert.match(readme, /研究工作台/, "README 需要明确研究工作台定位");
+assert.match(readme, /选股地图/, "README 需要明确选股地图定位");
+assert.match(readme, /信息组织与产业研究辅助工具/, "README 需要保留非投资建议定位");
 assert.match(readme, /仓库边界与提交安全/, "README 需要说明仓库边界与提交安全");
 assert.match(readme, /git rev-parse --show-toplevel/, "README 需要包含 Git root 检查命令");
 assert.match(readme, /L1.*L2.*L3/s, "README 需要解释 L1/L2/L3 证据等级");
 
 const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
+const companyMapList = await readFile(new URL("../src/components/CompanyMapList.jsx", import.meta.url), "utf8");
+const chainSidebar = await readFile(new URL("../src/components/ChainSidebar.jsx", import.meta.url), "utf8");
+const detailDrawer = await readFile(new URL("../src/components/DetailDrawer.jsx", import.meta.url), "utf8");
 assert.match(main, /viewMode/, "UI 需要保留视图切换状态");
-assert.match(main, /function ListPanel/, "UI 需要提供列表视图入口");
-assert.match(main, /公司映射列表/, "列表视图需要明确公司映射列表标题");
+assert.match(main, /mobileTab/, "UI 需要提供移动端视图切换状态");
+assert.match(main, /"url", "note"/, "CSV 导出需要包含本地反馈的来源 URL 和说明");
+assert.match(companyMapList, /公司映射列表/, "列表视图需要明确公司映射列表标题");
+assert.match(companyMapList, /为什么相关/, "列表视图需要突出相关性解释");
+assert.match(chainSidebar, /产业链导航/, "UI 需要保留产业链导航入口");
+assert.match(detailDrawer, /人工校正/, "UI 需要保留人工校正入口");
+assert.match(detailDrawer, /record\.payload\?\.url/, "本地审核队列需要展示反馈来源 URL");
 
 const companyIds = new Set(graph.companies.map((company) => company.id));
 const nodeIds = new Set(graph.nodes.map((node) => node.id));
@@ -77,4 +124,4 @@ for (const evidence of graph.evidences) {
   }
 }
 
-console.log("smoke ok: demo fallback, v0.2 schema/import boundaries, ignored local data paths, quote fields, and reference integrity are present");
+console.log("smoke ok: demo fallback, market/search view model, schema/import boundaries, ignored local data paths, quote fields, and reference integrity are present");

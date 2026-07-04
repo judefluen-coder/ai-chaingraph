@@ -1,0 +1,53 @@
+name: Bug report
+description: Report a UI, data loading, import, or build issue.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve AI-ChainGraph. Please do not include real brokerage data, paid data-source output, private notes, credentials, or copyrighted report text.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the visible issue and what you expected instead.
+      placeholder: "Example: On mobile, tapping the graph tab shows a blank viewport."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the shortest steps that reproduce the issue.
+      placeholder: |
+        1. Run npm run dev
+        2. Open the app at ...
+        3. Click ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Frontend UI
+        - Graph interaction
+        - Demo data
+        - Schema or import script
+        - Documentation
+        - Build or CI
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "macOS 15, Chrome 126, Node 22"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Safe extra context
+      description: Add screenshots or logs only after removing private data and restricted source content.

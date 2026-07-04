@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "smoke": "node scripts/smoke-test.mjs",
+    "validate:example": "node scripts/import-snapshot.mjs examples/fictional-ai-chain.snapshot.json",
     "import:snapshot": "node scripts/import-snapshot.mjs"
   },
   "dependencies": {

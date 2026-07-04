@@ -11,7 +11,7 @@
       "name": "算力硬件",
       "description": "AI 芯片、服务器、存储与数据中心设备链路。",
       "node_count": 5,
-      "company_count": 3,
+      "company_count": 4,
       "updated_at": "2026-06-26"
     },
     {
@@ -19,7 +19,7 @@
       "name": "光通信",
       "description": "光模块、光芯片、连接器、交换机与硅光/CPO 链路。",
       "node_count": 5,
-      "company_count": 3,
+      "company_count": 4,
       "updated_at": "2026-06-26"
     },
     {
@@ -49,7 +49,7 @@
       "level": 1,
       "aliases": ["AI 芯片", "服务器", "数据中心设备"],
       "description": "面向模型训练和推理的硬件基础设施。",
-      "company_ids": ["company:688001.SH", "company:300501.SZ", "company:603801.SH"],
+      "company_ids": ["company:688001.SH", "company:300501.SZ", "company:603801.SH", "company:VRCK"],
       "status": "active",
       "updated_at": "2026-06-26"
     },
@@ -88,7 +88,7 @@
       "level": 2,
       "aliases": ["训练服务器", "推理服务器"],
       "description": "面向 GPU 集群和高密度计算的整机与系统集成。",
-      "company_ids": ["company:300501.SZ", "company:603801.SH"],
+      "company_ids": ["company:300501.SZ", "company:603801.SH", "company:VRCK"],
       "status": "active",
       "updated_at": "2026-06-26"
     },
@@ -114,7 +114,7 @@
       "level": 1,
       "aliases": ["光模块", "硅光", "CPO"],
       "description": "支撑 AI 集群高速互连的数据传输链路。",
-      "company_ids": ["company:300801.SZ", "company:688208.SH", "company:002881.SZ"],
+      "company_ids": ["company:300801.SZ", "company:688208.SH", "company:002881.SZ", "company:PMN"],
       "status": "active",
       "updated_at": "2026-06-26"
     },
@@ -127,7 +127,7 @@
       "level": 2,
       "aliases": ["800G 光模块", "1.6T 光模块"],
       "description": "面向 AI 数据中心互连的高速光电转换模块。",
-      "company_ids": ["company:300801.SZ", "company:688208.SH"],
+      "company_ids": ["company:300801.SZ", "company:688208.SH", "company:PMN"],
       "status": "active",
       "updated_at": "2026-06-26"
     },
@@ -420,6 +420,30 @@
       "industry": "温控设备",
       "aliases": ["冷源"],
       "source_ids": ["ev_demo_l1_cooling"],
+      "updated_at": "2026-06-26"
+    },
+    {
+      "id": "company:VRCK",
+      "stock_code": "VRCK",
+      "stock_symbol": "VRCK",
+      "exchange": "NASDAQ",
+      "name": "VectorRack Systems",
+      "full_name": "VectorRack Systems Inc.",
+      "industry": "AI Infrastructure",
+      "aliases": ["VectorRack", "rack-scale AI server"],
+      "source_ids": ["ev_demo_l1_us_server"],
+      "updated_at": "2026-06-26"
+    },
+    {
+      "id": "company:PMN",
+      "stock_code": "PMN",
+      "stock_symbol": "PMN",
+      "exchange": "NYSE",
+      "name": "PhotonMesh Networks",
+      "full_name": "PhotonMesh Networks Corp.",
+      "industry": "Optical Networking",
+      "aliases": ["PhotonMesh", "1.6T optical module"],
+      "source_ids": ["ev_demo_l2_us_optical"],
       "updated_at": "2026-06-26"
     }
   ],
@@ -727,6 +751,38 @@
       "review_status": "accepted",
       "created_at": "2026-06-26T16:30:00+08:00",
       "updated_at": "2026-06-26T16:30:00+08:00"
+    },
+    {
+      "id": "edge_company_vectorrack_server",
+      "from_id": "seg_ai_server",
+      "to_id": "company:VRCK",
+      "edge_type": "company_maps_to_industry_node",
+      "direction": "directed",
+      "weight": 0.87,
+      "evidence_level": "L1",
+      "relevance_score": 0.86,
+      "purity_score": 0.82,
+      "confidence": 0.88,
+      "source_ids": ["ev_demo_l1_us_server"],
+      "review_status": "accepted",
+      "created_at": "2026-06-26T18:40:00+08:00",
+      "updated_at": "2026-06-26T18:40:00+08:00"
+    },
+    {
+      "id": "edge_company_photonmesh_optical",
+      "from_id": "seg_optical_module",
+      "to_id": "company:PMN",
+      "edge_type": "company_maps_to_industry_node",
+      "direction": "directed",
+      "weight": 0.74,
+      "evidence_level": "L2",
+      "relevance_score": 0.72,
+      "purity_score": 0.66,
+      "confidence": 0.73,
+      "source_ids": ["ev_demo_l2_us_optical"],
+      "review_status": "accepted",
+      "created_at": "2026-06-26T18:40:00+08:00",
+      "updated_at": "2026-06-26T18:40:00+08:00"
     }
   ],
   "evidences": [
@@ -938,6 +994,44 @@
       "reviewer": "human:codex-dev",
       "stale_threshold_days": 365,
       "notes": "虚构示例。"
+    },
+    {
+      "id": "ev_demo_l1_us_server",
+      "target_type": "edge",
+      "target_id": "edge_company_vectorrack_server",
+      "level": "L1",
+      "source_type": "annual_report",
+      "title": "VectorRack Systems 2025 Form 10-K 摘要（虚构）",
+      "url": null,
+      "local_path": "examples/demo-sources/vectorrack.md",
+      "publish_date": "2026-04-02",
+      "excerpt": "公司在虚构年报中将 rack-scale AI server systems 列为主要收入来源之一，并披露示例订单结构。",
+      "language": "zh",
+      "reliability": 0.88,
+      "mapped_at": "2026-06-26T18:40:00+08:00",
+      "reviewed_at": "2026-06-26T18:40:00+08:00",
+      "reviewer": "human:codex-dev",
+      "stale_threshold_days": 365,
+      "notes": "虚构美股示例。"
+    },
+    {
+      "id": "ev_demo_l2_us_optical",
+      "target_type": "edge",
+      "target_id": "edge_company_photonmesh_optical",
+      "level": "L2",
+      "source_type": "official_site",
+      "title": "PhotonMesh Networks 产品白皮书与客户案例（虚构）",
+      "url": null,
+      "local_path": "examples/demo-sources/photonmesh.md",
+      "publish_date": "2026-04-25",
+      "excerpt": "虚构白皮书和客户案例均提到 1.6T 光模块面向 AI 数据中心互连，但收入纯度仍需持续核验。",
+      "language": "zh",
+      "reliability": 0.66,
+      "mapped_at": "2026-06-26T18:40:00+08:00",
+      "reviewed_at": "2026-06-26T18:40:00+08:00",
+      "reviewer": "human:codex-dev",
+      "stale_threshold_days": 180,
+      "notes": "虚构美股示例。"
     }
   ],
   "quote_snapshots": [
@@ -988,12 +1082,44 @@
       "source": "manual:demo",
       "source_delay_note": "虚构示例行情，不用于交易。",
       "refresh_job_id": "refresh:demo"
+    },
+    {
+      "id": "quote:VRCK:demo",
+      "stock_code": "VRCK",
+      "name": "VectorRack Systems",
+      "industry": "AI Infrastructure",
+      "market_cap": 86.4,
+      "latest_price": 72.18,
+      "change_pct": 1.4,
+      "turnover_amount": 12.6,
+      "pe": 54.7,
+      "pb": 8.1,
+      "quote_time": "2026-06-26T16:00:00-04:00",
+      "source": "manual:demo",
+      "source_delay_note": "虚构美股行情，不用于交易。",
+      "refresh_job_id": "refresh:demo"
+    },
+    {
+      "id": "quote:PMN:demo",
+      "stock_code": "PMN",
+      "name": "PhotonMesh Networks",
+      "industry": "Optical Networking",
+      "market_cap": 42.7,
+      "latest_price": 38.45,
+      "change_pct": -0.3,
+      "turnover_amount": 6.8,
+      "pe": 41.5,
+      "pb": 5.6,
+      "quote_time": "2026-06-26T16:00:00-04:00",
+      "source": "manual:demo",
+      "source_delay_note": "虚构美股行情，不用于交易。",
+      "refresh_job_id": "refresh:demo"
     }
   ],
   "market_signal_interface": {
     "status": "reserved",
     "endpoint_contract": "/api/market-signals",
     "accepted_payload": "schemas/chaingraph.schema.json#/definitions/market_signal",
-    "note": "v0.1 仅保留接口边界，不生成市场信号。"
+    "note": "当前版本仅保留接口边界，不生成市场信号。"
   }
 }

@@ -5,6 +5,7 @@ dist/
 /logs/
 /secrets/
 /public/snapshots/
+.playwright-cli/
 .DS_Store
 *.log
 *.sqlite
