@@ -107,7 +107,7 @@
         "id": { "type": "string", "pattern": "^company:" },
         "stock_code": { "type": "string" },
         "stock_symbol": { "type": "string" },
-        "exchange": { "enum": ["SH", "SZ", "BJ"] },
+        "exchange": { "enum": ["SH", "SZ", "BJ", "NASDAQ", "NYSE", "AMEX", "OTC"] },
         "name": { "type": "string" },
         "full_name": { "type": ["string", "null"] },
         "industry": { "type": ["string", "null"] },
