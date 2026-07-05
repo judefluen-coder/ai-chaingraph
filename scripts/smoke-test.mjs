@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
+  buildCoverageMatrix,
   buildFlow,
   buildListRows,
   buildScopedData,
@@ -47,6 +48,13 @@ assert.ok(searchItems(graph, "光模块").some((item) => item.id === "ev_demo_l2
 const status = getDataStatus(graph);
 assert.equal(status.datasetType, "demo", "demo 数据状态需要保持 demo 类型");
 assert.equal(status.mappingReviewCount, 2, "数据状态需要统计待审核映射");
+const coverageMatrix = buildCoverageMatrix(graph, "all", "all");
+assert.equal(coverageMatrix.rows.length, graph.chains.length, "覆盖矩阵需要按每条一级链路生成行");
+assert.equal(coverageMatrix.totals.companyCount, 12, "覆盖矩阵需要统计 demo 公司覆盖数");
+assert.ok(coverageMatrix.rows.some((row) => row.chain.id === "optical_communication" && row.marketCounts.us === 1), "覆盖矩阵需要展示链路内美股覆盖");
+assert.ok(coverageMatrix.rows.every((row) => row.qualityScore >= 0 && row.qualityScore <= 100), "覆盖矩阵质量分需要保持在 0-100");
+const l1UsCoverage = buildCoverageMatrix(graph, "L1", "us");
+assert.equal(l1UsCoverage.totals.companyCount, 1, "覆盖矩阵需要响应市场与证据筛选");
 
 assert.ok(schema.$defs.market_signal, "schema 需要保留市场情报接口字段");
 assert.ok(schema.$defs.review_queue_item, "schema 需要保留人工校正字段");
@@ -70,12 +78,14 @@ assert.match(readme, /仓库边界与提交安全/, "README 需要说明仓库�
 assert.match(readme, /git rev-parse --show-toplevel/, "README 需要包含 Git root 检查命令");
 assert.match(readme, /L1.*L2.*L3/s, "README 需要解释 L1/L2/L3 证据等级");
 assert.match(readme, /本地观察列表/, "README 需要说明本地观察列表能力");
+assert.match(readme, /公司覆盖矩阵/, "README 需要说明公司覆盖矩阵能力");
 
 const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
 const loadGraphData = await readFile(new URL("../src/data/loadGraphData.js", import.meta.url), "utf8");
 const viteConfig = await readFile(new URL("../vite.config.js", import.meta.url), "utf8");
 const pagesWorkflow = await readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8");
 const companyMapList = await readFile(new URL("../src/components/CompanyMapList.jsx", import.meta.url), "utf8");
+const coverageMatrixComponent = await readFile(new URL("../src/components/CoverageMatrix.jsx", import.meta.url), "utf8");
 const chainSidebar = await readFile(new URL("../src/components/ChainSidebar.jsx", import.meta.url), "utf8");
 const detailDrawer = await readFile(new URL("../src/components/DetailDrawer.jsx", import.meta.url), "utf8");
 assert.match(main, /viewMode/, "UI 需要保留视图切换状态");
@@ -85,6 +95,9 @@ assert.match(main, /ai-chaingraph-watchlist/, "UI 需要把观察列表保存在
 assert.match(main, /exportWatchlist/, "UI 需要支持导出本地观察列表");
 assert.match(companyMapList, /公司映射列表/, "列表视图需要明确公司映射列表标题");
 assert.match(companyMapList, /为什么相关/, "列表视图需要突出相关性解释");
+assert.match(companyMapList, /CoverageMatrix/, "列表视图需要挂载公司覆盖矩阵");
+assert.match(coverageMatrixComponent, /公司覆盖矩阵/, "覆盖矩阵组件需要有可访问标签");
+assert.match(coverageMatrixComponent, /链路覆盖与证据质量/, "覆盖矩阵需要解释覆盖和证据质量");
 assert.match(chainSidebar, /产业链导航/, "UI 需要保留产业链导航入口");
 assert.match(detailDrawer, /人工校正/, "UI 需要保留人工校正入口");
 assert.match(detailDrawer, /观察列表/, "详情面板需要提供观察列表入口");

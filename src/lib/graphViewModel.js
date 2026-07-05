@@ -207,6 +207,87 @@ export function buildListRows(data, evidenceFilter, onlyChain, query, marketFilt
     });
 }
 
+export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter = "all") {
+  const rows = data.chains.map((chain) => {
+    const nodeIds = new Set(data.nodes.filter((node) => node.chain === chain.id).map((node) => node.id));
+    const edges = data.edges
+      .filter((edge) => edge.edge_type === "company_maps_to_industry_node" && matchesEvidenceFilter(edge, evidenceFilter))
+      .map((edge) => ({
+        edge,
+        company: data.companies.find((company) => company.id === edge.to_id),
+        node: data.nodes.find((node) => node.id === edge.from_id),
+      }))
+      .filter((item) => item.company && item.node && nodeIds.has(item.node.id) && matchesMarketFilter(item.company, marketFilter));
+
+    const companyIds = new Set(edges.map((item) => item.company.id));
+    const marketCompanyIds = { a_share: new Set(), us: new Set(), unknown: new Set() };
+    const evidenceCounts = { L1: 0, L2: 0, L3: 0 };
+    const nodeCounts = new Map();
+    let acceptedCount = 0;
+    let normalFreshnessCount = 0;
+    let weightedEvidence = 0;
+
+    for (const { edge, company, node } of edges) {
+      const market = getCompanyMarket(company);
+      (marketCompanyIds[market] || marketCompanyIds.unknown).add(company.id);
+      evidenceCounts[edge.evidence_level] = (evidenceCounts[edge.evidence_level] || 0) + 1;
+      nodeCounts.set(node.id, (nodeCounts.get(node.id) || 0) + 1);
+      if (edge.review_status === "accepted") acceptedCount += 1;
+      if (getEdgeRecency(data, edge).status === "normal") normalFreshnessCount += 1;
+      weightedEvidence += { L1: 1, L2: 0.7, L3: 0.35 }[edge.evidence_level] || 0.2;
+    }
+
+    const mappingCount = edges.length;
+    const topNodeId = [...nodeCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const topNode = data.nodes.find((node) => node.id === topNodeId);
+    const qualityScore = mappingCount === 0 ? 0 : Math.round(100 * (
+      0.55 * (weightedEvidence / mappingCount)
+      + 0.25 * (acceptedCount / mappingCount)
+      + 0.2 * (normalFreshnessCount / mappingCount)
+    ));
+
+    return {
+      chain,
+      companyCount: companyIds.size,
+      mappingCount,
+      marketCounts: {
+        a_share: marketCompanyIds.a_share.size,
+        us: marketCompanyIds.us.size,
+        unknown: marketCompanyIds.unknown.size,
+      },
+      evidenceCounts,
+      reviewCount: edges.filter((item) => item.edge.review_status !== "accepted").length,
+      topNodeName: topNode?.name || "暂无覆盖",
+      qualityScore,
+    };
+  });
+
+  return {
+    rows,
+    totals: rows.reduce((acc, row) => ({
+      companyCount: acc.companyCount + row.companyCount,
+      mappingCount: acc.mappingCount + row.mappingCount,
+      reviewCount: acc.reviewCount + row.reviewCount,
+      marketCounts: {
+        a_share: acc.marketCounts.a_share + row.marketCounts.a_share,
+        us: acc.marketCounts.us + row.marketCounts.us,
+        unknown: acc.marketCounts.unknown + row.marketCounts.unknown,
+      },
+      evidenceCounts: {
+        L1: acc.evidenceCounts.L1 + row.evidenceCounts.L1,
+        L2: acc.evidenceCounts.L2 + row.evidenceCounts.L2,
+        L3: acc.evidenceCounts.L3 + row.evidenceCounts.L3,
+      },
+    }), {
+      companyCount: 0,
+      mappingCount: 0,
+      reviewCount: 0,
+      marketCounts: { a_share: 0, us: 0, unknown: 0 },
+      evidenceCounts: { L1: 0, L2: 0, L3: 0 },
+    }),
+  };
+}
+
 export function getPathSummary(data, active, marketFilter = "all") {
   const marketLabel = getMarketLabel(marketFilter);
   if (!active || active.node_type === "overview") {

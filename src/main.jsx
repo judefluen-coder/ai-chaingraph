@@ -8,6 +8,7 @@ import { CompanyMapList } from "./components/CompanyMapList";
 import { GraphViewport } from "./components/GraphViewport";
 import { DetailDrawer } from "./components/DetailDrawer";
 import {
+  buildCoverageMatrix,
   buildFlow,
   buildListRows,
   buildScopedData,
@@ -119,6 +120,7 @@ function App() {
   const scopedData = useMemo(() => graphData ? buildScopedData(graphData, onlyChain, marketFilter) : null, [graphData, onlyChain, marketFilter]);
   const flow = useMemo(() => scopedData ? buildFlow(scopedData, activeId, query, evidenceFilter) : { nodes: [], edges: [] }, [scopedData, activeId, query, evidenceFilter]);
   const listRows = useMemo(() => graphData ? buildListRows(graphData, evidenceFilter, onlyChain, query, marketFilter) : [], [graphData, evidenceFilter, onlyChain, query, marketFilter]);
+  const coverageMatrix = useMemo(() => graphData ? buildCoverageMatrix(graphData, evidenceFilter, marketFilter) : { rows: [], totals: { companyCount: 0, mappingCount: 0, reviewCount: 0 } }, [graphData, evidenceFilter, marketFilter]);
   const searchResults = useMemo(() => graphData ? searchItems(graphData, query) : [], [graphData, query]);
   const active = graphData ? getEntity(graphData, activeId) : null;
   const dataStatus = graphData ? getDataStatus(graphData, reviewRecords) : null;
@@ -293,12 +295,14 @@ function App() {
           ) : (
             <CompanyMapList
               rows={listRows}
+              coverageMatrix={coverageMatrix}
               activeId={activeId}
               evidenceFilter={evidenceFilter}
               marketFilter={marketFilter}
               onlyChain={onlyChain}
               query={query}
               onSelect={selectEntity}
+              onScope={setOnlyChain}
               onViewGraph={() => {
                 setViewMode("graph");
                 setMobileTab("graph");
