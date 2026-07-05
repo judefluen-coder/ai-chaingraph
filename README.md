@@ -31,7 +31,7 @@ AI 产业链很容易被概念标签淹没：算力、光模块、PCB、液冷�
 - 详情解释：公司详情、行情快照占位、为什么相关、证据时间线、证据摘要、风险声明。
 - 搜索定位：支持股票、代码、产业环节、别名和证据文本，保留右侧搜索上下文。
 - 证据筛选：支持全部、L1、L2、L3。
-- 本地观察列表：收藏待跟踪公司到浏览器 localStorage，可导出 JSON/CSV。
+- 本地观察列表：收藏待跟踪公司到浏览器 localStorage，支持观察备注、优先级、标签、下次复核日期，并可导出 JSON/CSV。
 - 人工校正：反馈写入浏览器 localStorage，可导出 JSON/CSV。
 - 响应式：桌面三栏，平板列表优先，手机底部 tabs 切换“产业链 / 股票池 / 图谱 / 详情”。
 
@@ -206,7 +206,7 @@ git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite'
 
 - 数据层：补齐真实数据去重、证据冲突检测和 L3 审核工作流。
 - API 层：提供 `/api/graph`、`/api/search`、`/api/node/:id`、`/api/review`。
-- 研究体验：增加产业链路径对比、观察列表批量备注和更完整的证据冲突处理。
+- 研究体验：增加产业链路径对比和更完整的证据冲突处理。
 - 开源体验：补齐贡献指南、示例 snapshot、README 截图和 GitHub release 说明。
 
 ## 免责声明

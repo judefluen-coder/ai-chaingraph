@@ -96,6 +96,7 @@ assert.match(readme, /本地观察列表/, "README 需要说明本地观察列�
 assert.match(readme, /公司覆盖矩阵/, "README 需要说明公司覆盖矩阵能力");
 assert.match(readme, /证据时间线/, "README 需要说明证据时间线能力");
 assert.match(readme, /CSV\/JSONL/, "README 需要说明 CSV/JSONL 扁平映射表导入");
+assert.match(readme, /观察备注/, "README 需要说明观察列表研究备注能力");
 assert.match(packageJson, /validate:tabular/, "package.json 需要提供 tabular 导入示例校验命令");
 
 const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
@@ -114,8 +115,10 @@ const detailDrawer = await readFile(new URL("../src/components/DetailDrawer.jsx"
 assert.match(main, /viewMode/, "UI 需要保留视图切换状态");
 assert.match(main, /mobileTab/, "UI 需要提供移动端视图切换状态");
 assert.match(main, /"url", "note"/, "CSV 导出需要包含本地反馈的来源 URL 和说明");
+assert.match(main, /"priority", "tags", "thesis", "next_review_at"/, "观察列表 CSV 导出需要包含研究备注字段");
 assert.match(main, /ai-chaingraph-watchlist/, "UI 需要把观察列表保存在本地浏览器");
 assert.match(main, /exportWatchlist/, "UI 需要支持导出本地观察列表");
+assert.match(main, /updateWatchlistRecord/, "UI 需要支持编辑观察列表研究备注");
 assert.match(companyMapList, /公司映射列表/, "列表视图需要明确公司映射列表标题");
 assert.match(companyMapList, /为什么相关/, "列表视图需要突出相关性解释");
 assert.match(companyMapList, /CoverageMatrix/, "列表视图需要挂载公司覆盖矩阵");
@@ -125,6 +128,8 @@ assert.match(coverageMatrixComponent, /覆盖缺口提醒/, "覆盖矩阵需要�
 assert.match(chainSidebar, /产业链导航/, "UI 需要保留产业链导航入口");
 assert.match(detailDrawer, /人工校正/, "UI 需要保留人工校正入口");
 assert.match(detailDrawer, /观察列表/, "详情面板需要提供观察列表入口");
+assert.match(detailDrawer, /观察备注/, "详情面板需要提供观察备注入口");
+assert.match(detailDrawer, /下次复核/, "观察列表需要支持下次复核日期");
 assert.match(detailDrawer, /证据时间线/, "详情面板需要提供证据时间线入口");
 assert.match(detailDrawer, /质量提示/, "详情面板需要展示质量提示");
 assert.match(detailDrawer, /sort\(\(a, b\).*publish_date/s, "证据时间线需要按发布日期排序");
