@@ -69,6 +69,7 @@ assert.match(readme, /信息组织与产业研究辅助工具/, "README 需要�
 assert.match(readme, /仓库边界与提交安全/, "README 需要说明仓库边界与提交安全");
 assert.match(readme, /git rev-parse --show-toplevel/, "README 需要包含 Git root 检查命令");
 assert.match(readme, /L1.*L2.*L3/s, "README 需要解释 L1/L2/L3 证据等级");
+assert.match(readme, /本地观察列表/, "README 需要说明本地观察列表能力");
 
 const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
 const loadGraphData = await readFile(new URL("../src/data/loadGraphData.js", import.meta.url), "utf8");
@@ -80,10 +81,14 @@ const detailDrawer = await readFile(new URL("../src/components/DetailDrawer.jsx"
 assert.match(main, /viewMode/, "UI 需要保留视图切换状态");
 assert.match(main, /mobileTab/, "UI 需要提供移动端视图切换状态");
 assert.match(main, /"url", "note"/, "CSV 导出需要包含本地反馈的来源 URL 和说明");
+assert.match(main, /ai-chaingraph-watchlist/, "UI 需要把观察列表保存在本地浏览器");
+assert.match(main, /exportWatchlist/, "UI 需要支持导出本地观察列表");
 assert.match(companyMapList, /公司映射列表/, "列表视图需要明确公司映射列表标题");
 assert.match(companyMapList, /为什么相关/, "列表视图需要突出相关性解释");
 assert.match(chainSidebar, /产业链导航/, "UI 需要保留产业链导航入口");
 assert.match(detailDrawer, /人工校正/, "UI 需要保留人工校正入口");
+assert.match(detailDrawer, /观察列表/, "详情面板需要提供观察列表入口");
+assert.match(detailDrawer, /onToggleWatchlist/, "公司详情需要支持加入或移出观察列表");
 assert.match(detailDrawer, /record\.payload\?\.url/, "本地审核队列需要展示反馈来源 URL");
 assert.match(viteConfig, /VITE_BASE_PATH/, "Vite 需要支持 GitHub Pages 子路径构建");
 assert.match(loadGraphData, /import\.meta\.env\.BASE_URL/, "public snapshot 路径需要跟随 Vite base");

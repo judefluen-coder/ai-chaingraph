@@ -862,6 +862,31 @@ button:active {
   font-size: 12px;
 }
 
+.watchButton {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid rgba(127, 212, 59, 0.32);
+  border-radius: var(--radius-sm);
+  color: var(--brand-strong);
+  background: rgba(127, 212, 59, 0.07);
+  font-weight: 760;
+}
+
+.watchButton:hover,
+.watchButton.isActive {
+  border-color: rgba(127, 212, 59, 0.58);
+  background: var(--brand-soft);
+}
+
+.watchButton.isActive svg {
+  fill: currentColor;
+}
+
 .whyBox {
   padding: 12px;
   margin-top: 12px;
@@ -1053,6 +1078,81 @@ button:active {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
+}
+
+.exportActions button:disabled {
+  opacity: 0.44;
+  cursor: not-allowed;
+}
+
+.exportActions button:disabled:hover {
+  color: var(--muted);
+  background: transparent;
+}
+
+.watchList {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.watchItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(17, 24, 20, 0.82);
+  padding: 8px;
+}
+
+.watchInfo {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  padding: 2px;
+  text-align: left;
+}
+
+.watchInfo:hover strong {
+  color: var(--brand-strong);
+}
+
+.watchInfo strong,
+.watchInfo span,
+.watchInfo small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.watchInfo span,
+.watchInfo small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.iconButton {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  background: rgba(12, 17, 14, 0.72);
+  padding: 0;
+}
+
+.iconButton:hover {
+  border-color: rgba(238, 123, 98, 0.45);
+  color: var(--danger);
+  background: rgba(238, 123, 98, 0.08);
 }
 
 .reviewCard {

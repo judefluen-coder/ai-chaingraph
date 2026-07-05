@@ -12,6 +12,7 @@ import {
   buildListRows,
   buildScopedData,
   exportDisclaimer,
+  getCompanyMarket,
   getDataStatus,
   getEntity,
   getMarketOptions,
@@ -33,6 +34,18 @@ function writeStoredReviewQueue(records) {
   localStorage.setItem("ai-chaingraph-review-queue", JSON.stringify(records, null, 2));
 }
 
+function readStoredWatchlist() {
+  try {
+    return JSON.parse(localStorage.getItem("ai-chaingraph-watchlist") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredWatchlist(records) {
+  localStorage.setItem("ai-chaingraph-watchlist", JSON.stringify(records, null, 2));
+}
+
 function downloadText(filename, mimeType, content) {
   const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
   const link = document.createElement("a");
@@ -45,6 +58,12 @@ function downloadText(filename, mimeType, content) {
 function toCsv(records) {
   const headers = ["id", "target_type", "target_id", "issue_type", "status", "created_by", "created_at", "url", "note", "resolution_note"];
   const rows = records.map((record) => headers.map((header) => JSON.stringify(record[header] ?? record.payload?.[header] ?? "")).join(","));
+  return [`# ${exportDisclaimer}`, headers.join(","), ...rows].join("\n");
+}
+
+function toWatchlistCsv(records) {
+  const headers = ["company_id", "stock_code", "name", "market", "industry", "added_at"];
+  const rows = records.map((record) => headers.map((header) => JSON.stringify(record[header] ?? "")).join(","));
   return [`# ${exportDisclaimer}`, headers.join(","), ...rows].join("\n");
 }
 
@@ -61,6 +80,7 @@ function App() {
   const [ack, setAck] = useState(() => localStorage.getItem("ai-chaingraph-disclaimer") === "ack");
   const [feedback, setFeedback] = useState({ issue_type: "stale", url: "", note: "" });
   const [reviewRecords, setReviewRecords] = useState(readStoredReviewQueue);
+  const [watchlistRecords, setWatchlistRecords] = useState(readStoredWatchlist);
   const [notice, setNotice] = useState("");
   const showDesktopMiniGraph = useMediaQuery("(min-width: 1101px)");
   const isMobileLayout = useMediaQuery("(max-width: 760px)");
@@ -85,6 +105,10 @@ function App() {
   }, [reviewRecords]);
 
   useEffect(() => {
+    writeStoredWatchlist(watchlistRecords);
+  }, [watchlistRecords]);
+
+  useEffect(() => {
     setNotice("");
   }, [activeId]);
 
@@ -100,6 +124,7 @@ function App() {
   const dataStatus = graphData ? getDataStatus(graphData, reviewRecords) : null;
   const pathSummary = graphData && active ? getPathSummary(scopedData || graphData, active, marketFilter) : "数据加载中";
   const marketOptions = useMemo(() => graphData ? getMarketOptions(graphData) : ["all"], [graphData]);
+  const watchlistIds = useMemo(() => new Set(watchlistRecords.map((record) => record.company_id)), [watchlistRecords]);
 
   function acknowledgeDisclaimer() {
     localStorage.setItem("ai-chaingraph-disclaimer", "ack");
@@ -163,6 +188,31 @@ function App() {
     } : record));
   }
 
+  function toggleWatchlist(company) {
+    if (!company?.stock_code) return;
+    const isWatched = watchlistIds.has(company.id);
+    if (isWatched) {
+      setWatchlistRecords((records) => records.filter((record) => record.company_id !== company.id));
+      setNotice(`${company.name} 已移出观察列表。`);
+      return;
+    }
+    setWatchlistRecords((records) => records.some((record) => record.company_id === company.id) ? records : records.concat({
+      company_id: company.id,
+      stock_code: company.stock_code,
+      name: company.name,
+      market: getCompanyMarket(company),
+      industry: company.industry || "",
+      added_at: new Date().toISOString(),
+    }));
+    setNotice(`${company.name} 已加入观察列表。`);
+  }
+
+  function removeWatchlist(companyId) {
+    const record = watchlistRecords.find((item) => item.company_id === companyId);
+    setWatchlistRecords((records) => records.filter((item) => item.company_id !== companyId));
+    if (record) setNotice(`${record.name} 已移出观察列表。`);
+  }
+
   function exportFeedback(format) {
     const stamp = new Date().toISOString().replace(/[:.]/g, "-");
     if (format === "csv") {
@@ -173,6 +223,19 @@ function App() {
       `ai-chaingraph-feedback-${stamp}.json`,
       "application/json;charset=utf-8",
       JSON.stringify({ disclaimer: exportDisclaimer, exported_at: new Date().toISOString(), records: reviewRecords }, null, 2),
+    );
+  }
+
+  function exportWatchlist(format) {
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    if (format === "csv") {
+      downloadText(`ai-chaingraph-watchlist-${stamp}.csv`, "text/csv;charset=utf-8", toWatchlistCsv(watchlistRecords));
+      return;
+    }
+    downloadText(
+      `ai-chaingraph-watchlist-${stamp}.json`,
+      "application/json;charset=utf-8",
+      JSON.stringify({ disclaimer: exportDisclaimer, exported_at: new Date().toISOString(), records: watchlistRecords }, null, 2),
     );
   }
 
@@ -265,6 +328,11 @@ function App() {
             reviewRecords={reviewRecords}
             onResolveReview={resolveReview}
             onExportFeedback={exportFeedback}
+            watchlistRecords={watchlistRecords}
+            watchlistIds={watchlistIds}
+            onToggleWatchlist={toggleWatchlist}
+            onRemoveWatchlist={removeWatchlist}
+            onExportWatchlist={exportWatchlist}
             notice={notice}
           />
         </div>
