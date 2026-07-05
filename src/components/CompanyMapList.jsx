@@ -6,15 +6,18 @@ import {
   getMarketLabel,
   reviewStatusLabels,
 } from "../lib/graphViewModel";
+import { CoverageMatrix } from "./CoverageMatrix";
 
 export function CompanyMapList({
   rows,
+  coverageMatrix,
   activeId,
   evidenceFilter,
   marketFilter,
   onlyChain,
   query,
   onSelect,
+  onScope,
   onViewGraph,
 }) {
   return (
@@ -36,6 +39,8 @@ export function CompanyMapList({
         <Metric value={evidenceFilter === "all" ? "全部" : evidenceLabels[evidenceFilter]} label="证据" />
         <Metric value={onlyChain || "全部链路"} label="范围" />
       </div>
+
+      <CoverageMatrix matrix={coverageMatrix} activeChain={onlyChain} onScope={onScope} />
 
       <div className="listContext">
         <ListFilter size={16} />

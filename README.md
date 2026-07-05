@@ -25,6 +25,7 @@ AI 产业链很容易被概念标签淹没：算力、光模块、PCB、液冷�
 - 顶部工作台：品牌、搜索、A股/美股市场筛选、列表/图谱视图切换和数据状态。
 - 产业链导航：按算力硬件、光通信、PCB/材料、电力与液冷浏览上中下游节点。
 - 公司映射列表：默认首屏展示公司、产业链位置、证据等级、相关理由、状态和纯度。
+- 公司覆盖矩阵：按链路汇总 A股/美股覆盖、证据结构、质量分和待审线索。
 - 关系图谱：React Flow 展示产业节点和公司映射，点击节点联动详情。
 - 详情解释：公司详情、行情快照占位、为什么相关、证据摘要、风险声明。
 - 搜索定位：支持股票、代码、产业环节、别名和证据文本，保留右侧搜索上下文。
@@ -127,6 +128,7 @@ ai-chaingraph/
 │   ├── components/
 │   │   ├── ChainSidebar.jsx
 │   │   ├── CompanyMapList.jsx
+│   │   ├── CoverageMatrix.jsx
 │   │   ├── DetailDrawer.jsx
 │   │   ├── GraphViewport.jsx
 │   │   └── TopBar.jsx
@@ -188,7 +190,7 @@ git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite'
 
 - 数据层：补齐 CSV/JSONL adapter、真实数据去重、证据冲突检测和 L3 审核工作流。
 - API 层：提供 `/api/graph`、`/api/search`、`/api/node/:id`、`/api/review`。
-- 研究体验：增加产业链路径对比、公司覆盖矩阵、证据时间线和 watchlist。
+- 研究体验：增加产业链路径对比、证据时间线、观察列表批量备注和覆盖缺口提醒。
 - 开源体验：补齐贡献指南、示例 snapshot、README 截图和 GitHub release 说明。
 
 ## 免责声明

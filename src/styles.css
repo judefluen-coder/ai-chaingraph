@@ -486,7 +486,7 @@ button:active {
 
 .companyMapList {
   display: grid;
-  grid-template-rows: auto auto auto 1fr;
+  grid-template-rows: auto auto auto auto 1fr;
   padding: 18px;
 }
 
@@ -545,6 +545,177 @@ button:active {
   margin-top: 5px;
   color: var(--muted);
   font-size: 11px;
+}
+
+.coverageMatrix {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(9, 13, 11, 0.72);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.coverageHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.coverageHead h2 {
+  margin: 3px 0 0;
+  color: var(--text-strong);
+  font-size: 15px;
+  line-height: 1.15;
+}
+
+.coverageTotals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.coverageTotals span {
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  color: var(--muted);
+  background: rgba(20, 26, 23, 0.72);
+  font-size: 11px;
+}
+
+.coverageRows {
+  display: grid;
+}
+
+.coverageRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 54px 54px minmax(108px, 0.8fr) 78px;
+  gap: 10px;
+  align-items: center;
+  min-height: 34px;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: transparent;
+  color: var(--text);
+  padding: 4px 12px;
+  text-align: left;
+}
+
+.coverageRow:last-child {
+  border-bottom: 0;
+}
+
+.coverageRow:hover,
+.coverageRow.isActive {
+  background: rgba(127, 212, 59, 0.08);
+}
+
+.marketCount b {
+  color: var(--text-strong);
+  font-family: var(--mono);
+  font-size: 15px;
+}
+
+.marketCount {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.marketCount small {
+  color: var(--muted-2);
+  font-size: 10px;
+}
+
+.coverageChain {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 0 7px;
+  align-items: center;
+}
+
+.coverageChain svg {
+  color: var(--brand-strong);
+}
+
+.coverageChain strong,
+.coverageChain small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coverageChain strong {
+  color: var(--text-strong);
+  font-size: 13px;
+}
+
+.coverageChain small,
+.qualityCell small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.coverageChain small {
+  display: none;
+}
+
+.evidenceStack {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+}
+
+.evidenceStack i {
+  flex: var(--weight);
+  min-width: 24px;
+  border: 1px solid rgba(127, 212, 59, 0.36);
+  border-radius: var(--radius-sm);
+  color: var(--brand-strong);
+  background: rgba(127, 212, 59, 0.08);
+  padding: 3px 5px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.evidenceStack .level-L2 {
+  border-color: rgba(232, 193, 90, 0.4);
+  color: var(--warning);
+  background: rgba(232, 193, 90, 0.08);
+}
+
+.evidenceStack .level-L3 {
+  border-color: rgba(155, 167, 157, 0.36);
+  color: var(--muted);
+  background: rgba(155, 167, 157, 0.06);
+}
+
+.qualityCell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  color: var(--brand-strong);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.qualityCell small {
+  display: none;
 }
 
 .listContext {
@@ -1237,6 +1408,19 @@ button:active {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .coverageHead {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .coverageTotals {
+    justify-content: flex-end;
+  }
+
+  .coverageRows {
+    display: none;
+  }
+
   .mapRow {
     grid-template-columns: minmax(140px, 1fr) minmax(140px, 1fr) 64px minmax(180px, 1.2fr);
   }
@@ -1335,6 +1519,42 @@ button:active {
 
   .quickStats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .coverageMatrix {
+    margin-bottom: 10px;
+  }
+
+  .coverageHead {
+    padding: 11px 12px;
+  }
+
+  .coverageTotals span {
+    min-height: 24px;
+    padding: 0 7px;
+  }
+
+  .coverageRow {
+    grid-template-columns: minmax(0, 1fr) 40px 40px 62px;
+    gap: 7px;
+    min-height: 40px;
+    padding: 7px 12px;
+  }
+
+  .coverageChain small {
+    display: none;
+  }
+
+  .marketCount b {
+    font-size: 14px;
+  }
+
+  .marketCount small {
+    font-size: 9px;
+  }
+
+  .qualityCell small {
+    display: none;
   }
 
   .mapTable {
