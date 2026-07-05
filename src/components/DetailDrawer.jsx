@@ -261,8 +261,8 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
 function QualityAlerts({ alerts }) {
   if (!alerts?.length) return null;
   return (
-    <section className="qualityAlerts" aria-label="质量提示">
-      <h3><AlertTriangle size={14} />质量提示</h3>
+    <section className="qualityAlerts" aria-label="质量提示与证据冲突">
+      <h3><AlertTriangle size={14} />质量提示 / 证据冲突</h3>
       <div>
         {alerts.map((alert) => (
           <article className={`qualityAlert severity-${alert.severity}`} key={`${alert.type}:${alert.target_id}:${alert.title}`}>
