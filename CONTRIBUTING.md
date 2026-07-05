@@ -57,6 +57,7 @@ git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite'
 - 证据摘要应展示产品能力，不应复制真实受限内容。
 - L3 线索必须保持待审核语义，不能作为结论展示。
 - 公开导入示例放在 `examples/`，snapshot 示例应能通过 `npm run import:snapshot -- examples/fictional-ai-chain.snapshot.json`，CSV/JSONL 示例应能通过 `npm run validate:tabular`。
+- 同一公司和产业节点的多条证据可以拆成多行导入；导入器会合并映射边并保留全部证据来源。
 
 ## Pull Request 检查清单
 

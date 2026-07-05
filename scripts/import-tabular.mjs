@@ -29,10 +29,11 @@ const sourceHash = createHash("sha256").update(raw).digest("hex");
 const rows = parseRows(raw, adapterType);
 const datasetId = `tabular-${path.basename(absoluteInputPath, extension).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
 const errors = [];
+const importStats = { duplicate_mapping_rows: 0, merged_mapping_edges: new Set() };
 let graph;
 
 try {
-  graph = buildGraph(rows, { datasetId, sourceName: path.basename(absoluteInputPath), now, today });
+  graph = buildGraph(rows, { datasetId, sourceName: path.basename(absoluteInputPath), now, today, importStats });
   validateGraph(graph);
 } catch (error) {
   errors.push(error.message);
@@ -63,6 +64,8 @@ const importJob = {
     evidences: graph.evidences.length,
     quote_snapshots: graph.quote_snapshots.length,
     mappings_needing_review: reviewRecords,
+    duplicate_mapping_rows: importStats.duplicate_mapping_rows,
+    merged_mapping_edges: importStats.merged_mapping_edges.size,
   },
   created_by: "local",
   created_at: now,
@@ -171,8 +174,9 @@ function buildGraph(records, context) {
     const nodeLevel = integerCell(row, "level") || (nodeId === chainId ? 1 : parentId === chainId ? 2 : 3);
     const nodeType = cell(row, "node_type") || (nodeLevel === 1 ? "chain" : nodeLevel === 2 ? "segment" : "subsegment");
     const edgeId = cell(row, "edge_id") || `edge_${safeId(nodeId)}_${safeId(stockCode)}`;
-    const evidenceId = cell(row, "evidence_id") || `ev_${safeId(edgeId)}`;
-    const reviewedAt = reviewStatus(row, evidenceLevel) === "accepted" ? context.now : null;
+    const evidenceId = cell(row, "evidence_id") || `ev_${safeId(edgeId)}_${safeId(row.__line)}`;
+    const rowReviewStatus = reviewStatus(row, evidenceLevel);
+    const reviewedAt = rowReviewStatus === "accepted" ? context.now : null;
 
     chains.set(chainId, {
       id: chainId,
@@ -212,7 +216,7 @@ function buildGraph(records, context) {
       updated_at: context.today,
     });
 
-    companies.set(normalizedCompanyId, {
+    upsertCompany(companies, normalizedCompanyId, {
       id: normalizedCompanyId,
       stock_code: stockCode,
       stock_symbol: cell(row, "stock_symbol") || stockCode.split(".")[0],
@@ -226,7 +230,7 @@ function buildGraph(records, context) {
       updated_at: context.today,
     });
 
-    edges.set(edgeId, {
+    upsertMappingEdge(edges, {
       id: edgeId,
       from_id: nodeId,
       to_id: normalizedCompanyId,
@@ -238,10 +242,10 @@ function buildGraph(records, context) {
       purity_score: numberCell(row, "purity_score") ?? defaultScore(evidenceLevel).purity,
       confidence: numberCell(row, "confidence") ?? defaultScore(evidenceLevel).confidence,
       source_ids: [evidenceId],
-      review_status: reviewStatus(row, evidenceLevel),
+      review_status: rowReviewStatus,
       created_at: context.now,
       updated_at: context.now,
-    });
+    }, context.importStats);
 
     evidences.set(evidenceId, {
       id: evidenceId,
@@ -397,6 +401,63 @@ function upsertNode(nodes, id, nextNode) {
     return;
   }
   nodes.set(id, { ...existing, ...nextNode, company_ids: existing.company_ids });
+}
+
+function upsertCompany(companies, id, nextCompany) {
+  const existing = companies.get(id);
+  if (!existing) {
+    companies.set(id, nextCompany);
+    return;
+  }
+  companies.set(id, {
+    ...existing,
+    ...nextCompany,
+    aliases: uniqueList([...(existing.aliases || []), ...(nextCompany.aliases || [])]),
+    source_ids: uniqueList([...(existing.source_ids || []), ...(nextCompany.source_ids || [])]),
+  });
+}
+
+function upsertMappingEdge(edges, nextEdge, stats) {
+  const existing = edges.get(nextEdge.id);
+  if (!existing) {
+    edges.set(nextEdge.id, nextEdge);
+    return;
+  }
+  if (existing.edge_type === "company_maps_to_industry_node" && nextEdge.edge_type === "company_maps_to_industry_node") {
+    stats.duplicate_mapping_rows += 1;
+    stats.merged_mapping_edges.add(nextEdge.id);
+  }
+  edges.set(nextEdge.id, {
+    ...existing,
+    weight: maxNumber(existing.weight, nextEdge.weight),
+    evidence_level: strongerEvidenceLevel(existing.evidence_level, nextEdge.evidence_level),
+    relevance_score: maxNumber(existing.relevance_score, nextEdge.relevance_score),
+    purity_score: maxNumber(existing.purity_score, nextEdge.purity_score),
+    confidence: maxNumber(existing.confidence, nextEdge.confidence),
+    source_ids: uniqueList([...(existing.source_ids || []), ...(nextEdge.source_ids || [])]),
+    review_status: mergeReviewStatus(existing.review_status, nextEdge.review_status),
+    updated_at: nextEdge.updated_at,
+  });
+}
+
+function uniqueList(items) {
+  return [...new Set(items.filter(Boolean))];
+}
+
+function maxNumber(left, right) {
+  return Math.max(Number(left) || 0, Number(right) || 0);
+}
+
+function strongerEvidenceLevel(left, right) {
+  return evidenceRank(right) > evidenceRank(left) ? right : left;
+}
+
+function evidenceRank(level) {
+  return { L1: 3, L2: 2, L3: 1 }[level] || 0;
+}
+
+function mergeReviewStatus(left, right) {
+  return left === "accepted" && right === "accepted" ? "accepted" : "needs_review";
 }
 
 function cell(row, ...keys) {

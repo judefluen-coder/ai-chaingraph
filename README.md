@@ -100,6 +100,8 @@ npm run import:tabular -- examples/fictional-ai-mappings.csv --print-snapshot
 npm run import:tabular -- data/local-only/ai-mappings.csv --write
 ```
 
+同一“公司 -> 产业节点”可以有多行证据。导入器会把这些行合并为同一条映射边，保留全部 `source_ids`，并在边上使用最强证据等级；如果任一行仍需审核，合并后的映射会保持待审核。
+
 写入产物位于：
 
 - `data/snapshots/current.json`

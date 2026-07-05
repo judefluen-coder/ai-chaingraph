@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import {
   buildCoverageMatrix,
   buildFlow,
@@ -10,6 +13,8 @@ import {
   searchItems,
 } from "../src/lib/graphViewModel.js";
 
+const execFileAsync = promisify(execFile);
+const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 const graph = JSON.parse(await readFile(new URL("../src/data/demoGraph.json", import.meta.url)));
 const schema = JSON.parse(await readFile(new URL("../schemas/chaingraph.schema.json", import.meta.url)));
 
@@ -89,6 +94,7 @@ const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8")
 const importTabular = await readFile(new URL("../scripts/import-tabular.mjs", import.meta.url), "utf8");
 const csvMappingExample = await readFile(new URL("../examples/fictional-ai-mappings.csv", import.meta.url), "utf8");
 const jsonlMappingExample = await readFile(new URL("../examples/fictional-ai-mappings.jsonl", import.meta.url), "utf8");
+const duplicateMappingExample = await readFile(new URL("../examples/fictional-ai-mappings-duplicates.csv", import.meta.url), "utf8");
 const loadGraphData = await readFile(new URL("../src/data/loadGraphData.js", import.meta.url), "utf8");
 const viteConfig = await readFile(new URL("../vite.config.js", import.meta.url), "utf8");
 const pagesWorkflow = await readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8");
@@ -123,6 +129,23 @@ assert.match(importTabular, /jsonl/, "tabular adapter 需要支持 JSONL");
 assert.match(importTabular, /company_maps_to_industry_node/, "tabular adapter 需要生成公司映射边");
 assert.match(csvMappingExample, /chain_id,chain_name/, "CSV 示例需要包含标准表头");
 assert.match(jsonlMappingExample, /VectorRack Systems/, "JSONL 示例需要包含美股映射");
+assert.match(duplicateMappingExample, /星阵芯科 2025 年度报告/, "重复映射示例需要覆盖同一公司-产业节点多条证据");
+
+const { stdout: duplicateSnapshotOutput } = await execFileAsync(
+  process.execPath,
+  ["scripts/import-tabular.mjs", "examples/fictional-ai-mappings-duplicates.csv", "--print-snapshot"],
+  { cwd: repoRoot, maxBuffer: 1024 * 1024 },
+);
+const duplicateSnapshot = JSON.parse(duplicateSnapshotOutput);
+const duplicateEdge = duplicateSnapshot.edges.find((edge) => edge.id === "edge_seg_ai_server_688001_sh");
+const duplicateCompany = duplicateSnapshot.companies.find((company) => company.id === "company:688001.SH");
+assert.equal(duplicateSnapshot.import_jobs[0].report_json.duplicate_mapping_rows, 1, "重复映射导入报告需要统计被合并的行数");
+assert.equal(duplicateSnapshot.import_jobs[0].report_json.merged_mapping_edges, 1, "重复映射导入报告需要统计被合并的映射边");
+assert.equal(duplicateSnapshot.evidences.length, 2, "同一映射的多条证据都需要保留");
+assert.equal(duplicateEdge.source_ids.length, 2, "重复映射边需要引用全部证据");
+assert.equal(duplicateEdge.evidence_level, "L1", "重复映射边需要使用最强证据等级");
+assert.equal(duplicateEdge.review_status, "accepted", "全部已接受证据合并后仍应保持 accepted");
+assert.equal(duplicateCompany.source_ids.length, 2, "重复映射公司需要引用全部证据");
 
 const companyIds = new Set(graph.companies.map((company) => company.id));
 const nodeIds = new Set(graph.nodes.map((node) => node.id));
