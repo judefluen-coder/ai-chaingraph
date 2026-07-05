@@ -718,6 +718,64 @@ button:active {
   display: none;
 }
 
+.coverageAlerts {
+  display: grid;
+  gap: 7px;
+  padding: 9px 12px 11px;
+  border-top: 1px solid var(--line-soft);
+  background: rgba(232, 193, 90, 0.055);
+}
+
+.coverageAlertHead {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--warning);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.coverageAlertList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.coverageAlertList button {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  border: 1px solid rgba(232, 193, 90, 0.22);
+  border-radius: var(--radius-sm);
+  padding: 7px 8px;
+  color: var(--text);
+  background: rgba(20, 26, 23, 0.76);
+  text-align: left;
+}
+
+.coverageAlertList button:hover,
+.coverageAlertList button:focus-visible {
+  border-color: rgba(232, 193, 90, 0.42);
+  background: rgba(232, 193, 90, 0.08);
+}
+
+.coverageAlertList strong,
+.coverageAlertList small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coverageAlertList strong {
+  color: var(--text-strong);
+  font-size: 12px;
+}
+
+.coverageAlertList small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .listContext {
   display: flex;
   align-items: center;
@@ -1077,6 +1135,56 @@ button:active {
   color: var(--text);
   font-size: 12px;
   line-height: 1.55;
+}
+
+.qualityAlerts {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.qualityAlerts h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--warning);
+  font-size: 13px;
+}
+
+.qualityAlerts > div {
+  display: grid;
+  gap: 7px;
+}
+
+.qualityAlert {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(232, 193, 90, 0.24);
+  border-radius: var(--radius-sm);
+  padding: 9px 10px;
+  background: rgba(232, 193, 90, 0.07);
+}
+
+.qualityAlert.severity-critical {
+  border-color: rgba(255, 115, 115, 0.34);
+  background: rgba(255, 115, 115, 0.08);
+}
+
+.qualityAlert.severity-info {
+  border-color: rgba(127, 212, 59, 0.24);
+  background: rgba(127, 212, 59, 0.07);
+}
+
+.qualityAlert strong {
+  color: var(--text-strong);
+  font-size: 12px;
+}
+
+.qualityAlert span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .pathBox,
@@ -1508,6 +1616,10 @@ button:active {
 
   .coverageRows {
     display: none;
+  }
+
+  .coverageAlertList {
+    grid-template-columns: 1fr;
   }
 
   .mapRow {

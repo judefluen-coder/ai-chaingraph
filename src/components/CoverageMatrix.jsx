@@ -1,4 +1,4 @@
-import { Grid2X2, Target } from "lucide-react";
+import { AlertTriangle, Grid2X2, Target } from "lucide-react";
 
 export function CoverageMatrix({ matrix, activeChain, onScope }) {
   return (
@@ -42,6 +42,23 @@ export function CoverageMatrix({ matrix, activeChain, onScope }) {
           </button>
         ))}
       </div>
+
+      {matrix.insights?.length > 0 && (
+        <div className="coverageAlerts" aria-label="覆盖缺口提醒">
+          <div className="coverageAlertHead">
+            <AlertTriangle size={14} />
+            <span>覆盖缺口提醒</span>
+          </div>
+          <div className="coverageAlertList">
+            {matrix.insights.slice(0, 3).map((item) => (
+              <button key={`${item.type}:${item.target_id}:${item.title}`} onClick={() => onScope(item.target_id)}>
+                <strong>{item.title}</strong>
+                <small>{item.body}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
