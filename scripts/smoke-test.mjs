@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import {
+  buildCompanyPathCompare,
   buildCoverageMatrix,
   buildEvidenceConflictAlerts,
   buildFlow,
@@ -84,6 +85,15 @@ assert.ok(buildEvidenceConflictAlerts(conflictGraph, "all", "all").some((item) =
 assert.ok(buildEntityQualityAlerts(conflictGraph, conflictCompany, "all", "all").some((item) => item.type === "evidence_level_conflict"), "公司详情需要展示证据冲突");
 assert.ok(buildCoverageMatrix(conflictGraph, "all", "all").insights.some((item) => item.type === "evidence_level_conflict"), "总览覆盖提示需要展示证据冲突");
 
+const pcbCompany = graph.companies.find((company) => company.id === "company:002916.SZ");
+const pathCompare = buildCompanyPathCompare(graph, pcbCompany, "all", "all");
+assert.equal(pathCompare.paths.length, 2, "产业链路径对比需要列出当前公司的全部映射路径");
+assert.ok(pathCompare.paths.some((path) => path.node.name === "封装基板"), "产业链路径对比需要包含公司所在节点");
+const materialPeer = pathCompare.peers.find((peer) => peer.company.id === "company:688519.SH");
+assert.ok(materialPeer, "产业链路径对比需要找出同链路同行公司");
+assert.ok(materialPeer.sharedNodeNames.includes("封装基板"), "产业链路径对比需要识别共享产业节点");
+assert.ok(materialPeer.uniqueNodeNames.includes("Low-Dk 材料"), "产业链路径对比需要识别同行差异节点");
+
 assert.ok(schema.$defs.market_signal, "schema 需要保留市场情报接口字段");
 assert.ok(schema.$defs.review_queue_item, "schema 需要保留人工校正字段");
 assert.ok(schema.$defs.import_job, "schema 需要保留导入任务字段");
@@ -109,6 +119,7 @@ assert.match(readme, /git rev-parse --show-toplevel/, "README 需要包含 Git r
 assert.match(readme, /L1.*L2.*L3/s, "README 需要解释 L1/L2/L3 证据等级");
 assert.match(readme, /本地观察列表/, "README 需要说明本地观察列表能力");
 assert.match(readme, /公司覆盖矩阵/, "README 需要说明公司覆盖矩阵能力");
+assert.match(readme, /产业链路径对比/, "README 需要说明产业链路径对比能力");
 assert.match(readme, /证据冲突/, "README 需要说明证据冲突提示能力");
 assert.match(readme, /证据时间线/, "README 需要说明证据时间线能力");
 assert.match(readme, /CSV\/JSONL/, "README 需要说明 CSV/JSONL 扁平映射表导入");
@@ -155,6 +166,7 @@ assert.match(detailDrawer, /下次复核/, "观察列表需要支持下次复核
 assert.match(detailDrawer, /证据时间线/, "详情面板需要提供证据时间线入口");
 assert.match(detailDrawer, /质量提示/, "详情面板需要展示质量提示");
 assert.match(detailDrawer, /证据冲突/, "详情面板需要展示证据冲突提示");
+assert.match(detailDrawer, /产业链路径对比/, "详情面板需要展示产业链路径对比");
 assert.match(detailDrawer, /sort\(\(a, b\).*publish_date/s, "证据时间线需要按发布日期排序");
 assert.match(detailDrawer, /onToggleWatchlist/, "公司详情需要支持加入或移出观察列表");
 assert.match(detailDrawer, /record\.payload\?\.url/, "本地审核队列需要展示反馈来源 URL");

@@ -242,6 +242,73 @@ export function buildEvidenceConflictAlerts(data, evidenceFilter = "all", market
     .filter((alert) => alert.type === "evidence_level_conflict"));
 }
 
+function buildCompanyPaths(data, companyId, evidenceFilter) {
+  return (data.edges || [])
+    .filter((edge) => edge.edge_type === "company_maps_to_industry_node" && edge.to_id === companyId && matchesEvidenceFilter(edge, evidenceFilter))
+    .map((edge) => {
+      const node = data.nodes.find((item) => item.id === edge.from_id);
+      const chain = data.chains.find((item) => item.id === node?.chain);
+      const recency = getEdgeRecency(data, edge);
+      return {
+        edge,
+        node,
+        chain,
+        recency,
+        score: getAdjustedRelevance(edge, recency.recencyFactor),
+      };
+    })
+    .filter((path) => path.node && path.chain)
+    .sort((a, b) => b.score - a.score);
+}
+
+function strongestEdgeLevel(paths) {
+  return paths.reduce((best, path) => (
+    evidenceRank(path.edge.evidence_level) > evidenceRank(best) ? path.edge.evidence_level : best
+  ), "L3");
+}
+
+export function buildCompanyPathCompare(data, company, evidenceFilter = "all", marketFilter = "all") {
+  if (!company?.id) return { company: null, paths: [], peers: [] };
+  const paths = buildCompanyPaths(data, company.id, evidenceFilter);
+  const chainIds = new Set(paths.map((path) => path.chain.id));
+  const nodeIds = new Set(paths.map((path) => path.node.id));
+
+  const peers = data.companies
+    .filter((candidate) => candidate.id !== company.id && matchesMarketFilter(candidate, marketFilter))
+    .map((candidate) => {
+      const peerPaths = buildCompanyPaths(data, candidate.id, evidenceFilter)
+        .filter((path) => chainIds.has(path.chain.id));
+      const sharedNodeNames = peerPaths
+        .filter((path) => nodeIds.has(path.node.id))
+        .map((path) => path.node.name);
+      const sharedChainNames = [...new Set(peerPaths.map((path) => path.chain.name))];
+      const uniqueNodeNames = peerPaths
+        .filter((path) => !nodeIds.has(path.node.id))
+        .map((path) => path.node.name);
+      const score = peerPaths.reduce((sum, path) => sum + path.score, 0) / Math.max(1, peerPaths.length);
+      return {
+        company: candidate,
+        paths: peerPaths,
+        sharedNodeNames,
+        sharedChainNames,
+        uniqueNodeNames,
+        strongestEvidenceLevel: strongestEdgeLevel(peerPaths),
+        reviewCount: peerPaths.filter((path) => path.edge.review_status !== "accepted").length,
+        score,
+      };
+    })
+    .filter((peer) => peer.paths.length > 0)
+    .sort((a, b) => (
+      b.sharedNodeNames.length - a.sharedNodeNames.length
+      || b.paths.length - a.paths.length
+      || evidenceRank(b.strongestEvidenceLevel) - evidenceRank(a.strongestEvidenceLevel)
+      || b.score - a.score
+    ))
+    .slice(0, 4);
+
+  return { company, paths, peers };
+}
+
 export function getDataStatus(data, localReviewRecords = []) {
   const evidences = data.evidences || [];
   const freshness = evidences.map((evidence) => getEvidenceFreshness(evidence));
