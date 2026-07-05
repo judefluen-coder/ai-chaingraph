@@ -6,9 +6,11 @@ import { promisify } from "node:util";
 import {
   buildCoverageMatrix,
   buildFlow,
+  buildEntityQualityAlerts,
   buildListRows,
   buildScopedData,
   getDataStatus,
+  getMappingQualityAlerts,
   getMarketOptions,
   searchItems,
 } from "../src/lib/graphViewModel.js";
@@ -58,8 +60,14 @@ assert.equal(coverageMatrix.rows.length, graph.chains.length, "覆盖矩阵需�
 assert.equal(coverageMatrix.totals.companyCount, 12, "覆盖矩阵需要统计 demo 公司覆盖数");
 assert.ok(coverageMatrix.rows.some((row) => row.chain.id === "optical_communication" && row.marketCounts.us === 1), "覆盖矩阵需要展示链路内美股覆盖");
 assert.ok(coverageMatrix.rows.every((row) => row.qualityScore >= 0 && row.qualityScore <= 100), "覆盖矩阵质量分需要保持在 0-100");
+assert.ok(coverageMatrix.insights.some((item) => item.type === "market_gap"), "覆盖矩阵需要提示 A股/美股覆盖缺口");
 const l1UsCoverage = buildCoverageMatrix(graph, "L1", "us");
 assert.equal(l1UsCoverage.totals.companyCount, 1, "覆盖矩阵需要响应市场与证据筛选");
+const reviewMapping = mappingEdges.find((edge) => edge.review_status === "needs_review");
+assert.ok(getMappingQualityAlerts(graph, reviewMapping).some((item) => item.type === "needs_review"), "映射质量提示需要标出待审核关系");
+const reviewCompany = graph.companies.find((company) => company.id === reviewMapping.to_id);
+assert.ok(buildEntityQualityAlerts(graph, reviewCompany, "all", "all").some((item) => item.type === "needs_review"), "公司详情需要能展示待审核质量提示");
+assert.ok(buildEntityQualityAlerts(graph, { id: "overview", node_type: "overview" }, "all", "all").some((item) => item.type === "market_gap"), "总览详情需要能展示覆盖缺口提示");
 
 assert.ok(schema.$defs.market_signal, "schema 需要保留市场情报接口字段");
 assert.ok(schema.$defs.review_queue_item, "schema 需要保留人工校正字段");
@@ -113,10 +121,12 @@ assert.match(companyMapList, /为什么相关/, "列表视图需要突出相关�
 assert.match(companyMapList, /CoverageMatrix/, "列表视图需要挂载公司覆盖矩阵");
 assert.match(coverageMatrixComponent, /公司覆盖矩阵/, "覆盖矩阵组件需要有可访问标签");
 assert.match(coverageMatrixComponent, /链路覆盖与证据质量/, "覆盖矩阵需要解释覆盖和证据质量");
+assert.match(coverageMatrixComponent, /覆盖缺口提醒/, "覆盖矩阵需要展示覆盖缺口提醒");
 assert.match(chainSidebar, /产业链导航/, "UI 需要保留产业链导航入口");
 assert.match(detailDrawer, /人工校正/, "UI 需要保留人工校正入口");
 assert.match(detailDrawer, /观察列表/, "详情面板需要提供观察列表入口");
 assert.match(detailDrawer, /证据时间线/, "详情面板需要提供证据时间线入口");
+assert.match(detailDrawer, /质量提示/, "详情面板需要展示质量提示");
 assert.match(detailDrawer, /sort\(\(a, b\).*publish_date/s, "证据时间线需要按发布日期排序");
 assert.match(detailDrawer, /onToggleWatchlist/, "公司详情需要支持加入或移出观察列表");
 assert.match(detailDrawer, /record\.payload\?\.url/, "本地审核队列需要展示反馈来源 URL");

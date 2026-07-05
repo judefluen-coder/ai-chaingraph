@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import {
   edgeTypeLabels,
+  buildEntityQualityAlerts,
   getAdjustedRelevance,
   getCompanyMarket,
   getEdgeRecency,
@@ -156,6 +157,8 @@ function DataStatusPanel({ data, status }) {
 }
 
 function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watchlistIds, onToggleWatchlist }) {
+  const qualityAlerts = buildEntityQualityAlerts(data, active, evidenceFilter, marketFilter);
+
   if (active?.node_type === "overview") {
     const evidenceCounts = data.edges.reduce((acc, edge) => {
       acc[edge.evidence_level] = (acc[edge.evidence_level] || 0) + 1;
@@ -171,6 +174,7 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
           <Metric value={data.companies.length} label="公司池" />
           <Metric value={`${evidenceCounts.L1 || 0}/${evidenceCounts.L2 || 0}/${evidenceCounts.L3 || 0}`} label="L1/L2/L3" />
         </div>
+        <QualityAlerts alerts={qualityAlerts} />
         <RiskNote />
       </section>
     );
@@ -208,6 +212,7 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
               : "暂无已绑定产业链映射。"}
           </p>
         </section>
+        <QualityAlerts alerts={qualityAlerts} />
         <EvidenceTimeline items={evidenceItems} />
         <EvidenceList items={evidenceItems} />
         <RiskNote />
@@ -232,11 +237,29 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
       {mappingEdges.length > 0 && l3Mappings.length === mappingEdges.length && (
         <p className="reviewWarning">当前公司映射全部为 L3 公开线索，默认进入待审核。</p>
       )}
+      <QualityAlerts alerts={qualityAlerts} />
       <CompanyList data={data} mappings={mappingEdges} />
       <EvidenceTimeline items={evidenceItems} />
       <EvidenceList items={evidenceItems} />
       <RiskNote />
       {notice && <p className="noticeText">{notice}</p>}
+    </section>
+  );
+}
+
+function QualityAlerts({ alerts }) {
+  if (!alerts?.length) return null;
+  return (
+    <section className="qualityAlerts" aria-label="质量提示">
+      <h3><AlertTriangle size={14} />质量提示</h3>
+      <div>
+        {alerts.map((alert) => (
+          <article className={`qualityAlert severity-${alert.severity}`} key={`${alert.type}:${alert.target_id}:${alert.title}`}>
+            <strong>{alert.title}</strong>
+            <span>{alert.body}</span>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }

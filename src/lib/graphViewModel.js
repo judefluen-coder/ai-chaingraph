@@ -131,6 +131,97 @@ export function getAdjustedRelevance(edge, recencyFactor) {
   return Math.max(0, Math.min(1, 0.5 * edge.relevance_score + 0.3 * edge.purity_score + 0.2 * recencyFactor));
 }
 
+function evidenceRank(level) {
+  return { L1: 3, L2: 2, L3: 1 }[level] || 0;
+}
+
+function strongestEvidenceLevel(evidences) {
+  return evidences.reduce((best, evidence) => (
+    evidenceRank(evidence.level) > evidenceRank(best) ? evidence.level : best
+  ), "L3");
+}
+
+function sortQualityAlerts(alerts) {
+  const severityOrder = { critical: 4, important: 3, watch: 2, info: 1 };
+  return alerts.sort((a, b) => (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0));
+}
+
+function uniqueAlerts(alerts) {
+  const seen = new Set();
+  return sortQualityAlerts(alerts).filter((alert) => {
+    const key = `${alert.type}:${alert.target_id || ""}:${alert.title}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function getMappingQualityAlerts(data, edge) {
+  if (!edge || edge.edge_type !== "company_maps_to_industry_node") return [];
+  const node = data.nodes.find((item) => item.id === edge.from_id);
+  const company = data.companies.find((item) => item.id === edge.to_id);
+  const evidences = (edge.source_ids || [])
+    .map((sourceId) => data.evidences.find((evidence) => evidence.id === sourceId))
+    .filter(Boolean);
+  const alerts = [];
+
+  if (edge.review_status !== "accepted") {
+    alerts.push({
+      type: "needs_review",
+      severity: "important",
+      title: "映射待审核",
+      body: `${company?.name || edge.to_id} 与 ${node?.name || edge.from_id} 的关联尚未人工确认。`,
+      target_id: edge.id,
+    });
+  }
+
+  if (evidences.length === 0) {
+    alerts.push({
+      type: "missing_source",
+      severity: "critical",
+      title: "缺少证据来源",
+      body: "这条映射没有可复核的证据摘要，建议先补来源再用于研究。",
+      target_id: edge.id,
+    });
+    return alerts;
+  }
+
+  const freshness = getEdgeRecency(data, edge);
+  if (freshness.status !== "normal") {
+    alerts.push({
+      type: freshness.status === "missing" ? "missing_date" : "stale_source",
+      severity: freshness.status === "stale" ? "important" : "watch",
+      title: freshness.label,
+      body: `${company?.name || edge.to_id} 的证据时效需要复核，避免旧材料影响相关性判断。`,
+      target_id: edge.id,
+    });
+  }
+
+  const levels = new Set(evidences.map((evidence) => evidence.level).filter(Boolean));
+  if (levels.size > 1) {
+    alerts.push({
+      type: "mixed_evidence",
+      severity: "info",
+      title: "证据强弱不一",
+      body: `同一映射包含 ${[...levels].sort().join("/")} 多种证据等级，建议查看时间线确认主证据。`,
+      target_id: edge.id,
+    });
+  }
+
+  const strongestLevel = strongestEvidenceLevel(evidences);
+  if (evidenceRank(edge.evidence_level) < evidenceRank(strongestLevel)) {
+    alerts.push({
+      type: "level_mismatch",
+      severity: "watch",
+      title: "边等级低于来源",
+      body: `来源中存在 ${strongestLevel} 证据，但映射边当前标为 ${edge.evidence_level}。`,
+      target_id: edge.id,
+    });
+  }
+
+  return uniqueAlerts(alerts);
+}
+
 export function getDataStatus(data, localReviewRecords = []) {
   const evidences = data.evidences || [];
   const freshness = evidences.map((evidence) => getEvidenceFreshness(evidence));
@@ -262,9 +353,15 @@ export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter =
     };
   });
 
+  const rowsWithAlerts = rows.map((row) => ({
+    ...row,
+    alerts: buildCoverageRowAlerts(row, marketFilter),
+  }));
+
   return {
-    rows,
-    totals: rows.reduce((acc, row) => ({
+    rows: rowsWithAlerts,
+    insights: uniqueAlerts(rowsWithAlerts.flatMap((row) => row.alerts)).slice(0, 6),
+    totals: rowsWithAlerts.reduce((acc, row) => ({
       companyCount: acc.companyCount + row.companyCount,
       mappingCount: acc.mappingCount + row.mappingCount,
       reviewCount: acc.reviewCount + row.reviewCount,
@@ -286,6 +383,105 @@ export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter =
       evidenceCounts: { L1: 0, L2: 0, L3: 0 },
     }),
   };
+}
+
+function buildCoverageRowAlerts(row, marketFilter) {
+  const alerts = [];
+  if (row.mappingCount === 0) {
+    alerts.push({
+      type: "coverage_gap",
+      severity: "critical",
+      title: `${row.chain.name} 暂无公司映射`,
+      body: "当前筛选下没有公司覆盖，适合优先补产业节点和证据。",
+      target_id: row.chain.id,
+    });
+  }
+  if (marketFilter === "all") {
+    const missingMarkets = [
+      row.marketCounts.a_share === 0 ? "A股" : null,
+      row.marketCounts.us === 0 ? "美股" : null,
+    ].filter(Boolean);
+    if (missingMarkets.length > 0 && row.mappingCount > 0) {
+      alerts.push({
+        type: "market_gap",
+        severity: "watch",
+        title: `${row.chain.name} 缺少${missingMarkets.join("/")}覆盖`,
+        body: "跨市场覆盖不完整，横向比较时需要谨慎。",
+        target_id: row.chain.id,
+      });
+    }
+  }
+  if (row.reviewCount > 0) {
+    alerts.push({
+      type: "review_load",
+      severity: "important",
+      title: `${row.chain.name} 有 ${row.reviewCount} 条待审核`,
+      body: "待审核映射应先复核来源，再进入正式研究结论。",
+      target_id: row.chain.id,
+    });
+  }
+  if (row.mappingCount > 0 && row.qualityScore < 60) {
+    alerts.push({
+      type: "low_quality",
+      severity: "watch",
+      title: `${row.chain.name} 证据质量偏低`,
+      body: "当前链路的证据等级、审核状态或时效仍需补强。",
+      target_id: row.chain.id,
+    });
+  }
+  return sortQualityAlerts(alerts);
+}
+
+export function buildEntityQualityAlerts(data, active, evidenceFilter = "all", marketFilter = "all") {
+  if (!active || active.node_type === "overview") {
+    return buildCoverageMatrix(data, evidenceFilter, marketFilter).insights.slice(0, 4);
+  }
+
+  if (active.stock_code) {
+    const mappings = data.edges.filter((edge) =>
+      edge.edge_type === "company_maps_to_industry_node"
+      && edge.to_id === active.id
+      && matchesEvidenceFilter(edge, evidenceFilter),
+    );
+    if (mappings.length === 0) {
+      return [{
+        type: "coverage_gap",
+        severity: "watch",
+        title: "暂无产业映射",
+        body: `${active.name} 当前筛选下没有可展示的 AI 产业链位置。`,
+        target_id: active.id,
+      }];
+    }
+    return uniqueAlerts(mappings.flatMap((edge) => getMappingQualityAlerts(data, edge))).slice(0, 4);
+  }
+
+  const mappings = getMappingEdgesForNode(data, active, evidenceFilter, marketFilter);
+  const alerts = [];
+  if (mappings.length === 0) {
+    alerts.push({
+      type: "coverage_gap",
+      severity: "watch",
+      title: "当前筛选下无公司覆盖",
+      body: `${active.name} 还需要补充公司映射或放宽筛选条件。`,
+      target_id: active.id,
+    });
+  }
+
+  if (marketFilter === "all" && mappings.length > 0) {
+    const markets = new Set(mappings.map((edge) => getCompanyMarket(data.companies.find((company) => company.id === edge.to_id))));
+    const missingMarkets = [markets.has("a_share") ? null : "A股", markets.has("us") ? null : "美股"].filter(Boolean);
+    if (missingMarkets.length > 0) {
+      alerts.push({
+        type: "market_gap",
+        severity: "watch",
+        title: `缺少${missingMarkets.join("/")}映射`,
+        body: `${active.name} 的跨市场覆盖仍不完整。`,
+        target_id: active.id,
+      });
+    }
+  }
+
+  return uniqueAlerts(alerts.concat(mappings.flatMap((edge) => getMappingQualityAlerts(data, edge)))).slice(0, 4);
 }
 
 export function getPathSummary(data, active, marketFilter = "all") {
