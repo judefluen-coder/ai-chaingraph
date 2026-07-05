@@ -9,7 +9,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "smoke": "node scripts/smoke-test.mjs",
     "validate:example": "node scripts/import-snapshot.mjs examples/fictional-ai-chain.snapshot.json",
-    "validate:tabular": "node scripts/import-tabular.mjs examples/fictional-ai-mappings.csv && node scripts/import-tabular.mjs examples/fictional-ai-mappings.jsonl",
+    "validate:tabular": "node scripts/import-tabular.mjs examples/fictional-ai-mappings.csv && node scripts/import-tabular.mjs examples/fictional-ai-mappings.jsonl && node scripts/import-tabular.mjs examples/fictional-ai-mappings-duplicates.csv",
     "import:snapshot": "node scripts/import-snapshot.mjs",
     "import:tabular": "node scripts/import-tabular.mjs"
   },
