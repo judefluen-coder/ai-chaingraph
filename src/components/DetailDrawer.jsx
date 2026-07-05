@@ -50,6 +50,7 @@ export function DetailDrawer({
   watchlistRecords,
   watchlistIds,
   onToggleWatchlist,
+  onUpdateWatchlist,
   onRemoveWatchlist,
   onExportWatchlist,
   notice,
@@ -86,14 +87,17 @@ export function DetailDrawer({
         notice={notice}
         evidenceFilter={evidenceFilter}
         marketFilter={marketFilter}
+        watchlistRecords={watchlistRecords}
         watchlistIds={watchlistIds}
         onToggleWatchlist={onToggleWatchlist}
+        onUpdateWatchlist={onUpdateWatchlist}
       />
 
       <WatchlistPanel
         data={data}
         records={watchlistRecords}
         onSelect={onSelect}
+        onUpdate={onUpdateWatchlist}
         onRemove={onRemoveWatchlist}
         onExport={onExportWatchlist}
       />
@@ -156,7 +160,7 @@ function DataStatusPanel({ data, status }) {
   );
 }
 
-function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watchlistIds, onToggleWatchlist }) {
+function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watchlistRecords, watchlistIds, onToggleWatchlist, onUpdateWatchlist }) {
   const qualityAlerts = buildEntityQualityAlerts(data, active, evidenceFilter, marketFilter);
 
   if (active?.node_type === "overview") {
@@ -191,6 +195,7 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
     const market = getCompanyMarket(active);
     const marketCapUnit = market === "us" ? "亿美元" : "亿元";
     const isWatched = watchlistIds?.has(active.id);
+    const watchRecord = watchlistRecords?.find((record) => record.company_id === active.id);
     return (
       <section className="sideCard detailPanel">
         <PanelTitle icon={<CheckCircle2 size={17} />} title={active.name} label={active.stock_code} />
@@ -212,6 +217,12 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
               : "暂无已绑定产业链映射。"}
           </p>
         </section>
+        {isWatched && (
+          <WatchlistMemo
+            record={watchRecord}
+            onChange={(patch) => onUpdateWatchlist(active.id, patch)}
+          />
+        )}
         <QualityAlerts alerts={qualityAlerts} />
         <EvidenceTimeline items={evidenceItems} />
         <EvidenceList items={evidenceItems} />
@@ -264,7 +275,7 @@ function QualityAlerts({ alerts }) {
   );
 }
 
-function WatchlistPanel({ data, records, onSelect, onRemove, onExport }) {
+function WatchlistPanel({ data, records, onSelect, onUpdate, onRemove, onExport }) {
   return (
     <section className="sideCard watchlistPanel">
       <div className="queueHead">
@@ -292,11 +303,50 @@ function WatchlistPanel({ data, records, onSelect, onRemove, onExport }) {
                 <button className="iconButton" aria-label={`移除 ${name}`} onClick={() => onRemove(record.company_id)}>
                   <Trash2 size={15} />
                 </button>
+                <WatchlistMemo
+                  record={record}
+                  compact
+                  onChange={(patch) => onUpdate(record.company_id, patch)}
+                />
               </article>
             );
           })}
         </div>
       )}
+    </section>
+  );
+}
+
+function WatchlistMemo({ record, compact = false, onChange }) {
+  if (!record) return null;
+  return (
+    <section className={`watchMemo ${compact ? "isCompact" : ""}`} aria-label="观察备注">
+      <div className="watchMemoHead">
+        <strong>观察备注</strong>
+        <span>{record.updated_at ? `更新 ${record.updated_at.slice(0, 10)}` : "本地保存"}</span>
+      </div>
+      <div className="watchMemoGrid">
+        <label>
+          优先级
+          <select value={record.priority || "medium"} onChange={(event) => onChange({ priority: event.target.value })}>
+            <option value="high">高</option>
+            <option value="medium">中</option>
+            <option value="low">低</option>
+          </select>
+        </label>
+        <label>
+          标签
+          <input value={record.tags || ""} onChange={(event) => onChange({ tags: event.target.value })} placeholder="光模块;高纯度" />
+        </label>
+        <label>
+          下次复核
+          <input type="date" value={record.next_review_at || ""} onChange={(event) => onChange({ next_review_at: event.target.value })} />
+        </label>
+      </div>
+      <label>
+        研究假设
+        <textarea value={record.thesis || ""} onChange={(event) => onChange({ thesis: event.target.value })} placeholder="记录关注理由、待验证证据或触发条件" />
+      </label>
     </section>
   );
 }

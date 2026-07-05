@@ -37,10 +37,21 @@ function writeStoredReviewQueue(records) {
 
 function readStoredWatchlist() {
   try {
-    return JSON.parse(localStorage.getItem("ai-chaingraph-watchlist") || "[]");
+    const records = JSON.parse(localStorage.getItem("ai-chaingraph-watchlist") || "[]");
+    return Array.isArray(records) ? records.map(normalizeWatchlistRecord) : [];
   } catch {
     return [];
   }
+}
+
+function normalizeWatchlistRecord(record) {
+  return {
+    priority: "medium",
+    tags: "",
+    thesis: "",
+    next_review_at: "",
+    ...record,
+  };
 }
 
 function writeStoredWatchlist(records) {
@@ -63,7 +74,7 @@ function toCsv(records) {
 }
 
 function toWatchlistCsv(records) {
-  const headers = ["company_id", "stock_code", "name", "market", "industry", "added_at"];
+  const headers = ["company_id", "stock_code", "name", "market", "industry", "priority", "tags", "thesis", "next_review_at", "added_at", "updated_at"];
   const rows = records.map((record) => headers.map((header) => JSON.stringify(record[header] ?? "")).join(","));
   return [`# ${exportDisclaimer}`, headers.join(","), ...rows].join("\n");
 }
@@ -204,9 +215,22 @@ function App() {
       name: company.name,
       market: getCompanyMarket(company),
       industry: company.industry || "",
+      priority: "medium",
+      tags: "",
+      thesis: "",
+      next_review_at: "",
       added_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }));
     setNotice(`${company.name} 已加入观察列表。`);
+  }
+
+  function updateWatchlistRecord(companyId, patch) {
+    setWatchlistRecords((records) => records.map((record) => (
+      record.company_id === companyId
+        ? normalizeWatchlistRecord({ ...record, ...patch, updated_at: new Date().toISOString() })
+        : record
+    )));
   }
 
   function removeWatchlist(companyId) {
@@ -335,6 +359,7 @@ function App() {
             watchlistRecords={watchlistRecords}
             watchlistIds={watchlistIds}
             onToggleWatchlist={toggleWatchlist}
+            onUpdateWatchlist={updateWatchlistRecord}
             onRemoveWatchlist={removeWatchlist}
             onExportWatchlist={exportWatchlist}
             notice={notice}

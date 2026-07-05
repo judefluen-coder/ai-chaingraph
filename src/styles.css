@@ -1372,7 +1372,8 @@ button:active {
   line-height: 1.5;
 }
 
-.feedbackPanel label {
+.feedbackPanel label,
+.watchMemo label {
   display: grid;
   gap: 6px;
   margin-top: 10px;
@@ -1382,7 +1383,10 @@ button:active {
 
 .feedbackPanel input,
 .feedbackPanel select,
-.feedbackPanel textarea {
+.feedbackPanel textarea,
+.watchMemo input,
+.watchMemo select,
+.watchMemo textarea {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
@@ -1391,7 +1395,8 @@ button:active {
   padding: 9px 10px;
 }
 
-.feedbackPanel textarea {
+.feedbackPanel textarea,
+.watchMemo textarea {
   min-height: 76px;
   resize: vertical;
 }
@@ -1473,6 +1478,48 @@ button:active {
   border-radius: var(--radius-sm);
   background: rgba(17, 24, 20, 0.82);
   padding: 8px;
+}
+
+.watchMemo {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  border: 1px solid rgba(127, 212, 59, 0.2);
+  border-radius: var(--radius-sm);
+  background: rgba(127, 212, 59, 0.055);
+  padding: 10px;
+}
+
+.watchItem .watchMemo {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.watchMemoHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.watchMemoHead strong {
+  color: var(--text-strong);
+  font-size: 12px;
+}
+
+.watchMemoHead span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.watchMemoGrid {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) 118px;
+  gap: 8px;
+}
+
+.watchMemo.isCompact textarea {
+  min-height: 58px;
 }
 
 .watchInfo {
@@ -1756,6 +1803,10 @@ button:active {
 
   .qualityCell small {
     display: none;
+  }
+
+  .watchMemoGrid {
+    grid-template-columns: 1fr;
   }
 
   .mapTable {
