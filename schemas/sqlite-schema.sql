@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS company (
   id TEXT PRIMARY KEY,
   stock_code TEXT NOT NULL UNIQUE,
   stock_symbol TEXT NOT NULL,
-  exchange TEXT NOT NULL CHECK (exchange IN ('SH', 'SZ', 'BJ')),
+  exchange TEXT NOT NULL CHECK (exchange IN ('SH', 'SZ', 'BJ', 'NASDAQ', 'NYSE', 'AMEX', 'OTC')),
   name TEXT NOT NULL,
   full_name TEXT,
   industry TEXT,
