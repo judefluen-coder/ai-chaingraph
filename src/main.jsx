@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Database, GitBranch, ListFilter, Map, ShieldAlert } from "lucide-react";
 import { loadGraphData } from "./data/loadGraphData";
+import { submitReviewRecord } from "./data/reviewTransport";
 import { TopBar } from "./components/TopBar";
 import { ChainSidebar } from "./components/ChainSidebar";
 import { CompanyMapList } from "./components/CompanyMapList";
@@ -160,7 +161,7 @@ function App() {
     setMobileTab("detail");
   }
 
-  function saveFeedback() {
+  async function saveFeedback() {
     if (!active) return;
     if (feedback.issue_type === "add_evidence" && !feedback.url.trim()) {
       setNotice("补充证据需要至少填写来源 URL。");
@@ -180,9 +181,21 @@ function App() {
       created_at: new Date().toISOString(),
       operations: [],
     };
-    setReviewRecords((records) => records.concat(nextRecord));
+    try {
+      const result = await submitReviewRecord(nextRecord);
+      setReviewRecords((records) => records.concat(result.record));
+      setNotice(result.source === "api"
+        ? "反馈已同步到本地 API，并保留在浏览器审核队列。"
+        : "反馈已写入浏览器待审核队列。");
+    } catch (error) {
+      console.warn("AI-ChainGraph review API unavailable, keeping feedback in local queue.", error);
+      setReviewRecords((records) => records.concat({
+        ...nextRecord,
+        sync_error: error.message,
+      }));
+      setNotice("API 同步失败，反馈已写入浏览器待审核队列。");
+    }
     setFeedback({ issue_type: "stale", url: "", note: "" });
-    setNotice("反馈已写入本地待审核队列。");
   }
 
   function resolveReview(id, status) {

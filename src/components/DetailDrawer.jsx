@@ -354,7 +354,7 @@ function WatchlistMemo({ record, compact = false, onChange }) {
 function FeedbackPanel({ feedback, onFeedbackChange, onSaveFeedback }) {
   return (
     <section className="sideCard feedbackPanel">
-      <PanelTitle icon={<ShieldAlert size={17} />} title="人工校正" label="本地记录" />
+      <PanelTitle icon={<ShieldAlert size={17} />} title="人工校正" label="API / 本地记录" />
       <label>
         反馈类型
         <select value={feedback.issue_type} onChange={(event) => onFeedbackChange({ ...feedback, issue_type: event.target.value })}>
