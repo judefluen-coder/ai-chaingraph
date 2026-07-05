@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import {
+  buildCompanyPathCompare,
   edgeTypeLabels,
   buildEntityQualityAlerts,
   getAdjustedRelevance,
@@ -91,6 +92,7 @@ export function DetailDrawer({
         watchlistIds={watchlistIds}
         onToggleWatchlist={onToggleWatchlist}
         onUpdateWatchlist={onUpdateWatchlist}
+        onSelect={onSelect}
       />
 
       <WatchlistPanel
@@ -160,7 +162,7 @@ function DataStatusPanel({ data, status }) {
   );
 }
 
-function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watchlistRecords, watchlistIds, onToggleWatchlist, onUpdateWatchlist }) {
+function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watchlistRecords, watchlistIds, onToggleWatchlist, onUpdateWatchlist, onSelect }) {
   const qualityAlerts = buildEntityQualityAlerts(data, active, evidenceFilter, marketFilter);
 
   if (active?.node_type === "overview") {
@@ -196,6 +198,7 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
     const marketCapUnit = market === "us" ? "亿美元" : "亿元";
     const isWatched = watchlistIds?.has(active.id);
     const watchRecord = watchlistRecords?.find((record) => record.company_id === active.id);
+    const pathCompare = buildCompanyPathCompare(data, active, evidenceFilter, marketFilter);
     return (
       <section className="sideCard detailPanel">
         <PanelTitle icon={<CheckCircle2 size={17} />} title={active.name} label={active.stock_code} />
@@ -217,6 +220,7 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
               : "暂无已绑定产业链映射。"}
           </p>
         </section>
+        <PathComparePanel compare={pathCompare} onSelect={onSelect} />
         {isWatched && (
           <WatchlistMemo
             record={watchRecord}
@@ -254,6 +258,40 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
       <EvidenceList items={evidenceItems} />
       <RiskNote />
       {notice && <p className="noticeText">{notice}</p>}
+    </section>
+  );
+}
+
+function PathComparePanel({ compare, onSelect }) {
+  if (!compare?.paths?.length) return null;
+  return (
+    <section className="infoBlock pathCompare" aria-label="产业链路径对比">
+      <h3><GitBranch size={14} />产业链路径对比</h3>
+      <div className="pathChipRow">
+        {compare.paths.map((path) => (
+          <span className={`pathChip level-${path.edge.evidence_level}`} key={path.edge.id}>
+            {path.chain.name} / {path.node.name}
+            <small>{path.edge.evidence_level} · 相关 {Math.round(path.score * 100)}%</small>
+          </span>
+        ))}
+      </div>
+      {compare.peers.length === 0 ? <p className="muted">当前筛选下暂无同链路可比公司。</p> : (
+        <div className="pathPeerList">
+          {compare.peers.map((peer) => (
+            <button className="pathPeerCard" key={peer.company.id} onClick={() => onSelect(peer.company.id)}>
+              <strong>{peer.company.name}</strong>
+              <span>{peer.company.stock_code} · {getMarketLabel(getCompanyMarket(peer.company))}</span>
+              <small>
+                {peer.sharedNodeNames.length > 0
+                  ? `共享节点：${peer.sharedNodeNames.join(" / ")}`
+                  : `同链路：${peer.sharedChainNames.join(" / ")}`}
+              </small>
+              {peer.uniqueNodeNames.length > 0 && <small>差异节点：{peer.uniqueNodeNames.join(" / ")}</small>}
+              <em>{peer.paths.length} 条路径 · 最强 {peer.strongestEvidenceLevel} · {peer.reviewCount} 待审</em>
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
