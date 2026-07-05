@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import {
   buildCoverageMatrix,
+  buildEvidenceConflictAlerts,
   buildFlow,
   buildEntityQualityAlerts,
   buildListRows,
@@ -71,6 +72,18 @@ const reviewCompany = graph.companies.find((company) => company.id === reviewMap
 assert.ok(buildEntityQualityAlerts(graph, reviewCompany, "all", "all").some((item) => item.type === "needs_review"), "公司详情需要能展示待审核质量提示");
 assert.ok(buildEntityQualityAlerts(graph, { id: "overview", node_type: "overview" }, "all", "all").some((item) => item.type === "market_gap"), "总览详情需要能展示覆盖缺口提示");
 
+const conflictGraph = structuredClone(graph);
+const conflictEdge = conflictGraph.edges.find((edge) => edge.id === "edge_company_star_chip");
+conflictEdge.evidence_level = "L1";
+for (const evidence of conflictGraph.evidences.filter((item) => conflictEdge.source_ids.includes(item.id))) {
+  evidence.level = "L3";
+}
+const conflictCompany = conflictGraph.companies.find((company) => company.id === conflictEdge.to_id);
+assert.ok(getMappingQualityAlerts(conflictGraph, conflictEdge).some((item) => item.type === "evidence_level_conflict"), "映射质量提示需要标出证据等级冲突");
+assert.ok(buildEvidenceConflictAlerts(conflictGraph, "all", "all").some((item) => item.target_id === conflictEdge.id), "证据冲突汇总需要包含冲突映射");
+assert.ok(buildEntityQualityAlerts(conflictGraph, conflictCompany, "all", "all").some((item) => item.type === "evidence_level_conflict"), "公司详情需要展示证据冲突");
+assert.ok(buildCoverageMatrix(conflictGraph, "all", "all").insights.some((item) => item.type === "evidence_level_conflict"), "总览覆盖提示需要展示证据冲突");
+
 assert.ok(schema.$defs.market_signal, "schema 需要保留市场情报接口字段");
 assert.ok(schema.$defs.review_queue_item, "schema 需要保留人工校正字段");
 assert.ok(schema.$defs.import_job, "schema 需要保留导入任务字段");
@@ -96,6 +109,7 @@ assert.match(readme, /git rev-parse --show-toplevel/, "README 需要包含 Git r
 assert.match(readme, /L1.*L2.*L3/s, "README 需要解释 L1/L2/L3 证据等级");
 assert.match(readme, /本地观察列表/, "README 需要说明本地观察列表能力");
 assert.match(readme, /公司覆盖矩阵/, "README 需要说明公司覆盖矩阵能力");
+assert.match(readme, /证据冲突/, "README 需要说明证据冲突提示能力");
 assert.match(readme, /证据时间线/, "README 需要说明证据时间线能力");
 assert.match(readme, /CSV\/JSONL/, "README 需要说明 CSV/JSONL 扁平映射表导入");
 assert.match(readme, /观察备注/, "README 需要说明观察列表研究备注能力");
@@ -140,6 +154,7 @@ assert.match(detailDrawer, /观察备注/, "详情面板需要提供观察备注
 assert.match(detailDrawer, /下次复核/, "观察列表需要支持下次复核日期");
 assert.match(detailDrawer, /证据时间线/, "详情面板需要提供证据时间线入口");
 assert.match(detailDrawer, /质量提示/, "详情面板需要展示质量提示");
+assert.match(detailDrawer, /证据冲突/, "详情面板需要展示证据冲突提示");
 assert.match(detailDrawer, /sort\(\(a, b\).*publish_date/s, "证据时间线需要按发布日期排序");
 assert.match(detailDrawer, /onToggleWatchlist/, "公司详情需要支持加入或移出观察列表");
 assert.match(detailDrawer, /record\.payload\?\.url/, "本地审核队列需要展示反馈来源 URL");

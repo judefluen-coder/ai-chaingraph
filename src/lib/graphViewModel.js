@@ -218,8 +218,28 @@ export function getMappingQualityAlerts(data, edge) {
       target_id: edge.id,
     });
   }
+  if (evidenceRank(edge.evidence_level) > evidenceRank(strongestLevel)) {
+    alerts.push({
+      type: "evidence_level_conflict",
+      severity: "critical",
+      title: "证据冲突：边等级高于来源",
+      body: `${company?.name || edge.to_id} 当前映射标为 ${edge.evidence_level}，但底层来源最强只有 ${strongestLevel}。`,
+      target_id: edge.id,
+    });
+  }
 
   return uniqueAlerts(alerts);
+}
+
+export function buildEvidenceConflictAlerts(data, evidenceFilter = "all", marketFilter = "all") {
+  return uniqueAlerts((data.edges || [])
+    .filter((edge) => edge.edge_type === "company_maps_to_industry_node" && matchesEvidenceFilter(edge, evidenceFilter))
+    .filter((edge) => {
+      const company = data.companies.find((item) => item.id === edge.to_id);
+      return matchesMarketFilter(company, marketFilter);
+    })
+    .flatMap((edge) => getMappingQualityAlerts(data, edge))
+    .filter((alert) => alert.type === "evidence_level_conflict"));
 }
 
 export function getDataStatus(data, localReviewRecords = []) {
@@ -357,10 +377,11 @@ export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter =
     ...row,
     alerts: buildCoverageRowAlerts(row, marketFilter),
   }));
+  const evidenceConflictAlerts = buildEvidenceConflictAlerts(data, evidenceFilter, marketFilter);
 
   return {
     rows: rowsWithAlerts,
-    insights: uniqueAlerts(rowsWithAlerts.flatMap((row) => row.alerts)).slice(0, 6),
+    insights: uniqueAlerts(rowsWithAlerts.flatMap((row) => row.alerts).concat(evidenceConflictAlerts)).slice(0, 6),
     totals: rowsWithAlerts.reduce((acc, row) => ({
       companyCount: acc.companyCount + row.companyCount,
       mappingCount: acc.mappingCount + row.mappingCount,
