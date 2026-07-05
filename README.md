@@ -32,7 +32,7 @@ AI 产业链很容易被概念标签淹没：算力、光模块、PCB、液冷�
 - 搜索定位：支持股票、代码、产业环节、别名和证据文本，保留右侧搜索上下文。
 - 证据筛选：支持全部、L1、L2、L3。
 - 本地观察列表：收藏待跟踪公司到浏览器 localStorage，支持观察备注、优先级、标签、下次复核日期，并可导出 JSON/CSV。
-- 人工校正：反馈写入浏览器 localStorage，可导出 JSON/CSV。
+- 人工校正：配置本地 API 时反馈会同步到 `/api/review`，否则写入浏览器 localStorage，并可导出 JSON/CSV。
 - 本地 API：提供 `/api/graph`、`/api/search`、`/api/node/:id`、`/api/review`，方便前端或脚本读取本地 snapshot。
 - 响应式：桌面三栏，平板列表优先，手机底部 tabs 切换“产业链 / 股票池 / 图谱 / 详情”。
 
@@ -69,7 +69,7 @@ npm run api
 - `GET /api/node/:id`：返回公司或产业节点详情、映射边和证据摘要。
 - `POST /api/review`：把本地审核记录追加到 `data/review-queue/local-api-review.jsonl`。
 
-让前端优先读取本地 API：
+让前端优先读取本地 API，并让人工校正同步写入 API 审核队列：
 
 ```bash
 VITE_CHAINGRAPH_API_BASE=http://127.0.0.1:8787 npm run dev
@@ -168,7 +168,8 @@ ai-chaingraph/
 │   │   └── TopBar.jsx
 │   ├── data/
 │   │   ├── demoGraph.json
-│   │   └── loadGraphData.js
+│   │   ├── loadGraphData.js
+│   │   └── reviewTransport.js
 │   ├── lib/
 │   │   └── graphViewModel.js
 │   ├── main.jsx
