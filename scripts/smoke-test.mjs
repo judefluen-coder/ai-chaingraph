@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import {
@@ -97,10 +99,13 @@ assert.match(readme, /公司覆盖矩阵/, "README 需要说明公司覆盖矩�
 assert.match(readme, /证据时间线/, "README 需要说明证据时间线能力");
 assert.match(readme, /CSV\/JSONL/, "README 需要说明 CSV/JSONL 扁平映射表导入");
 assert.match(readme, /观察备注/, "README 需要说明观察列表研究备注能力");
+assert.match(readme, /本地 API/, "README 需要说明本地 API 服务");
 assert.match(packageJson, /validate:tabular/, "package.json 需要提供 tabular 导入示例校验命令");
+assert.match(packageJson, /"api": "node scripts\/serve-api\.mjs"/, "package.json 需要提供本地 API 启动命令");
 
 const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
 const importTabular = await readFile(new URL("../scripts/import-tabular.mjs", import.meta.url), "utf8");
+const serveApi = await readFile(new URL("../scripts/serve-api.mjs", import.meta.url), "utf8");
 const csvMappingExample = await readFile(new URL("../examples/fictional-ai-mappings.csv", import.meta.url), "utf8");
 const jsonlMappingExample = await readFile(new URL("../examples/fictional-ai-mappings.jsonl", import.meta.url), "utf8");
 const duplicateMappingExample = await readFile(new URL("../examples/fictional-ai-mappings-duplicates.csv", import.meta.url), "utf8");
@@ -142,6 +147,11 @@ assert.match(ciWorkflow, /validate:tabular/, "CI 需要校验 CSV/JSONL tabular 
 assert.match(importTabular, /parseCsv/, "tabular adapter 需要支持 CSV");
 assert.match(importTabular, /jsonl/, "tabular adapter 需要支持 JSONL");
 assert.match(importTabular, /company_maps_to_industry_node/, "tabular adapter 需要生成公司映射边");
+assert.match(serveApi, /createApiServer/, "本地 API 需要导出 createApiServer 方便 smoke 测试");
+assert.match(serveApi, /\/api\/graph/, "本地 API 需要提供 /api/graph");
+assert.match(serveApi, /\/api\/search/, "本地 API 需要提供 /api/search");
+assert.match(serveApi, /\/api\/node\/:id/, "本地 API 需要说明 /api/node/:id");
+assert.match(serveApi, /\/api\/review/, "本地 API 需要提供 /api/review");
 assert.match(csvMappingExample, /chain_id,chain_name/, "CSV 示例需要包含标准表头");
 assert.match(jsonlMappingExample, /VectorRack Systems/, "JSONL 示例需要包含美股映射");
 assert.match(duplicateMappingExample, /星阵芯科 2025 年度报告/, "重复映射示例需要覆盖同一公司-产业节点多条证据");
@@ -161,6 +171,30 @@ assert.equal(duplicateEdge.source_ids.length, 2, "重复映射边需要引用全
 assert.equal(duplicateEdge.evidence_level, "L1", "重复映射边需要使用最强证据等级");
 assert.equal(duplicateEdge.review_status, "accepted", "全部已接受证据合并后仍应保持 accepted");
 assert.equal(duplicateCompany.source_ids.length, 2, "重复映射公司需要引用全部证据");
+
+const { createApiServer } = await import("./serve-api.mjs");
+const apiDataDir = await mkdtemp(path.join(tmpdir(), "ai-chaingraph-api-"));
+const apiServer = createApiServer({ dataDir: apiDataDir });
+await new Promise((resolve) => apiServer.listen(0, "127.0.0.1", resolve));
+const apiBase = `http://127.0.0.1:${apiServer.address().port}`;
+try {
+  const apiGraph = await fetchJson(`${apiBase}/api/graph`);
+  assert.equal(apiGraph.meta.dataset_type, "demo", "本地 API 缺少 snapshot 时需要回退 demo graph");
+  const apiSearch = await fetchJson(`${apiBase}/api/search?q=${encodeURIComponent("光模块")}`);
+  assert.ok(apiSearch.items.some((item) => item.target_id === "company:300801.SZ"), "本地 API 搜索需要返回可定位目标");
+  const apiNode = await fetchJson(`${apiBase}/api/node/${encodeURIComponent("company:688001.SH")}`);
+  assert.equal(apiNode.entity.name, "星阵芯科", "本地 API 节点详情需要返回公司实体");
+  assert.ok(apiNode.mapping_edges.length > 0, "本地 API 节点详情需要返回映射边");
+  const apiReview = await fetchJson(`${apiBase}/api/review`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ target_type: "company", target_id: "company:688001.SH", issue_type: "add_evidence", payload: { note: "smoke" } }),
+  });
+  assert.equal(apiReview.record.status, "pending", "本地 API 审核入口需要保存 pending 记录");
+} finally {
+  await new Promise((resolve) => apiServer.close(resolve));
+  await rm(apiDataDir, { recursive: true, force: true });
+}
 
 const companyIds = new Set(graph.companies.map((company) => company.id));
 const nodeIds = new Set(graph.nodes.map((node) => node.id));
@@ -204,3 +238,9 @@ for (const evidence of graph.evidences) {
 }
 
 console.log("smoke ok: demo fallback, market/search view model, schema/import boundaries, ignored local data paths, quote fields, and reference integrity are present");
+
+async function fetchJson(url, options) {
+  const response = await fetch(url, options);
+  assert.ok(response.ok, `${url} expected HTTP 2xx, got ${response.status}`);
+  return response.json();
+}

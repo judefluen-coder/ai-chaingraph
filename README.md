@@ -33,6 +33,7 @@ AI 产业链很容易被概念标签淹没：算力、光模块、PCB、液冷�
 - 证据筛选：支持全部、L1、L2、L3。
 - 本地观察列表：收藏待跟踪公司到浏览器 localStorage，支持观察备注、优先级、标签、下次复核日期，并可导出 JSON/CSV。
 - 人工校正：反馈写入浏览器 localStorage，可导出 JSON/CSV。
+- 本地 API：提供 `/api/graph`、`/api/search`、`/api/node/:id`、`/api/review`，方便前端或脚本读取本地 snapshot。
 - 响应式：桌面三栏，平板列表优先，手机底部 tabs 切换“产业链 / 股票池 / 图谱 / 详情”。
 
 ## 本地运行
@@ -52,6 +53,27 @@ npm run build
 ```
 
 欢迎参与改进，贡献前请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)，尤其是公开仓库与私有研究数据的边界。
+
+## 本地 API
+
+启动只读图谱和本地审核入口：
+
+```bash
+npm run api
+```
+
+默认地址是 `http://127.0.0.1:8787`，提供：
+
+- `GET /api/graph`：读取 `data/snapshots/current.json`，不存在时回退到虚构 demo。
+- `GET /api/search?q=光模块`：返回可定位的节点、公司和证据命中。
+- `GET /api/node/:id`：返回公司或产业节点详情、映射边和证据摘要。
+- `POST /api/review`：把本地审核记录追加到 `data/review-queue/local-api-review.jsonl`。
+
+让前端优先读取本地 API：
+
+```bash
+VITE_CHAINGRAPH_API_BASE=http://127.0.0.1:8787 npm run dev
+```
 
 ## 数据读取顺序
 
@@ -157,6 +179,7 @@ ai-chaingraph/
 ├── scripts/
 │   ├── import-snapshot.mjs
 │   ├── import-tabular.mjs
+│   ├── serve-api.mjs
 │   └── smoke-test.mjs
 ├── examples/
 │   ├── fictional-ai-chain.snapshot.json
@@ -205,7 +228,7 @@ git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite'
 ## 路线图
 
 - 数据层：补齐真实数据去重、证据冲突检测和 L3 审核工作流。
-- API 层：提供 `/api/graph`、`/api/search`、`/api/node/:id`、`/api/review`。
+- API 层：补齐更完整的持久化、权限边界和增量更新工作流。
 - 研究体验：增加产业链路径对比和更完整的证据冲突处理。
 - 开源体验：补齐贡献指南、示例 snapshot、README 截图和 GitHub release 说明。
 
