@@ -65,6 +65,7 @@ const sqliteSchema = await readFile(new URL("../schemas/sqlite-schema.sql", impo
 assert.match(sqliteSchema, /CREATE TABLE IF NOT EXISTS dataset/, "SQLite schema 需要 dataset 表");
 assert.match(sqliteSchema, /CREATE TABLE IF NOT EXISTS import_job/, "SQLite schema 需要 import_job 表");
 assert.match(sqliteSchema, /CREATE TABLE IF NOT EXISTS chain/, "SQLite schema 需要 chain 表");
+assert.match(sqliteSchema, /NASDAQ.*NYSE.*AMEX.*OTC/s, "SQLite schema 需要允许美股交易所");
 
 const gitignore = await readFile(new URL("../.gitignore", import.meta.url), "utf8");
 for (const ignoredPath of ["data/", "feedbacks/", "logs/", "secrets/", "public/snapshots/", "*.sqlite"]) {
@@ -72,6 +73,7 @@ for (const ignoredPath of ["data/", "feedbacks/", "logs/", "secrets/", "public/s
 }
 
 const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+const packageJson = await readFile(new URL("../package.json", import.meta.url), "utf8");
 assert.match(readme, /选股地图/, "README 需要明确选股地图定位");
 assert.match(readme, /信息组织与产业研究辅助工具/, "README 需要保留非投资建议定位");
 assert.match(readme, /仓库边界与提交安全/, "README 需要说明仓库边界与提交安全");
@@ -80,11 +82,17 @@ assert.match(readme, /L1.*L2.*L3/s, "README 需要解释 L1/L2/L3 证据等级")
 assert.match(readme, /本地观察列表/, "README 需要说明本地观察列表能力");
 assert.match(readme, /公司覆盖矩阵/, "README 需要说明公司覆盖矩阵能力");
 assert.match(readme, /证据时间线/, "README 需要说明证据时间线能力");
+assert.match(readme, /CSV\/JSONL/, "README 需要说明 CSV/JSONL 扁平映射表导入");
+assert.match(packageJson, /validate:tabular/, "package.json 需要提供 tabular 导入示例校验命令");
 
 const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
+const importTabular = await readFile(new URL("../scripts/import-tabular.mjs", import.meta.url), "utf8");
+const csvMappingExample = await readFile(new URL("../examples/fictional-ai-mappings.csv", import.meta.url), "utf8");
+const jsonlMappingExample = await readFile(new URL("../examples/fictional-ai-mappings.jsonl", import.meta.url), "utf8");
 const loadGraphData = await readFile(new URL("../src/data/loadGraphData.js", import.meta.url), "utf8");
 const viteConfig = await readFile(new URL("../vite.config.js", import.meta.url), "utf8");
 const pagesWorkflow = await readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8");
+const ciWorkflow = await readFile(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
 const companyMapList = await readFile(new URL("../src/components/CompanyMapList.jsx", import.meta.url), "utf8");
 const coverageMatrixComponent = await readFile(new URL("../src/components/CoverageMatrix.jsx", import.meta.url), "utf8");
 const chainSidebar = await readFile(new URL("../src/components/ChainSidebar.jsx", import.meta.url), "utf8");
@@ -109,6 +117,12 @@ assert.match(detailDrawer, /record\.payload\?\.url/, "本地审核队列需要�
 assert.match(viteConfig, /VITE_BASE_PATH/, "Vite 需要支持 GitHub Pages 子路径构建");
 assert.match(loadGraphData, /import\.meta\.env\.BASE_URL/, "public snapshot 路径需要跟随 Vite base");
 assert.match(pagesWorkflow, /VITE_BASE_PATH: \/ai-chaingraph\//, "Pages workflow 需要使用仓库子路径构建");
+assert.match(ciWorkflow, /validate:tabular/, "CI 需要校验 CSV/JSONL tabular 示例");
+assert.match(importTabular, /parseCsv/, "tabular adapter 需要支持 CSV");
+assert.match(importTabular, /jsonl/, "tabular adapter 需要支持 JSONL");
+assert.match(importTabular, /company_maps_to_industry_node/, "tabular adapter 需要生成公司映射边");
+assert.match(csvMappingExample, /chain_id,chain_name/, "CSV 示例需要包含标准表头");
+assert.match(jsonlMappingExample, /VectorRack Systems/, "JSONL 示例需要包含美股映射");
 
 const companyIds = new Set(graph.companies.map((company) => company.id));
 const nodeIds = new Set(graph.nodes.map((node) => node.id));

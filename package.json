@@ -9,7 +9,9 @@
     "preview": "vite preview --host 127.0.0.1",
     "smoke": "node scripts/smoke-test.mjs",
     "validate:example": "node scripts/import-snapshot.mjs examples/fictional-ai-chain.snapshot.json",
-    "import:snapshot": "node scripts/import-snapshot.mjs"
+    "validate:tabular": "node scripts/import-tabular.mjs examples/fictional-ai-mappings.csv && node scripts/import-tabular.mjs examples/fictional-ai-mappings.jsonl",
+    "import:snapshot": "node scripts/import-snapshot.mjs",
+    "import:tabular": "node scripts/import-tabular.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.1",

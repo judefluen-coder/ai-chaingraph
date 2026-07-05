@@ -14,6 +14,7 @@ npm run dev
 ```bash
 npm run smoke
 npm run validate:example
+npm run validate:tabular
 npm run build
 ```
 
@@ -55,12 +56,13 @@ git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite'
 - A股和美股 demo 都可以保留，但不能暗示真实买卖建议。
 - 证据摘要应展示产品能力，不应复制真实受限内容。
 - L3 线索必须保持待审核语义，不能作为结论展示。
-- 公开导入示例放在 `examples/`，应能通过 `npm run import:snapshot -- examples/fictional-ai-chain.snapshot.json`。
+- 公开导入示例放在 `examples/`，snapshot 示例应能通过 `npm run import:snapshot -- examples/fictional-ai-chain.snapshot.json`，CSV/JSONL 示例应能通过 `npm run validate:tabular`。
 
 ## Pull Request 检查清单
 
 - [ ] 我已运行 `npm run smoke`。
 - [ ] 我已运行 `npm run validate:example`。
+- [ ] 我已运行 `npm run validate:tabular`。
 - [ ] 我已运行 `npm run build`。
 - [ ] 我没有提交真实金融数据、商业数据源结果或本地私有记录。
 - [ ] 如果改动 UI，我已检查桌面、平板和手机主要布局。

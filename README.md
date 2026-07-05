@@ -46,6 +46,7 @@ Vite 会输出本地地址，通常是 `http://127.0.0.1:5173/`。如果只做�
 ```bash
 npm run smoke
 npm run validate:example
+npm run validate:tabular
 npm run build
 ```
 
@@ -89,6 +90,14 @@ npm run import:snapshot -- data/local-only/ai-chain.snapshot.json
 
 ```bash
 npm run import:snapshot -- data/local-only/ai-chain.snapshot.json --write
+```
+
+如果数据还在表格整理阶段，可以先用 CSV/JSONL 扁平映射表导入。每行表示“公司 -> 产业节点 -> 证据”的一条映射，脚本会生成 canonical snapshot：
+
+```bash
+npm run validate:tabular
+npm run import:tabular -- examples/fictional-ai-mappings.csv --print-snapshot
+npm run import:tabular -- data/local-only/ai-mappings.csv --write
 ```
 
 写入产物位于：
@@ -144,9 +153,12 @@ ai-chaingraph/
 │   └── sqlite-schema.sql
 ├── scripts/
 │   ├── import-snapshot.mjs
+│   ├── import-tabular.mjs
 │   └── smoke-test.mjs
 ├── examples/
-│   └── fictional-ai-chain.snapshot.json
+│   ├── fictional-ai-chain.snapshot.json
+│   ├── fictional-ai-mappings.csv
+│   └── fictional-ai-mappings.jsonl
 ├── docs/assets/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
@@ -188,7 +200,7 @@ git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite'
 
 ## 路线图
 
-- 数据层：补齐 CSV/JSONL adapter、真实数据去重、证据冲突检测和 L3 审核工作流。
+- 数据层：补齐真实数据去重、证据冲突检测和 L3 审核工作流。
 - API 层：提供 `/api/graph`、`/api/search`、`/api/node/:id`、`/api/review`。
 - 研究体验：增加产业链路径对比、观察列表批量备注、证据冲突提示和覆盖缺口提醒。
 - 开源体验：补齐贡献指南、示例 snapshot、README 截图和 GitHub release 说明。
