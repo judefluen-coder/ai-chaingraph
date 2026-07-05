@@ -79,6 +79,7 @@ assert.match(readme, /git rev-parse --show-toplevel/, "README 需要包含 Git r
 assert.match(readme, /L1.*L2.*L3/s, "README 需要解释 L1/L2/L3 证据等级");
 assert.match(readme, /本地观察列表/, "README 需要说明本地观察列表能力");
 assert.match(readme, /公司覆盖矩阵/, "README 需要说明公司覆盖矩阵能力");
+assert.match(readme, /证据时间线/, "README 需要说明证据时间线能力");
 
 const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
 const loadGraphData = await readFile(new URL("../src/data/loadGraphData.js", import.meta.url), "utf8");
@@ -101,6 +102,8 @@ assert.match(coverageMatrixComponent, /链路覆盖与证据质量/, "覆盖矩�
 assert.match(chainSidebar, /产业链导航/, "UI 需要保留产业链导航入口");
 assert.match(detailDrawer, /人工校正/, "UI 需要保留人工校正入口");
 assert.match(detailDrawer, /观察列表/, "详情面板需要提供观察列表入口");
+assert.match(detailDrawer, /证据时间线/, "详情面板需要提供证据时间线入口");
+assert.match(detailDrawer, /sort\(\(a, b\).*publish_date/s, "证据时间线需要按发布日期排序");
 assert.match(detailDrawer, /onToggleWatchlist/, "公司详情需要支持加入或移出观察列表");
 assert.match(detailDrawer, /record\.payload\?\.url/, "本地审核队列需要展示反馈来源 URL");
 assert.match(viteConfig, /VITE_BASE_PATH/, "Vite 需要支持 GitHub Pages 子路径构建");

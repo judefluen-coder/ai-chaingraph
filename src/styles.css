@@ -1106,6 +1106,95 @@ button:active {
   margin-top: 14px;
 }
 
+.timelineHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.timelineHead h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 13px;
+}
+
+.timelineHead span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.evidenceTimeline ol {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evidenceTimeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0 8px 13px;
+  border-left: 1px solid rgba(127, 212, 59, 0.28);
+}
+
+.evidenceTimeline li::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 14px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgba(127, 212, 59, 0.6);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.evidenceTimeline time {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.evidenceTimeline div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.evidenceTimeline strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.evidenceTimeline span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.evidenceTimeline em {
+  border: 1px solid rgba(127, 212, 59, 0.36);
+  border-radius: var(--radius-sm);
+  color: var(--brand-strong);
+  padding: 1px 5px;
+  font-family: var(--mono);
+  font-style: normal;
+}
+
 .companyCard,
 .evidenceCard,
 .reviewCard {
