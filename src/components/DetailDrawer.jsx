@@ -8,6 +8,7 @@ import {
   Send,
   ShieldAlert,
   Star,
+  TimerReset,
   Trash2,
 } from "lucide-react";
 import {
@@ -207,6 +208,7 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
               : "暂无已绑定产业链映射。"}
           </p>
         </section>
+        <EvidenceTimeline items={evidenceItems} />
         <EvidenceList items={evidenceItems} />
         <RiskNote />
         {notice && <p className="noticeText">{notice}</p>}
@@ -231,6 +233,7 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
         <p className="reviewWarning">当前公司映射全部为 L3 公开线索，默认进入待审核。</p>
       )}
       <CompanyList data={data} mappings={mappingEdges} />
+      <EvidenceTimeline items={evidenceItems} />
       <EvidenceList items={evidenceItems} />
       <RiskNote />
       {notice && <p className="noticeText">{notice}</p>}
@@ -338,6 +341,42 @@ function EvidenceList({ items }) {
       {items.length === 0 ? <p className="muted">当前筛选下暂无已绑定证据。</p> : items.map(({ evidence, edge }) => (
         <EvidenceCard key={`${edge.id}:${evidence.id}`} evidence={evidence} edge={edge} />
       ))}
+    </section>
+  );
+}
+
+function EvidenceTimeline({ items }) {
+  const timeline = items
+    .slice()
+    .sort((a, b) => (b.evidence.publish_date || "").localeCompare(a.evidence.publish_date || ""))
+    .slice(0, 6);
+  const staleCount = timeline.filter(({ evidence }) => getEvidenceFreshness(evidence).status !== "normal").length;
+  return (
+    <section className="infoBlock evidenceTimeline" aria-label="证据时间线">
+      <div className="timelineHead">
+        <h3><TimerReset size={14} />证据时间线</h3>
+        <span>{timeline.length} 条 · {staleCount} 条需关注</span>
+      </div>
+      {timeline.length === 0 ? <p className="muted">当前筛选下暂无可排序证据。</p> : (
+        <ol>
+          {timeline.map(({ evidence, edge }) => {
+            const freshness = getEvidenceFreshness(evidence);
+            return (
+              <li key={`${edge.id}:${evidence.id}`}>
+                <time>{evidence.publish_date || "日期待补"}</time>
+                <div>
+                  <strong>{evidence.title}</strong>
+                  <span>
+                    <b className={`freshness-${freshness.status}`}>{freshness.label}</b>
+                    <em>{evidence.level}</em>
+                    <small>{edgeTypeLabels[edge.edge_type]}</small>
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      )}
     </section>
   );
 }
