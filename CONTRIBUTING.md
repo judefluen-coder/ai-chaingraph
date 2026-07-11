@@ -38,7 +38,7 @@ npm run build
 
 公开仓库可以包含代码、schema、脚本、文档、虚构示例，以及经过来源许可检查的结构化公司与产业关系。以下内容不要提交：
 
-- `data/`、`feedbacks/`、`logs/`、`secrets/`、`public/snapshots/`
+- `data/`、`feedbacks/`、`logs/`、`secrets/`，以及 `public/snapshots/` 中除正式发布的 `current.json` 之外的文件
 - SQLite/DB 文件、抓取缓存、第三方商业数据源结果
 - 真实研报原文、公告全文或其他受版权限制的长篇摘录
 - 未脱敏的个人研究记录和人工校正队列
@@ -46,10 +46,11 @@ npm run build
 提交前可以用以下命令确认没有误跟踪本地数据：
 
 ```bash
-git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite' '*.db'
+git ls-files --cached -- data feedbacks logs secrets '*.sqlite' '*.db'
+git ls-files --cached -- public/snapshots
 ```
 
-期望输出为空。
+第一条命令期望无输出；第二条只能输出 `public/snapshots/current.json`。
 
 ## Demo 数据规则
 
@@ -68,6 +69,7 @@ git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite'
 - 具名客户、供应商关系必须由公开来源明确点名双方，不能只靠产业常识推断。
 - 摘要只陈述来源支持的事实，不使用“高潜力”“受益最大”“纯度高”等投资判断。
 - 已发布数据使用 CC BY 4.0；外部来源链接及引用仍遵守原权利人的许可条款。
+- `public/snapshots/current.json` 是面向访问者的正式发布文件，修改它必须与 canonical 数据变更同 PR 并通过 smoke test。
 
 ## Pull Request 检查清单
 

@@ -4,7 +4,8 @@ dist/
 /feedbacks/
 /logs/
 /secrets/
-/public/snapshots/
+/public/snapshots/*
+!/public/snapshots/current.json
 .playwright-cli/
 .DS_Store
 *.log
