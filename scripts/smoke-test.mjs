@@ -182,6 +182,7 @@ assert.match(serveApi, /\/api\/graph/, "本地 API 需要提供 /api/graph");
 assert.match(serveApi, /\/api\/search/, "本地 API 需要提供 /api/search");
 assert.match(serveApi, /\/api\/node\/:id/, "本地 API 需要说明 /api/node/:id");
 assert.match(serveApi, /\/api\/review/, "本地 API 需要提供 /api/review");
+assert.match(serveApi, /readReviewQueue/, "本地 API 需要能读取 JSONL 审核队列");
 assert.match(reviewTransport, /VITE_CHAINGRAPH_API_BASE/, "人工校正同步需要读取本地 API 配置");
 assert.match(reviewTransport, /\/api\/review/, "人工校正同步需要调用 /api/review");
 assert.match(csvMappingExample, /chain_id,chain_name/, "CSV 示例需要包含标准表头");
@@ -233,6 +234,12 @@ try {
   );
   assert.equal(syncedReview.source, "api", "人工校正同步需要标记 API 来源");
   assert.equal(syncedReview.record.status, "pending", "人工校正同步需要返回 API 保存的 pending 记录");
+  const apiReviewQueue = await fetchJson(`${apiBase}/api/review`);
+  assert.equal(apiReviewQueue.count, 2, "本地 API 需要能读取已写入的 JSONL 审核记录");
+  assert.ok(apiReviewQueue.records.some((record) => record.id === apiReview.record.id), "GET /api/review 需要返回直接 POST 的审核记录");
+  assert.ok(apiReviewQueue.records.some((record) => record.id === syncedReview.record.id), "GET /api/review 需要返回前端 transport 同步的审核记录");
+  const apiGraphWithReview = await fetchJson(`${apiBase}/api/graph`);
+  assert.ok(apiGraphWithReview.review_queue.some((record) => record.id === syncedReview.record.id), "/api/graph 需要合并本地 JSONL 审核队列");
 } finally {
   await new Promise((resolve) => apiServer.close(resolve));
   await rm(apiDataDir, { recursive: true, force: true });

@@ -78,6 +78,12 @@ export async function handleApiRequest(request, response, context) {
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/review") {
+    const records = await readReviewQueue(context);
+    sendJson(response, 200, { count: records.length, records });
+    return;
+  }
+
   if (request.method === "POST" && url.pathname === "/api/review") {
     const body = await readRequestJson(request);
     const record = buildReviewRecord(body);
@@ -95,12 +101,12 @@ export async function readGraph(context = {}) {
   const localSnapshotPath = path.join(resolvedDataDir, "snapshots", "current.json");
   try {
     const snapshot = JSON.parse(await readFile(localSnapshotPath, "utf8"));
-    return normalizeGraph(snapshot, "local_snapshot");
+    return mergeReviewQueue(normalizeGraph(snapshot, "local_snapshot"), await readReviewQueue({ ...context, dataDir: resolvedDataDir }));
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
   const demo = JSON.parse(await readFile(path.join(resolvedRoot, "src", "data", "demoGraph.json"), "utf8"));
-  return normalizeGraph(demo, "demo");
+  return mergeReviewQueue(normalizeGraph(demo, "demo"), await readReviewQueue({ ...context, dataDir: resolvedDataDir }));
 }
 
 function normalizeGraph(graph, source) {
@@ -115,6 +121,33 @@ function normalizeGraph(graph, source) {
       ...graph.meta,
       source,
     },
+  };
+}
+
+export async function readReviewQueue(context = {}) {
+  const resolvedRoot = context.rootDir || rootDir;
+  const resolvedDataDir = context.dataDir || path.join(resolvedRoot, "data");
+  const reviewPath = path.join(resolvedDataDir, "review-queue", "local-api-review.jsonl");
+  let content = "";
+  try {
+    content = await readFile(reviewPath, "utf8");
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
+  return content
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
+function mergeReviewQueue(graph, localRecords) {
+  const records = [...(graph.review_queue || []), ...localRecords];
+  const byId = new Map(records.map((record) => [record.id, record]));
+  return {
+    ...graph,
+    review_queue: [...byId.values()].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")),
   };
 }
 

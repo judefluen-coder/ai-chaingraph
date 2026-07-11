@@ -68,6 +68,7 @@ npm run api
 - `GET /api/graph`：读取 `data/snapshots/current.json`，不存在时回退到虚构 demo。
 - `GET /api/search?q=光模块`：返回可定位的节点、公司和证据命中。
 - `GET /api/node/:id`：返回公司或产业节点详情、映射边和证据摘要。
+- `GET /api/review`：读取本地 JSONL 审核队列，便于脚本或前端复用。
 - `POST /api/review`：把本地审核记录追加到 `data/review-queue/local-api-review.jsonl`。
 
 让前端优先读取本地 API，并让人工校正同步写入 API 审核队列：
