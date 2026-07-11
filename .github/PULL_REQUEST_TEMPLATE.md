@@ -18,10 +18,12 @@
 - [ ] UI checked on desktop, tablet, and mobile if frontend behavior changed
 - [ ] Schema/docs updated if data shape changed
 
-## Data safety
+## Data provenance
 
-- [ ] This PR does not include real financial data, paid data-source output, private research notes, credentials, or restricted report text.
-- [ ] Demo data is fictional or fully anonymized.
+- [ ] This PR does not include paid data-source output, private research notes, credentials, or restricted long-form source text.
+- [ ] Demo fixtures are fictional or fully anonymized.
+- [ ] Real company relationships include a public source, factual summary, relationship basis, and verification date.
+- [ ] Named customer or supplier relationships are explicitly supported by the cited public source.
 - [ ] `git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite' '*.db'` returns no private data paths.
 
 ## Notes for reviewers

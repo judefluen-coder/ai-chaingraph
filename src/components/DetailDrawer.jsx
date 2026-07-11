@@ -2,11 +2,9 @@ import {
   AlertTriangle,
   BadgeInfo,
   CheckCircle2,
-  Database,
+  ExternalLink,
   GitBranch,
   Search,
-  Send,
-  ShieldAlert,
   Star,
   TimerReset,
   Trash2,
@@ -14,25 +12,21 @@ import {
 import {
   buildCompanyPathCompare,
   edgeTypeLabels,
-  buildEntityQualityAlerts,
-  getAdjustedRelevance,
   getCompanyMarket,
-  getEdgeRecency,
   getEvidenceFreshness,
   getEvidenceItems,
   getMappingEdgesForNode,
   getMarketLabel,
+  getPublishedGraphStats,
+  getRelationPresentation,
   getSearchTarget,
-  reviewStatusLabels,
+  isPublishedEdge,
   typeLabels,
 } from "../lib/graphViewModel";
-import { GraphViewport } from "./GraphViewport";
 
 export function DetailDrawer({
   data,
   active,
-  flow,
-  showMiniGraph,
   query,
   searchResults,
   searchCollapsed,
@@ -41,13 +35,6 @@ export function DetailDrawer({
   onSelect,
   evidenceFilter,
   marketFilter,
-  dataStatus,
-  feedback,
-  onFeedbackChange,
-  onSaveFeedback,
-  reviewRecords,
-  onResolveReview,
-  onExportFeedback,
   watchlistRecords,
   watchlistIds,
   onToggleWatchlist,
@@ -68,18 +55,6 @@ export function DetailDrawer({
           onClear={onClearSearch}
           onSelect={onSelect}
         />
-      )}
-
-      <DataStatusPanel data={data} status={dataStatus} />
-
-      {showMiniGraph && (
-        <section className="miniGraphCard">
-          <div className="miniGraphHead">
-            <GitBranch size={16} />
-            <span>关系缩略图</span>
-          </div>
-          <GraphViewport flow={flow} activeId={active?.id} pathSummary="" onSelect={onSelect} compact />
-        </section>
       )}
 
       <DetailPanel
@@ -104,17 +79,6 @@ export function DetailDrawer({
         onExport={onExportWatchlist}
       />
 
-      <FeedbackPanel
-        feedback={feedback}
-        onFeedbackChange={onFeedbackChange}
-        onSaveFeedback={onSaveFeedback}
-      />
-
-      <ReviewQueuePanel
-        records={reviewRecords}
-        onResolve={onResolveReview}
-        onExport={onExportFeedback}
-      />
     </aside>
   );
 }
@@ -147,55 +111,36 @@ function SearchPanel({ data, results, query, collapsed, onToggle, onClear, onSel
   );
 }
 
-function DataStatusPanel({ data, status }) {
-  return (
-    <section className="sideCard dataStatusPanel">
-      <PanelTitle icon={<Database size={17} />} title="数据状态" label={status.label} />
-      <div className="statusGrid">
-        <Metric value={status.staleCount} label="过期证据" />
-        <Metric value={status.expiringCount} label="即将过期" />
-        <Metric value={status.mappingReviewCount} label="映射待审核" />
-        <Metric value={status.feedbackPendingCount} label="本地反馈" />
-      </div>
-      <p className="smallNote">当前数据集：{data.meta.name}。公开 demo 只用于产品体验验证。</p>
-    </section>
-  );
-}
-
 function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watchlistRecords, watchlistIds, onToggleWatchlist, onUpdateWatchlist, onSelect }) {
-  const qualityAlerts = buildEntityQualityAlerts(data, active, evidenceFilter, marketFilter);
-
   if (active?.node_type === "overview") {
-    const evidenceCounts = data.edges.reduce((acc, edge) => {
-      acc[edge.evidence_level] = (acc[edge.evidence_level] || 0) + 1;
-      return acc;
-    }, {});
+    const publishedStats = getPublishedGraphStats(data, marketFilter);
     return (
       <section className="sideCard detailPanel">
-        <PanelTitle icon={<BadgeInfo size={17} />} title="AI 产业链总览" label="选股地图入口" />
-        <p className="muted">先从产业链定位方向，再进入公司映射和证据摘要。图谱展示逻辑关系，不给买卖建议。</p>
+        <PanelTitle icon={<BadgeInfo size={17} />} title="AI 产业链总览" label={data.meta.data_version} />
+        <p className="muted">从产业链选择方向，沿上游、核心环节和下游应用发现公司。每条关系都应能回到公开来源。</p>
         <div className="metricGrid">
           <Metric value={data.chains.length} label="覆盖链路" />
           <Metric value={data.nodes.length} label="产业节点" />
-          <Metric value={data.companies.length} label="公司池" />
-          <Metric value={`${evidenceCounts.L1 || 0}/${evidenceCounts.L2 || 0}/${evidenceCounts.L3 || 0}`} label="L1/L2/L3" />
+          <Metric value={publishedStats.companyCount} label="上市公司" />
+          <Metric value={publishedStats.sourceCount} label="公开来源" />
         </div>
-        <QualityAlerts alerts={qualityAlerts} />
+        <div className="basisGuide">
+          <span className="basisBadge basis-official_disclosure">官方披露</span>
+          <span className="basisBadge basis-product_fact">产品事实</span>
+          <span className="basisBadge basis-industry_inference">产业推导</span>
+        </div>
         <RiskNote />
       </section>
     );
   }
 
   if (active?.stock_code) {
-    const mappings = data.edges.filter((edge) => edge.to_id === active.id);
+    const mappings = data.edges.filter((edge) => edge.to_id === active.id && edge.edge_type === "company_maps_to_industry_node" && isPublishedEdge(edge));
     const filteredMappings = mappings.filter((edge) => edge.evidence_level === evidenceFilter || evidenceFilter === "all");
-    const quote = data.quote_snapshots.find((item) => item.stock_code === active.stock_code);
     const evidenceItems = getEvidenceItems(data, filteredMappings);
     const firstMapping = filteredMappings[0] || mappings[0];
-    const firstRecency = firstMapping ? getEdgeRecency(data, firstMapping) : null;
-    const firstScore = firstMapping ? getAdjustedRelevance(firstMapping, firstRecency.recencyFactor) : null;
+    const firstRelation = firstMapping ? getRelationPresentation(data, firstMapping) : null;
     const market = getCompanyMarket(active);
-    const marketCapUnit = market === "us" ? "亿美元" : "亿元";
     const isWatched = watchlistIds?.has(active.id);
     const watchRecord = watchlistRecords?.find((record) => record.company_id === active.id);
     const pathCompare = buildCompanyPathCompare(data, active, evidenceFilter, marketFilter);
@@ -208,26 +153,25 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
         </button>
         <div className="quoteBox">
           <span>市场：{getMarketLabel(market)}</span>
-          <span>行业：{quote?.industry || active.industry || "待补"}</span>
-          <span>市值：{quote?.market_cap ? `${quote.market_cap} ${marketCapUnit}` : "待补"}</span>
-          <span>PE/PB：{quote?.pe ?? "待补"} / {quote?.pb ?? "待补"}</span>
+          <span>交易所：{active.exchange}</span>
+          <span>行业：{active.industry || "待补"}</span>
+          <span>关系：{mappings.length} 条</span>
         </div>
         <section className="whyBox">
-          <h3>为什么相关</h3>
-          <p>
-            {firstMapping
-              ? `映射到 ${data.nodes.find((node) => node.id === firstMapping.from_id)?.name || "产业节点"}，当前时效调整相关性 ${Math.round(firstScore * 100)}%，证据等级 ${firstMapping.evidence_level}。`
-              : "暂无已绑定产业链映射。"}
-          </p>
+          <div className="whyHead">
+            <h3>为什么相关</h3>
+            {firstRelation && <span className={`basisBadge basis-${firstRelation.basis}`}>{firstRelation.label}</span>}
+          </div>
+          <p>{firstRelation?.summary || "暂无已绑定产业链映射。"}</p>
+          {firstRelation?.lastVerifiedAt && <small>最后核验：{String(firstRelation.lastVerifiedAt).slice(0, 10)}</small>}
         </section>
-        <PathComparePanel compare={pathCompare} onSelect={onSelect} />
+        <PathComparePanel data={data} compare={pathCompare} onSelect={onSelect} />
         {isWatched && (
           <WatchlistMemo
             record={watchRecord}
             onChange={(patch) => onUpdateWatchlist(active.id, patch)}
           />
         )}
-        <QualityAlerts alerts={qualityAlerts} />
         <EvidenceTimeline items={evidenceItems} />
         <EvidenceList items={evidenceItems} />
         <RiskNote />
@@ -242,17 +186,12 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
     .filter((edge) => edge.from_id === active.id || edge.to_id === active.id)
     .filter((edge) => edge.edge_type === "industry_parent" || edge.evidence_level === evidenceFilter || evidenceFilter === "all");
   const evidenceItems = getEvidenceItems(data, filteredEdges.concat(mappingEdges));
-  const l3Mappings = mappingEdges.filter((edge) => edge.evidence_level === "L3");
 
   return (
     <section className="sideCard detailPanel">
       <PanelTitle icon={<GitBranch size={17} />} title={active.name} label={typeLabels[active.node_type]} />
       <p className="muted">{active.description || chain?.description}</p>
       <div className="pathBox">{chain?.name} / {active.name}</div>
-      {mappingEdges.length > 0 && l3Mappings.length === mappingEdges.length && (
-        <p className="reviewWarning">当前公司映射全部为 L3 公开线索，默认进入待审核。</p>
-      )}
-      <QualityAlerts alerts={qualityAlerts} />
       <CompanyList data={data} mappings={mappingEdges} />
       <EvidenceTimeline items={evidenceItems} />
       <EvidenceList items={evidenceItems} />
@@ -262,18 +201,21 @@ function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watch
   );
 }
 
-function PathComparePanel({ compare, onSelect }) {
+function PathComparePanel({ data, compare, onSelect }) {
   if (!compare?.paths?.length) return null;
   return (
     <section className="infoBlock pathCompare" aria-label="产业链路径对比">
       <h3><GitBranch size={14} />产业链路径对比</h3>
       <div className="pathChipRow">
-        {compare.paths.map((path) => (
-          <span className={`pathChip level-${path.edge.evidence_level}`} key={path.edge.id}>
-            {path.chain.name} / {path.node.name}
-            <small>{path.edge.evidence_level} · 相关 {Math.round(path.score * 100)}%</small>
-          </span>
-        ))}
+        {compare.paths.map((path) => {
+          const relation = getRelationPresentation(data, path.edge);
+          return (
+            <span className={`pathChip basis-${relation.basis}`} key={path.edge.id}>
+              {path.chain.name} / {path.node.name}
+              <small>{relation.label} · 核验 {String(relation.lastVerifiedAt || "待补").slice(0, 10)}</small>
+            </span>
+          );
+        })}
       </div>
       {compare.peers.length === 0 ? <p className="muted">当前筛选下暂无同链路可比公司。</p> : (
         <div className="pathPeerList">
@@ -287,28 +229,11 @@ function PathComparePanel({ compare, onSelect }) {
                   : `同链路：${peer.sharedChainNames.join(" / ")}`}
               </small>
               {peer.uniqueNodeNames.length > 0 && <small>差异节点：{peer.uniqueNodeNames.join(" / ")}</small>}
-              <em>{peer.paths.length} 条路径 · 最强 {peer.strongestEvidenceLevel} · {peer.reviewCount} 待审</em>
+              <em>{peer.paths.length} 条产业路径</em>
             </button>
           ))}
         </div>
       )}
-    </section>
-  );
-}
-
-function QualityAlerts({ alerts }) {
-  if (!alerts?.length) return null;
-  return (
-    <section className="qualityAlerts" aria-label="质量提示与证据冲突">
-      <h3><AlertTriangle size={14} />质量提示 / 证据冲突</h3>
-      <div>
-        {alerts.map((alert) => (
-          <article className={`qualityAlert severity-${alert.severity}`} key={`${alert.type}:${alert.target_id}:${alert.title}`}>
-            <strong>{alert.title}</strong>
-            <span>{alert.body}</span>
-          </article>
-        ))}
-      </div>
     </section>
   );
 }
@@ -374,7 +299,7 @@ function WatchlistMemo({ record, compact = false, onChange }) {
         </label>
         <label>
           标签
-          <input value={record.tags || ""} onChange={(event) => onChange({ tags: event.target.value })} placeholder="光模块;高纯度" />
+          <input value={record.tags || ""} onChange={(event) => onChange({ tags: event.target.value })} placeholder="光模块;数据中心" />
         </label>
         <label>
           下次复核
@@ -389,54 +314,24 @@ function WatchlistMemo({ record, compact = false, onChange }) {
   );
 }
 
-function FeedbackPanel({ feedback, onFeedbackChange, onSaveFeedback }) {
-  return (
-    <section className="sideCard feedbackPanel">
-      <PanelTitle icon={<ShieldAlert size={17} />} title="人工校正" label="API / 本地记录" />
-      <label>
-        反馈类型
-        <select value={feedback.issue_type} onChange={(event) => onFeedbackChange({ ...feedback, issue_type: event.target.value })}>
-          <option value="stale">证据过期</option>
-          <option value="incorrect">证据有误</option>
-          <option value="wrong_mapping">关联关系有误</option>
-          <option value="wrong_category">分类不当</option>
-          <option value="concept_pollution">存在概念污染</option>
-          <option value="add_evidence">补充证据</option>
-        </select>
-      </label>
-      <label>
-        来源 URL
-        <input value={feedback.url} onChange={(event) => onFeedbackChange({ ...feedback, url: event.target.value })} placeholder="可选，本地记录" />
-      </label>
-      <label>
-        说明
-        <textarea value={feedback.note} onChange={(event) => onFeedbackChange({ ...feedback, note: event.target.value })} placeholder="记录校正理由或补充线索" />
-      </label>
-      <button className="primaryButton" onClick={onSaveFeedback}><Send size={15} />保存到待审核</button>
-    </section>
-  );
-}
-
 function CompanyList({ data, mappings }) {
   return (
     <section className="infoBlock">
       <h3>相关公司</h3>
       {mappings.length === 0 ? <p className="muted">当前筛选下暂无公司映射。</p> : mappings.map((edge) => {
         const company = data.companies.find((item) => item.id === edge.to_id);
-        const recency = getEdgeRecency(data, edge);
-        const adjustedRelevance = getAdjustedRelevance(edge, recency.recencyFactor);
+        const relation = getRelationPresentation(data, edge);
         return (
           <div key={edge.id} className="companyCard">
             <div className="companyCardHead">
               <strong>{company?.name}</strong>
-              <span className={`levelPill level-${edge.evidence_level}`}>{edge.evidence_level}</span>
+              <span className={`basisBadge basis-${relation.basis}`}>{relation.label}</span>
             </div>
             <span>{company?.stock_code} · {company?.industry}</span>
             <div className="mappingMeta">
               <span>{edgeTypeLabels[edge.edge_type]}</span>
-              <span>相关 {Math.round(adjustedRelevance * 100)}%</span>
-              <b className={`freshness-${recency.status}`}>{recency.label}</b>
-              {edge.review_status !== "accepted" && <b>待审核</b>}
+              <span>核验 {String(relation.lastVerifiedAt || "待补").slice(0, 10)}</span>
+              <b>{edge.source_ids?.length || 0} 个来源</b>
             </div>
           </div>
         );
@@ -472,6 +367,7 @@ function EvidenceTimeline({ items }) {
         <ol>
           {timeline.map(({ evidence, edge }) => {
             const freshness = getEvidenceFreshness(evidence);
+            const relation = getRelationPresentation({ evidences: [evidence] }, edge);
             return (
               <li key={`${edge.id}:${evidence.id}`}>
                 <time>{evidence.publish_date || "日期待补"}</time>
@@ -479,7 +375,7 @@ function EvidenceTimeline({ items }) {
                   <strong>{evidence.title}</strong>
                   <span>
                     <b className={`freshness-${freshness.status}`}>{freshness.label}</b>
-                    <em>{evidence.level}</em>
+                    <em>{relation.label}</em>
                     <small>{edgeTypeLabels[edge.edge_type]}</small>
                   </span>
                 </div>
@@ -494,46 +390,18 @@ function EvidenceTimeline({ items }) {
 
 function EvidenceCard({ evidence, edge }) {
   const freshness = getEvidenceFreshness(evidence);
-  const adjustedRelevance = getAdjustedRelevance(edge, freshness.recencyFactor);
+  const relation = getRelationPresentation({ evidences: [evidence] }, edge);
   return (
     <article className={`evidenceCard level-${evidence.level} freshness-${freshness.status}`}>
-      <div><span>{evidence.level}</span><strong>{evidence.title}</strong></div>
+      <div><span>{relation.label}</span><strong>{evidence.title}</strong></div>
       <p>{evidence.excerpt}</p>
       <div className="evidenceMeta">
         <span>{edgeTypeLabels[edge.edge_type]}</span>
-        <span>相关 {Math.round(adjustedRelevance * 100)}%</span>
         <b className={`freshness-${freshness.status}`}>{freshness.label}</b>
       </div>
-      <small>{evidence.source_type} · {evidence.publish_date} · {evidence.reviewer}</small>
+      <small>{evidence.source_type} · {evidence.publish_date} · 核验 {String(relation.lastVerifiedAt || "待补").slice(0, 10)}</small>
+      {evidence.url && <a href={evidence.url} target="_blank" rel="noreferrer"><ExternalLink size={13} />打开公开来源</a>}
     </article>
-  );
-}
-
-function ReviewQueuePanel({ records, onResolve, onExport }) {
-  return (
-    <section className="sideCard reviewQueuePanel">
-      <div className="queueHead">
-        <PanelTitle icon={<Database size={17} />} title="本地审核队列" label={`${records.filter((record) => record.status === "pending").length} 待处理`} />
-      </div>
-      <p className="smallNote">导出数据仅供研究参考，重新分发时需附带免责声明。</p>
-      <div className="exportActions">
-        <button onClick={() => onExport("json")}>导出 JSON</button>
-        <button onClick={() => onExport("csv")}>导出 CSV</button>
-      </div>
-      {records.length === 0 ? <p className="muted">暂无本地反馈。</p> : records.slice().reverse().map((record) => (
-        <article className="reviewCard" key={record.id}>
-          <strong>{record.issue_type} · {record.target_id}</strong>
-          <small>{reviewStatusLabels[record.status] || record.status} · {record.created_at}</small>
-          {record.payload?.url && <small>来源：{record.payload.url}</small>}
-          {record.payload?.note && <p>{record.payload.note}</p>}
-          <div className="reviewActions">
-            <button onClick={() => onResolve(record.id, "accepted")}>接受</button>
-            <button onClick={() => onResolve(record.id, "rejected")}>拒绝</button>
-            <button onClick={() => onResolve(record.id, "needs_more_source")}>需更多来源</button>
-          </div>
-        </article>
-      ))}
-    </section>
   );
 }
 

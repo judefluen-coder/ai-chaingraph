@@ -1,6 +1,6 @@
 {
   "name": "ai-chaingraph",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,12 +15,12 @@
     "import:tabular": "node scripts/import-tabular.mjs"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^3.0.0",
     "@vitejs/plugin-react": "^5.1.1",
     "lucide-react": "^0.468.0",
-    "vite": "^7.2.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "reactflow": "^11.11.4"
-  },
-  "devDependencies": {}
+    "reactflow": "^11.11.4",
+    "vite": "^7.2.7"
+  }
 }
