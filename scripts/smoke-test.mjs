@@ -10,12 +10,16 @@ import {
   buildCoverageMatrix,
   buildEvidenceConflictAlerts,
   buildFlow,
+  buildIndustryAtlas,
   buildEntityQualityAlerts,
   buildListRows,
+  buildPublishedGraph,
   buildScopedData,
   getDataStatus,
   getMappingQualityAlerts,
   getMarketOptions,
+  getPublishedGraphStats,
+  getRelationPresentation,
   searchItems,
 } from "../src/lib/graphViewModel.js";
 
@@ -26,6 +30,10 @@ const schema = JSON.parse(await readFile(new URL("../schemas/chaingraph.schema.j
 
 assert.equal(graph.chains.length, 4, "需要四条一级链路");
 assert.ok(graph.nodes.length >= 20, "需要至少 20 个示例产业节点");
+assert.ok(
+  graph.nodes.every((node) => ["overview", "upstream", "core", "downstream"].includes(node.stage)),
+  "每个产业节点都需要显式标注上游、核心、下游或总览阶段",
+);
 assert.ok(graph.companies.length >= 8, "需要示例公司数据");
 assert.ok(graph.edges.some((edge) => edge.edge_type === "company_maps_to_industry_node"), "需要公司映射边");
 assert.ok(graph.evidences.every((item) => ["L1", "L2", "L3"].includes(item.level)), "证据等级必须合法");
@@ -36,8 +44,27 @@ assert.ok(["NASDAQ", "NYSE", "AMEX", "OTC"].some((exchange) => exchanges.has(exc
 assert.ok(schema.$defs.company.properties.exchange.enum.includes("NASDAQ"), "schema 需要允许美股交易所");
 
 const mappingEdges = graph.edges.filter((edge) => edge.edge_type === "company_maps_to_industry_node");
+const publishedMappingEdges = mappingEdges.filter((edge) => edge.review_status === "accepted");
+const industryAtlas = buildIndustryAtlas(graph, "all");
+assert.equal(industryAtlas.length, graph.chains.length, "产业全景需要覆盖每条一级链路");
+assert.ok(industryAtlas.every((item) => item.stages.length === 3), "每条产业链都需要展示上游、核心和下游");
+assert.ok(
+  industryAtlas.find((item) => item.chain.id === "compute_hardware")?.stages.find((stage) => stage.id === "downstream")?.nodes.length > 0,
+  "算力硬件示例需要包含可发现的下游应用",
+);
+const relationPresentation = getRelationPresentation(graph, mappingEdges[0]);
+assert.ok(["official_disclosure", "product_fact", "industry_inference"].includes(relationPresentation.basis), "公司关系需要有明确事实依据类型");
+assert.ok(relationPresentation.summary, "公司关系需要给出可读的事实说明");
+assert.ok(relationPresentation.lastVerifiedAt, "公司关系需要给出最后核验时间");
 assert.deepEqual(getMarketOptions(graph), ["all", "a_share", "us"], "市场筛选需要识别 A股和美股");
-assert.equal(buildListRows(graph, "all", null, "", "all").length, mappingEdges.length, "全部市场列表需要展示所有公司映射");
+assert.equal(buildListRows(graph, "all", null, "", "all").length, publishedMappingEdges.length, "普通用户列表只能展示正式发布的公司映射");
+assert.equal(getPublishedGraphStats(graph).companyCount, 10, "公开图谱统计只能包含正式发布关系中的公司");
+assert.ok(!searchItems(graph, "海量存储").some((item) => item.id === "company:603801.SH"), "未发布公司不能通过访问者搜索出现");
+const publishedGraph = buildPublishedGraph(graph);
+assert.equal(publishedGraph.companies.length, 10, "公开图谱投影不能包含仅有未发布关系的公司");
+assert.ok(publishedGraph.edges.every((edge) => edge.review_status === "accepted" || !edge.review_status), "公开图谱投影不能包含未发布关系");
+assert.equal(publishedGraph.review_queue.length, 0, "公开图谱投影不能暴露维护审核队列");
+assert.equal(publishedGraph.import_jobs.length, 0, "公开图谱投影不能暴露本地导入记录");
 const usRows = buildListRows(graph, "all", null, "", "us");
 assert.equal(usRows.length, 2, "美股筛选需要保留 demo 中的两条映射");
 assert.ok(usRows.every((row) => ["NASDAQ", "NYSE", "AMEX", "OTC"].includes(row.company.exchange)), "美股筛选不能混入 A股公司");
@@ -98,6 +125,10 @@ assert.ok(schema.$defs.market_signal, "schema 需要保留市场情报接口字�
 assert.ok(schema.$defs.review_queue_item, "schema 需要保留人工校正字段");
 assert.ok(schema.$defs.import_job, "schema 需要保留导入任务字段");
 assert.ok(schema.$defs.dataset, "schema 需要保留数据集字段");
+assert.ok(schema.$defs.relation_basis, "schema 需要定义面向用户的关系依据类型");
+assert.ok(schema.$defs.industry_node.required.includes("stage"), "schema 需要强制产业节点声明上下游阶段");
+assert.equal(graph.meta.data_license, "CC-BY-4.0", "公开 demo 需要声明 CC BY 4.0 数据许可证");
+assert.ok(schema.$defs.meta.properties.data_license, "schema 需要支持数据许可证声明");
 
 const sqliteSchema = await readFile(new URL("../schemas/sqlite-schema.sql", import.meta.url), "utf8");
 assert.match(sqliteSchema, /CREATE TABLE IF NOT EXISTS dataset/, "SQLite schema 需要 dataset 表");
@@ -111,21 +142,25 @@ for (const ignoredPath of ["data/", "feedbacks/", "logs/", "secrets/", "public/s
 }
 
 const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+const dataLicense = await readFile(new URL("../DATA_LICENSE.md", import.meta.url), "utf8");
 const packageJson = await readFile(new URL("../package.json", import.meta.url), "utf8");
-assert.match(readme, /选股地图/, "README 需要明确选股地图定位");
+assert.match(readme, /研究地图/, "README 需要明确产业研究地图定位");
 assert.match(readme, /信息组织与产业研究辅助工具/, "README 需要保留非投资建议定位");
+assert.match(readme, /产业链优先/, "README 需要明确默认从产业链开始发现");
+assert.match(readme, /CC BY 4\.0/, "README 需要明确公开数据许可证");
+assert.match(dataLicense, /Creative Commons Attribution 4\.0 International/, "仓库需要提供 CC BY 4.0 数据许可说明");
+assert.match(readme, /具名供应商或客户关系/, "README 需要明确具名上下游关系的来源门槛");
+assert.match(readme, /完整双语界面/, "README 需要说明双语发布目标");
 assert.match(readme, /仓库边界与提交安全/, "README 需要说明仓库边界与提交安全");
 assert.match(readme, /git rev-parse --show-toplevel/, "README 需要包含 Git root 检查命令");
 assert.match(readme, /L1.*L2.*L3/s, "README 需要解释 L1/L2/L3 证据等级");
 assert.match(readme, /本地观察列表/, "README 需要说明本地观察列表能力");
-assert.match(readme, /公司覆盖矩阵/, "README 需要说明公司覆盖矩阵能力");
 assert.match(readme, /产业链路径对比/, "README 需要说明产业链路径对比能力");
-assert.match(readme, /证据冲突/, "README 需要说明证据冲突提示能力");
 assert.match(readme, /证据时间线/, "README 需要说明证据时间线能力");
 assert.match(readme, /CSV\/JSONL/, "README 需要说明 CSV/JSONL 扁平映射表导入");
 assert.match(readme, /观察备注/, "README 需要说明观察列表研究备注能力");
 assert.match(readme, /本地 API/, "README 需要说明本地 API 服务");
-assert.match(readme, /API.*人工校正|人工校正.*API/, "README 需要说明人工校正可同步到本地 API");
+assert.match(readme, /\/api\/review.*维护者|维护者.*\/api\/review/s, "README 需要把审核接口限定为维护者工作流");
 assert.match(packageJson, /validate:tabular/, "package.json 需要提供 tabular 导入示例校验命令");
 assert.match(packageJson, /"api": "node scripts\/serve-api\.mjs"/, "package.json 需要提供本地 API 启动命令");
 
@@ -137,41 +172,45 @@ const csvMappingExample = await readFile(new URL("../examples/fictional-ai-mappi
 const jsonlMappingExample = await readFile(new URL("../examples/fictional-ai-mappings.jsonl", import.meta.url), "utf8");
 const duplicateMappingExample = await readFile(new URL("../examples/fictional-ai-mappings-duplicates.csv", import.meta.url), "utf8");
 const loadGraphData = await readFile(new URL("../src/data/loadGraphData.js", import.meta.url), "utf8");
+const indexHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const viteConfig = await readFile(new URL("../vite.config.js", import.meta.url), "utf8");
 const pagesWorkflow = await readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8");
 const ciWorkflow = await readFile(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
 const companyMapList = await readFile(new URL("../src/components/CompanyMapList.jsx", import.meta.url), "utf8");
-const coverageMatrixComponent = await readFile(new URL("../src/components/CoverageMatrix.jsx", import.meta.url), "utf8");
+const industryExplorer = await readFile(new URL("../src/components/IndustryExplorer.jsx", import.meta.url), "utf8");
 const chainSidebar = await readFile(new URL("../src/components/ChainSidebar.jsx", import.meta.url), "utf8");
 const detailDrawer = await readFile(new URL("../src/components/DetailDrawer.jsx", import.meta.url), "utf8");
+const graphViewport = await readFile(new URL("../src/components/GraphViewport.jsx", import.meta.url), "utf8");
 assert.match(main, /viewMode/, "UI 需要保留视图切换状态");
+assert.match(main, /useState\("atlas"\)/, "UI 默认需要从产业全景开始");
+assert.match(main, /IndustryExplorer/, "UI 需要挂载产业链发现首屏");
 assert.match(main, /mobileTab/, "UI 需要提供移动端视图切换状态");
-assert.match(main, /"url", "note"/, "CSV 导出需要包含本地反馈的来源 URL 和说明");
 assert.match(main, /"priority", "tags", "thesis", "next_review_at"/, "观察列表 CSV 导出需要包含研究备注字段");
 assert.match(main, /ai-chaingraph-watchlist/, "UI 需要把观察列表保存在本地浏览器");
 assert.match(main, /exportWatchlist/, "UI 需要支持导出本地观察列表");
 assert.match(main, /updateWatchlistRecord/, "UI 需要支持编辑观察列表研究备注");
-assert.match(main, /submitReviewRecord/, "人工校正需要优先尝试同步到本地 API");
 assert.match(companyMapList, /公司映射列表/, "列表视图需要明确公司映射列表标题");
 assert.match(companyMapList, /为什么相关/, "列表视图需要突出相关性解释");
-assert.match(companyMapList, /CoverageMatrix/, "列表视图需要挂载公司覆盖矩阵");
-assert.match(coverageMatrixComponent, /公司覆盖矩阵/, "覆盖矩阵组件需要有可访问标签");
-assert.match(coverageMatrixComponent, /链路覆盖与证据质量/, "覆盖矩阵需要解释覆盖和证据质量");
-assert.match(coverageMatrixComponent, /覆盖缺口提醒/, "覆盖矩阵需要展示覆盖缺口提醒");
+assert.doesNotMatch(companyMapList, /% 相关|纯度|待审核/, "普通用户列表不能展示模糊分数或审核状态");
+assert.match(industryExplorer, /AI 产业全景/, "产业链发现首屏需要明确全景入口");
+assert.match(industryExplorer, /上游/, "产业链发现首屏需要展示上游阶段");
+assert.match(industryExplorer, /核心环节/, "产业链发现首屏需要展示核心环节");
+assert.match(industryExplorer, /下游应用/, "产业链发现首屏需要展示下游阶段");
 assert.match(chainSidebar, /产业链导航/, "UI 需要保留产业链导航入口");
-assert.match(detailDrawer, /人工校正/, "UI 需要保留人工校正入口");
+assert.doesNotMatch(detailDrawer, /人工校正|本地审核队列/, "普通用户详情不能暴露维护审核工具");
 assert.match(detailDrawer, /观察列表/, "详情面板需要提供观察列表入口");
 assert.match(detailDrawer, /观察备注/, "详情面板需要提供观察备注入口");
 assert.match(detailDrawer, /下次复核/, "观察列表需要支持下次复核日期");
 assert.match(detailDrawer, /证据时间线/, "详情面板需要提供证据时间线入口");
-assert.match(detailDrawer, /质量提示/, "详情面板需要展示质量提示");
-assert.match(detailDrawer, /证据冲突/, "详情面板需要展示证据冲突提示");
 assert.match(detailDrawer, /产业链路径对比/, "详情面板需要展示产业链路径对比");
+assert.doesNotMatch(detailDrawer, /相关 \{Math\.round|纯度/, "普通用户详情不能展示模糊关系分数");
 assert.match(detailDrawer, /sort\(\(a, b\).*publish_date/s, "证据时间线需要按发布日期排序");
 assert.match(detailDrawer, /onToggleWatchlist/, "公司详情需要支持加入或移出观察列表");
-assert.match(detailDrawer, /record\.payload\?\.url/, "本地审核队列需要展示反馈来源 URL");
+assert.doesNotMatch(graphViewport, /MiniMap/, "聚焦关系图不需要干扰阅读的缩略图");
+assert.match(graphViewport, /MarkerType\.ArrowClosed/, "关系图需要用箭头明确上下游方向");
 assert.match(viteConfig, /VITE_BASE_PATH/, "Vite 需要支持 GitHub Pages 子路径构建");
 assert.match(loadGraphData, /import\.meta\.env\.BASE_URL/, "public snapshot 路径需要跟随 Vite base");
+assert.match(indexHtml, /%BASE_URL%favicon\.svg/, "favicon 路径需要跟随 GitHub Pages base");
 assert.match(pagesWorkflow, /VITE_BASE_PATH: \/ai-chaingraph\//, "Pages workflow 需要使用仓库子路径构建");
 assert.match(ciWorkflow, /validate:tabular/, "CI 需要校验 CSV/JSONL tabular 示例");
 assert.match(importTabular, /parseCsv/, "tabular adapter 需要支持 CSV");
@@ -217,6 +256,7 @@ try {
   assert.equal(localOnlyReview.source, "local", "未配置 API 时人工校正需要保留本地队列语义");
   const apiGraph = await fetchJson(`${apiBase}/api/graph`);
   assert.equal(apiGraph.meta.dataset_type, "demo", "本地 API 缺少 snapshot 时需要回退 demo graph");
+  assert.equal(apiGraph.companies.length, 10, "只读图谱 API 只能返回正式发布公司");
   const apiSearch = await fetchJson(`${apiBase}/api/search?q=${encodeURIComponent("光模块")}`);
   assert.ok(apiSearch.items.some((item) => item.target_id === "company:300801.SZ"), "本地 API 搜索需要返回可定位目标");
   const apiNode = await fetchJson(`${apiBase}/api/node/${encodeURIComponent("company:688001.SH")}`);
@@ -239,7 +279,7 @@ try {
   assert.ok(apiReviewQueue.records.some((record) => record.id === apiReview.record.id), "GET /api/review 需要返回直接 POST 的审核记录");
   assert.ok(apiReviewQueue.records.some((record) => record.id === syncedReview.record.id), "GET /api/review 需要返回前端 transport 同步的审核记录");
   const apiGraphWithReview = await fetchJson(`${apiBase}/api/graph`);
-  assert.ok(apiGraphWithReview.review_queue.some((record) => record.id === syncedReview.record.id), "/api/graph 需要合并本地 JSONL 审核队列");
+  assert.equal(apiGraphWithReview.review_queue.length, 0, "/api/graph 不能向访问者暴露本地审核队列");
 } finally {
   await new Promise((resolve) => apiServer.close(resolve));
   await rm(apiDataDir, { recursive: true, force: true });

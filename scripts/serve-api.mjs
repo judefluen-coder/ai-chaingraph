@@ -3,6 +3,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  buildPublishedGraph,
   getEntity,
   getEvidenceItems,
   getMappingEdgesForNode,
@@ -37,12 +38,12 @@ export async function handleApiRequest(request, response, context) {
 
   const url = new URL(request.url, "http://localhost");
   if (request.method === "GET" && url.pathname === "/api/graph") {
-    sendJson(response, 200, await readGraph(context));
+    sendJson(response, 200, buildPublishedGraph(await readGraph(context)));
     return;
   }
 
   if (request.method === "GET" && url.pathname === "/api/search") {
-    const graph = await readGraph(context);
+    const graph = buildPublishedGraph(await readGraph(context));
     const query = url.searchParams.get("q") || "";
     const items = searchItems(graph, query).map((item) => ({
       id: item.id,
@@ -56,7 +57,7 @@ export async function handleApiRequest(request, response, context) {
   }
 
   if (request.method === "GET" && url.pathname.startsWith("/api/node/")) {
-    const graph = await readGraph(context);
+    const graph = buildPublishedGraph(await readGraph(context));
     const id = decodeURIComponent(url.pathname.slice("/api/node/".length));
     const entity = getEntity(graph, id);
     if (!entity) throw httpError(404, `Entity not found: ${id}`);

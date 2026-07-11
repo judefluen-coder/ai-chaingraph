@@ -27,6 +27,7 @@
         "dataset_id": { "type": "string" },
         "dataset_type": { "enum": ["demo", "local_real", "mixed"] },
         "source_policy": { "enum": ["public_demo_only", "local_only", "mixed_review_required"] },
+        "data_license": { "enum": ["CC-BY-4.0"] },
         "latest_import_job_id": { "type": ["string", "null"] },
         "updated_at": { "type": "string", "format": "date-time" },
         "disclaimer": { "type": "string" }
@@ -38,7 +39,9 @@
       "properties": {
         "id": { "$ref": "#/$defs/chain_id" },
         "name": { "type": "string" },
+        "name_en": { "type": ["string", "null"] },
         "description": { "type": "string" },
+        "description_en": { "type": ["string", "null"] },
         "node_count": { "type": "integer", "minimum": 0 },
         "company_count": { "type": "integer", "minimum": 0 },
         "updated_at": { "type": "string" }
@@ -55,6 +58,7 @@
         "description": { "type": "string" },
         "disclaimer": { "type": "string" },
         "source_policy": { "enum": ["public_demo_only", "local_only", "mixed_review_required"] },
+        "data_license": { "enum": ["CC-BY-4.0"] },
         "created_at": { "type": "string", "format": "date-time" },
         "updated_at": { "type": "string", "format": "date-time" }
       }
@@ -83,16 +87,19 @@
     },
     "industry_node": {
       "type": "object",
-      "required": ["id", "name", "node_type", "chain", "parent_id", "level", "aliases", "description", "company_ids", "status", "updated_at"],
+      "required": ["id", "name", "node_type", "stage", "chain", "parent_id", "level", "aliases", "description", "company_ids", "status", "updated_at"],
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "name_en": { "type": ["string", "null"] },
         "node_type": { "enum": ["chain", "segment", "subsegment"] },
+        "stage": { "enum": ["overview", "upstream", "core", "downstream"] },
         "chain": { "$ref": "#/$defs/chain_id" },
         "parent_id": { "type": ["string", "null"] },
         "level": { "type": "integer", "minimum": 1, "maximum": 3 },
         "aliases": { "type": "array", "items": { "type": "string" } },
         "description": { "type": "string" },
+        "description_en": { "type": ["string", "null"] },
         "source_ids": { "type": "array", "items": { "type": "string" } },
         "company_ids": { "type": "array", "items": { "type": "string" } },
         "status": { "enum": ["active", "draft", "deprecated"] },
@@ -109,8 +116,10 @@
         "stock_symbol": { "type": "string" },
         "exchange": { "enum": ["SH", "SZ", "BJ", "NASDAQ", "NYSE", "AMEX", "OTC"] },
         "name": { "type": "string" },
+        "name_en": { "type": ["string", "null"] },
         "full_name": { "type": ["string", "null"] },
         "industry": { "type": ["string", "null"] },
+        "industry_en": { "type": ["string", "null"] },
         "listed_at": { "type": ["string", "null"], "format": "date" },
         "aliases": { "type": "array", "items": { "type": "string" } },
         "source_ids": { "type": "array", "items": { "type": "string" } },
@@ -144,6 +153,10 @@
         "purity_score": { "type": "number", "minimum": 0, "maximum": 1 },
         "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
         "source_ids": { "type": "array", "items": { "type": "string" } },
+        "relation_basis": { "$ref": "#/$defs/relation_basis" },
+        "relation_summary": { "type": ["string", "null"] },
+        "relation_summary_en": { "type": ["string", "null"] },
+        "last_verified_at": { "type": ["string", "null"], "format": "date-time" },
         "review_status": { "enum": ["accepted", "needs_review", "rejected", "stale"] },
         "manual_correction": { "$ref": "#/$defs/manual_correction" },
         "valid_from": { "type": ["string", "null"], "format": "date" },
@@ -164,10 +177,12 @@
           "enum": ["annual_report", "announcement", "research_report", "news", "interview", "patent", "irm_qa", "official_site", "concept_tag", "imported_unverified", "manual", "other"]
         },
         "title": { "type": "string" },
+        "title_en": { "type": ["string", "null"] },
         "url": { "type": ["string", "null"] },
         "local_path": { "type": ["string", "null"] },
         "publish_date": { "type": ["string", "null"], "format": "date" },
         "excerpt": { "type": "string" },
+        "excerpt_en": { "type": ["string", "null"] },
         "language": { "enum": ["zh", "en"] },
         "reliability": { "type": "number", "minimum": 0, "maximum": 1 },
         "mapped_at": { "type": "string", "format": "date-time" },
@@ -257,6 +272,9 @@
     },
     "evidence_level": {
       "enum": ["L1", "L2", "L3"]
+    },
+    "relation_basis": {
+      "enum": ["official_disclosure", "product_fact", "industry_inference"]
     }
   }
 }

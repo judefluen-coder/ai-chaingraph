@@ -33,9 +33,12 @@ function validateGraph(data) {
   const nodeIds = new Set(data.nodes.map((node) => node.id));
   const edgeIds = new Set(data.edges.map((edge) => edge.id));
   const evidenceIds = new Set(data.evidences.map((evidence) => evidence.id));
+  const validStages = new Set(["overview", "upstream", "core", "downstream"]);
+  const validRelationBases = new Set(["official_disclosure", "product_fact", "industry_inference"]);
 
   for (const node of data.nodes) {
     assert.ok(node.id && node.name, "节点必须包含 id/name");
+    assert.ok(validStages.has(node.stage), `节点 ${node.id} 缺少合法的 stage`);
     for (const companyId of node.company_ids || []) {
       assert.ok(companyIds.has(companyId), `节点 ${node.id} 引用了不存在的公司 ${companyId}`);
     }
@@ -47,6 +50,9 @@ function validateGraph(data) {
     for (const sourceId of edge.source_ids || []) {
       assert.ok(evidenceIds.has(sourceId), `边 ${edge.id} 引用了不存在的证据 ${sourceId}`);
     }
+    assert.ok(validRelationBases.has(edge.relation_basis), `边 ${edge.id} 缺少合法的 relation_basis`);
+    assert.ok(edge.relation_summary, `边 ${edge.id} 缺少 relation_summary`);
+    assert.ok(edge.last_verified_at, `边 ${edge.id} 缺少 last_verified_at`);
   }
 
   for (const evidence of data.evidences) {

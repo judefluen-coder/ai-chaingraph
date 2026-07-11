@@ -173,15 +173,20 @@ function buildGraph(records, context) {
     const parentId = cell(row, "parent_id") || (nodeId === chainId ? null : chainId);
     const nodeLevel = integerCell(row, "level") || (nodeId === chainId ? 1 : parentId === chainId ? 2 : 3);
     const nodeType = cell(row, "node_type") || (nodeLevel === 1 ? "chain" : nodeLevel === 2 ? "segment" : "subsegment");
+    const nodeStage = cell(row, "stage") || (nodeId === chainId ? "overview" : "core");
     const edgeId = cell(row, "edge_id") || `edge_${safeId(nodeId)}_${safeId(stockCode)}`;
     const evidenceId = cell(row, "evidence_id") || `ev_${safeId(edgeId)}_${safeId(row.__line)}`;
+    const evidenceSourceType = cell(row, "evidence_source_type", "source_type") || "imported_unverified";
+    const relationBasis = cell(row, "relation_basis") || relationBasisForSource(evidenceSourceType);
     const rowReviewStatus = reviewStatus(row, evidenceLevel);
     const reviewedAt = rowReviewStatus === "accepted" ? context.now : null;
 
     chains.set(chainId, {
       id: chainId,
       name: chainName,
+      name_en: cell(row, "chain_name_en") || null,
       description: cell(row, "chain_description") || `${chainName} imported from tabular mappings.`,
+      description_en: cell(row, "chain_description_en") || null,
       node_count: 0,
       company_count: 0,
       updated_at: context.today,
@@ -190,12 +195,15 @@ function buildGraph(records, context) {
     upsertNode(nodes, chainId, {
       id: chainId,
       name: chainName,
+      name_en: cell(row, "chain_name_en") || null,
       node_type: "chain",
+      stage: "overview",
       chain: chainId,
       parent_id: null,
       level: 1,
       aliases: listCell(row, "chain_aliases"),
       description: cell(row, "chain_description") || `${chainName} imported from tabular mappings.`,
+      description_en: cell(row, "chain_description_en") || null,
       company_ids: [],
       status: "active",
       updated_at: context.today,
@@ -204,12 +212,15 @@ function buildGraph(records, context) {
     upsertNode(nodes, nodeId, {
       id: nodeId,
       name: nodeName,
+      name_en: cell(row, "node_name_en") || null,
       node_type: nodeType,
+      stage: nodeStage,
       chain: chainId,
       parent_id: parentId,
       level: nodeLevel,
       aliases: listCell(row, "node_aliases"),
       description: cell(row, "node_description") || `${nodeName} imported from tabular mappings.`,
+      description_en: cell(row, "node_description_en") || null,
       source_ids: [],
       company_ids: [],
       status: cell(row, "node_status") || "active",
@@ -222,8 +233,10 @@ function buildGraph(records, context) {
       stock_symbol: cell(row, "stock_symbol") || stockCode.split(".")[0],
       exchange,
       name: companyName,
+      name_en: cell(row, "company_name_en", "name_en") || null,
       full_name: cell(row, "full_name") || null,
       industry: cell(row, "industry") || null,
+      industry_en: cell(row, "industry_en") || null,
       listed_at: cell(row, "listed_at") || null,
       aliases: listCell(row, "company_aliases"),
       source_ids: [evidenceId],
@@ -242,6 +255,10 @@ function buildGraph(records, context) {
       purity_score: numberCell(row, "purity_score") ?? defaultScore(evidenceLevel).purity,
       confidence: numberCell(row, "confidence") ?? defaultScore(evidenceLevel).confidence,
       source_ids: [evidenceId],
+      relation_basis: relationBasis,
+      relation_summary: cell(row, "relation_summary") || evidenceExcerpt,
+      relation_summary_en: cell(row, "relation_summary_en") || null,
+      last_verified_at: cell(row, "last_verified_at") || reviewedAt || context.now,
       review_status: rowReviewStatus,
       created_at: context.now,
       updated_at: context.now,
@@ -252,12 +269,14 @@ function buildGraph(records, context) {
       target_type: "edge",
       target_id: edgeId,
       level: evidenceLevel,
-      source_type: cell(row, "evidence_source_type", "source_type") || "imported_unverified",
+      source_type: evidenceSourceType,
       title: evidenceTitle,
+      title_en: cell(row, "evidence_title_en") || null,
       url: cell(row, "evidence_url", "url") || null,
       local_path: cell(row, "evidence_local_path", "local_path") || null,
       publish_date: evidencePublishDate,
       excerpt: evidenceExcerpt,
+      excerpt_en: cell(row, "evidence_excerpt_en") || null,
       language: cell(row, "language") || "zh",
       reliability: numberCell(row, "evidence_reliability", "reliability") ?? defaultReliability(evidenceLevel),
       mapped_at: context.now,
@@ -286,6 +305,10 @@ function buildGraph(records, context) {
         purity_score: 1,
         confidence: 1,
         source_ids: [],
+        relation_basis: "industry_inference",
+        relation_summary: `${node.name} 属于 ${nodes.get(node.parent_id)?.name || node.parent_id} 产业层级。`,
+        relation_summary_en: null,
+        last_verified_at: context.now,
         review_status: "accepted",
         created_at: context.now,
         updated_at: context.now,
@@ -313,6 +336,7 @@ function buildGraph(records, context) {
       dataset_id: context.datasetId,
       dataset_type: "local_real",
       source_policy: "local_only",
+      data_license: "CC-BY-4.0",
       data_version: `${context.datasetId}-${context.today}`,
       updated_at: context.now,
       disclaimer: "Imported tabular data is for research organization only and is not investment advice.",
@@ -364,6 +388,7 @@ function validateGraph(data) {
   const evidenceIds = new Set(data.evidences.map((evidence) => evidence.id));
   for (const node of data.nodes) {
     assert.ok(node.id && node.name, "节点必须包含 id/name");
+    assert.ok(["overview", "upstream", "core", "downstream"].includes(node.stage), `节点 ${node.id} 的 stage 不合法: ${node.stage}`);
     for (const companyId of node.company_ids || []) {
       assert.ok(companyIds.has(companyId), `节点 ${node.id} 引用了不存在的公司 ${companyId}`);
     }
@@ -374,6 +399,10 @@ function validateGraph(data) {
     for (const sourceId of edge.source_ids || []) {
       assert.ok(evidenceIds.has(sourceId), `边 ${edge.id} 引用了不存在的证据 ${sourceId}`);
     }
+    assert.ok(
+      ["official_disclosure", "product_fact", "industry_inference"].includes(edge.relation_basis),
+      `边 ${edge.id} 的 relation_basis 不合法: ${edge.relation_basis}`,
+    );
   }
   for (const evidence of data.evidences) {
     if (evidence.target_type === "edge") assert.ok(edgeIds.has(evidence.target_id), `证据 ${evidence.id} 指向不存在的边 ${evidence.target_id}`);
@@ -435,6 +464,10 @@ function upsertMappingEdge(edges, nextEdge, stats) {
     purity_score: maxNumber(existing.purity_score, nextEdge.purity_score),
     confidence: maxNumber(existing.confidence, nextEdge.confidence),
     source_ids: uniqueList([...(existing.source_ids || []), ...(nextEdge.source_ids || [])]),
+    relation_basis: strongerRelationBasis(existing.relation_basis, nextEdge.relation_basis),
+    relation_summary: existing.relation_summary || nextEdge.relation_summary,
+    relation_summary_en: existing.relation_summary_en || nextEdge.relation_summary_en,
+    last_verified_at: [existing.last_verified_at, nextEdge.last_verified_at].filter(Boolean).sort().at(-1) || null,
     review_status: mergeReviewStatus(existing.review_status, nextEdge.review_status),
     updated_at: nextEdge.updated_at,
   });
@@ -454,6 +487,17 @@ function strongerEvidenceLevel(left, right) {
 
 function evidenceRank(level) {
   return { L1: 3, L2: 2, L3: 1 }[level] || 0;
+}
+
+function relationBasisForSource(sourceType) {
+  if (["annual_report", "announcement", "irm_qa"].includes(sourceType)) return "official_disclosure";
+  if (["official_site", "patent"].includes(sourceType)) return "product_fact";
+  return "industry_inference";
+}
+
+function strongerRelationBasis(left, right) {
+  const rank = { official_disclosure: 3, product_fact: 2, industry_inference: 1 };
+  return (rank[right] || 0) > (rank[left] || 0) ? right : left;
 }
 
 function mergeReviewStatus(left, right) {

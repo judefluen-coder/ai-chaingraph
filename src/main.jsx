@@ -1,40 +1,26 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Database, GitBranch, ListFilter, Map, ShieldAlert } from "lucide-react";
+import { Database, GitBranch, ListFilter, Map, PanelRight } from "lucide-react";
 import { loadGraphData } from "./data/loadGraphData";
-import { submitReviewRecord } from "./data/reviewTransport";
 import { TopBar } from "./components/TopBar";
 import { ChainSidebar } from "./components/ChainSidebar";
+import { IndustryExplorer } from "./components/IndustryExplorer";
 import { CompanyMapList } from "./components/CompanyMapList";
 import { GraphViewport } from "./components/GraphViewport";
 import { DetailDrawer } from "./components/DetailDrawer";
 import {
-  buildCoverageMatrix,
   buildFlow,
+  buildIndustryAtlas,
   buildListRows,
   buildScopedData,
   exportDisclaimer,
   getCompanyMarket,
-  getDataStatus,
   getEntity,
   getMarketOptions,
   getPathSummary,
-  reviewStatusLabels,
   searchItems,
 } from "./lib/graphViewModel";
 import "./styles.css";
-
-function readStoredReviewQueue() {
-  try {
-    return JSON.parse(localStorage.getItem("ai-chaingraph-review-queue") || "[]");
-  } catch {
-    return [];
-  }
-}
-
-function writeStoredReviewQueue(records) {
-  localStorage.setItem("ai-chaingraph-review-queue", JSON.stringify(records, null, 2));
-}
 
 function readStoredWatchlist() {
   try {
@@ -68,12 +54,6 @@ function downloadText(filename, mimeType, content) {
   URL.revokeObjectURL(url);
 }
 
-function toCsv(records) {
-  const headers = ["id", "target_type", "target_id", "issue_type", "status", "created_by", "created_at", "url", "note", "resolution_note"];
-  const rows = records.map((record) => headers.map((header) => JSON.stringify(record[header] ?? record.payload?.[header] ?? "")).join(","));
-  return [`# ${exportDisclaimer}`, headers.join(","), ...rows].join("\n");
-}
-
 function toWatchlistCsv(records) {
   const headers = ["company_id", "stock_code", "name", "market", "industry", "priority", "tags", "thesis", "next_review_at", "added_at", "updated_at"];
   const rows = records.map((record) => headers.map((header) => JSON.stringify(record[header] ?? "")).join(","));
@@ -84,19 +64,16 @@ function App() {
   const [graphState, setGraphState] = useState({ data: null, error: null });
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState("overview");
-  const [viewMode, setViewMode] = useState("list");
-  const [mobileTab, setMobileTab] = useState("stocks");
+  const [viewMode, setViewMode] = useState("atlas");
+  const [mobileTab, setMobileTab] = useState("atlas");
   const [onlyChain, setOnlyChain] = useState(null);
   const [marketFilter, setMarketFilter] = useState("all");
-  const [evidenceFilter, setEvidenceFilter] = useState("all");
   const [searchCollapsed, setSearchCollapsed] = useState(false);
   const [ack, setAck] = useState(() => localStorage.getItem("ai-chaingraph-disclaimer") === "ack");
-  const [feedback, setFeedback] = useState({ issue_type: "stale", url: "", note: "" });
-  const [reviewRecords, setReviewRecords] = useState(readStoredReviewQueue);
   const [watchlistRecords, setWatchlistRecords] = useState(readStoredWatchlist);
   const [notice, setNotice] = useState("");
-  const showDesktopMiniGraph = useMediaQuery("(min-width: 1101px)");
   const isMobileLayout = useMediaQuery("(max-width: 760px)");
+  const evidenceFilter = "all";
   const graphData = graphState.data;
 
   useEffect(() => {
@@ -114,10 +91,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    writeStoredReviewQueue(reviewRecords);
-  }, [reviewRecords]);
-
-  useEffect(() => {
     writeStoredWatchlist(watchlistRecords);
   }, [watchlistRecords]);
 
@@ -130,12 +103,14 @@ function App() {
   }, [query]);
 
   const scopedData = useMemo(() => graphData ? buildScopedData(graphData, onlyChain, marketFilter) : null, [graphData, onlyChain, marketFilter]);
-  const flow = useMemo(() => scopedData ? buildFlow(scopedData, activeId, query, evidenceFilter) : { nodes: [], edges: [] }, [scopedData, activeId, query, evidenceFilter]);
+  const flow = useMemo(
+    () => scopedData ? buildFlow(scopedData, activeId, query, evidenceFilter, isMobileLayout ? "TB" : "LR") : { nodes: [], edges: [] },
+    [scopedData, activeId, query, evidenceFilter, isMobileLayout],
+  );
   const listRows = useMemo(() => graphData ? buildListRows(graphData, evidenceFilter, onlyChain, query, marketFilter) : [], [graphData, evidenceFilter, onlyChain, query, marketFilter]);
-  const coverageMatrix = useMemo(() => graphData ? buildCoverageMatrix(graphData, evidenceFilter, marketFilter) : { rows: [], totals: { companyCount: 0, mappingCount: 0, reviewCount: 0 } }, [graphData, evidenceFilter, marketFilter]);
+  const industryAtlas = useMemo(() => graphData ? buildIndustryAtlas(graphData, marketFilter) : [], [graphData, marketFilter]);
   const searchResults = useMemo(() => graphData ? searchItems(graphData, query) : [], [graphData, query]);
   const active = graphData ? getEntity(graphData, activeId) : null;
-  const dataStatus = graphData ? getDataStatus(graphData, reviewRecords) : null;
   const pathSummary = graphData && active ? getPathSummary(scopedData || graphData, active, marketFilter) : "数据加载中";
   const marketOptions = useMemo(() => graphData ? getMarketOptions(graphData) : ["all"], [graphData]);
   const watchlistIds = useMemo(() => new Set(watchlistRecords.map((record) => record.company_id)), [watchlistRecords]);
@@ -150,68 +125,35 @@ function App() {
     setOnlyChain(null);
     setQuery("");
     setMarketFilter("all");
-    setEvidenceFilter("all");
-    setViewMode("list");
-    setMobileTab("stocks");
+    setViewMode("atlas");
+    setMobileTab("atlas");
   }
 
   function selectEntity(id) {
     setActiveId(id);
-    if (isMobileLayout) setViewMode("list");
-    setMobileTab("detail");
+    if (isMobileLayout) setMobileTab("detail");
   }
 
-  async function saveFeedback() {
-    if (!active) return;
-    if (feedback.issue_type === "add_evidence" && !feedback.url.trim()) {
-      setNotice("补充证据需要至少填写来源 URL。");
-      return;
-    }
-    const nextRecord = {
-      id: `review:${Date.now()}`,
-      target_type: active?.stock_code ? "company" : "node",
-      target_id: active?.id,
-      issue_type: feedback.issue_type,
-      payload: {
-        url: feedback.url,
-        note: feedback.note,
-      },
-      status: "pending",
-      created_by: "human:local",
-      created_at: new Date().toISOString(),
-      operations: [],
-    };
-    try {
-      const result = await submitReviewRecord(nextRecord);
-      setReviewRecords((records) => records.concat(result.record));
-      setNotice(result.source === "api"
-        ? "反馈已同步到本地 API，并保留在浏览器审核队列。"
-        : "反馈已写入浏览器待审核队列。");
-    } catch (error) {
-      console.warn("AI-ChainGraph review API unavailable, keeping feedback in local queue.", error);
-      setReviewRecords((records) => records.concat({
-        ...nextRecord,
-        sync_error: error.message,
-      }));
-      setNotice("API 同步失败，反馈已写入浏览器待审核队列。");
-    }
-    setFeedback({ issue_type: "stale", url: "", note: "" });
+  function focusChain(chainId) {
+    setOnlyChain(chainId);
+    setActiveId(chainId || "overview");
+    setViewMode("atlas");
+    setMobileTab("atlas");
   }
 
-  function resolveReview(id, status) {
-    setReviewRecords((records) => records.map((record) => record.id === id ? {
-      ...record,
-      status,
-      resolved_at: new Date().toISOString(),
-      resolution_note: reviewStatusLabels[status],
-      operations: (record.operations || []).concat({
-        action: status,
-        actor: "human:local",
-        at: new Date().toISOString(),
-        reason: reviewStatusLabels[status],
-        target_id: record.target_id,
-      }),
-    } : record));
+  function showChainCompanies(chainId) {
+    setOnlyChain(chainId);
+    setActiveId(chainId);
+    setViewMode("list");
+    setMobileTab("stocks");
+  }
+
+  function showChainGraph(chainId) {
+    const nextChainId = chainId || onlyChain || graphData.chains[0]?.id;
+    setOnlyChain(nextChainId);
+    setActiveId(nextChainId);
+    setViewMode("graph");
+    setMobileTab("graph");
   }
 
   function toggleWatchlist(company) {
@@ -252,19 +194,6 @@ function App() {
     if (record) setNotice(`${record.name} 已移出观察列表。`);
   }
 
-  function exportFeedback(format) {
-    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-    if (format === "csv") {
-      downloadText(`ai-chaingraph-feedback-${stamp}.csv`, "text/csv;charset=utf-8", toCsv(reviewRecords));
-      return;
-    }
-    downloadText(
-      `ai-chaingraph-feedback-${stamp}.json`,
-      "application/json;charset=utf-8",
-      JSON.stringify({ disclaimer: exportDisclaimer, exported_at: new Date().toISOString(), records: reviewRecords }, null, 2),
-    );
-  }
-
   function exportWatchlist(format) {
     const stamp = new Date().toISOString().replace(/[:.]/g, "-");
     if (format === "csv") {
@@ -296,13 +225,16 @@ function App() {
         onQueryChange={setQuery}
         viewMode={viewMode}
         onViewModeChange={(mode) => {
+          if (mode === "graph") {
+            showChainGraph();
+            return;
+          }
           setViewMode(mode);
-          setMobileTab(mode === "graph" ? "graph" : "stocks");
+          setMobileTab(mode === "atlas" ? "atlas" : "stocks");
         }}
         marketFilter={marketFilter}
         onMarketFilterChange={setMarketFilter}
         marketOptions={marketOptions}
-        dataStatus={dataStatus}
         dataVersion={graphData.meta.data_version}
         onReset={resetWorkspace}
       />
@@ -315,35 +247,36 @@ function App() {
             query={query}
             onlyChain={onlyChain}
             onSelect={selectEntity}
-            onScope={setOnlyChain}
-            evidenceFilter={evidenceFilter}
-            onEvidenceFilterChange={setEvidenceFilter}
+            onScope={focusChain}
           />
         </div>
 
-        <section className={`centerPane mobilePane pane-stocks ${mobileTab === "stocks" || mobileTab === "graph" ? "isMobileActive" : ""}`}>
-          {viewMode === "graph" ? (
+        <section className={`centerPane mobilePane pane-stocks ${["atlas", "stocks", "graph"].includes(mobileTab) ? "isMobileActive" : ""}`}>
+          {viewMode === "atlas" ? (
+            <IndustryExplorer
+              atlas={industryAtlas}
+              focusedChainId={onlyChain}
+              dataVersion={graphData.meta.data_version}
+              onFocusChain={focusChain}
+              onSelectNode={selectEntity}
+              onSelectCompany={selectEntity}
+              onViewGraph={showChainGraph}
+              onViewCompanies={showChainCompanies}
+            />
+          ) : viewMode === "graph" ? (
             <GraphViewport
               flow={flow}
-              activeId={activeId}
               pathSummary={pathSummary}
               onSelect={selectEntity}
             />
           ) : (
             <CompanyMapList
               rows={listRows}
-              coverageMatrix={coverageMatrix}
               activeId={activeId}
-              evidenceFilter={evidenceFilter}
               marketFilter={marketFilter}
-              onlyChain={onlyChain}
               query={query}
               onSelect={selectEntity}
-              onScope={setOnlyChain}
-              onViewGraph={() => {
-                setViewMode("graph");
-                setMobileTab("graph");
-              }}
+              onViewGraph={() => showChainGraph(onlyChain)}
             />
           )}
         </section>
@@ -352,8 +285,6 @@ function App() {
           <DetailDrawer
             data={graphData}
             active={active}
-            flow={flow}
-            showMiniGraph={showDesktopMiniGraph}
             query={query}
             searchResults={searchResults}
             searchCollapsed={searchCollapsed}
@@ -362,13 +293,6 @@ function App() {
             onSelect={selectEntity}
             evidenceFilter={evidenceFilter}
             marketFilter={marketFilter}
-            dataStatus={dataStatus}
-            feedback={feedback}
-            onFeedbackChange={setFeedback}
-            onSaveFeedback={saveFeedback}
-            reviewRecords={reviewRecords}
-            onResolveReview={resolveReview}
-            onExportFeedback={exportFeedback}
             watchlistRecords={watchlistRecords}
             watchlistIds={watchlistIds}
             onToggleWatchlist={toggleWatchlist}
@@ -381,10 +305,10 @@ function App() {
       </main>
 
       <nav className="mobileTabs" aria-label="移动端视图">
-        <button className={mobileTab === "chain" ? "isActive" : ""} onClick={() => { setViewMode("list"); setMobileTab("chain"); }}><GitBranch size={16} />产业链</button>
+        <button className={mobileTab === "atlas" ? "isActive" : ""} onClick={() => { setViewMode("atlas"); setMobileTab("atlas"); }}><Map size={16} />产业链</button>
         <button className={mobileTab === "stocks" ? "isActive" : ""} onClick={() => { setViewMode("list"); setMobileTab("stocks"); }}><ListFilter size={16} />股票池</button>
-        <button className={mobileTab === "graph" ? "isActive" : ""} onClick={() => { setViewMode("graph"); setMobileTab("graph"); }}><Map size={16} />图谱</button>
-        <button className={mobileTab === "detail" ? "isActive" : ""} onClick={() => { setViewMode("list"); setMobileTab("detail"); }}><ShieldAlert size={16} />详情</button>
+        <button className={mobileTab === "graph" ? "isActive" : ""} onClick={() => showChainGraph()}><GitBranch size={16} />关系</button>
+        <button className={mobileTab === "detail" ? "isActive" : ""} onClick={() => { setViewMode("list"); setMobileTab("detail"); }}><PanelRight size={16} />详情</button>
       </nav>
     </div>
   );
@@ -399,7 +323,7 @@ function DisclaimerModal({ onAccept }) {
         <ul>
           <li>本工具不提供、不构成、不暗示任何形式的投资建议、买卖建议或交易策略。</li>
           <li>展示的上市公司、产业环节、关联关系，不代表对投资价值、股价走势或公司经营状况的判断。</li>
-          <li>证据等级仅描述信息来源可靠性，不代表未来表现。</li>
+          <li>关系依据只说明事实来源类型，不代表公司质量、投资价值或未来表现。</li>
           <li>演示数据只用于本地原型验证。使用真实数据前请自行查证原始来源。</li>
         </ul>
         <button className="primaryButton" onClick={onAccept}>已知晓并同意，进入地图</button>
