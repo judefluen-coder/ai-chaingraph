@@ -90,6 +90,8 @@ VITE_CHAINGRAPH_API_BASE /api/graph
   -> src/data/demoGraph.json
 ```
 
+`public/snapshots/current.json` is the only tracked snapshot served by the static site and currently mirrors the fictional demo. All other local snapshots remain ignored. Real data may replace this file only after provenance and licensing checks.
+
 Start the local API with `npm run api`. Reader endpoints are `GET /api/graph`, `GET /api/search`, and `GET /api/node/:id`. `/api/review` remains a maintainer-workflow compatibility endpoint and is not exposed in the reader UI.
 
 ## Data Import

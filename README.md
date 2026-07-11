@@ -104,6 +104,8 @@ VITE_CHAINGRAPH_API_BASE /api/graph
   -> src/data/demoGraph.json
 ```
 
+`public/snapshots/current.json` 是静态站点唯一跟踪的公开发布快照，当前与虚构 demo 保持一致。其他本地 snapshot 默认被 Git 忽略；未来真实数据也只会在通过来源与许可检查后替换这个发布文件。
+
 启动本地 API：
 
 ```bash
@@ -172,10 +174,11 @@ pwd
 git rev-parse --show-toplevel
 git remote -v
 git status --short --branch -- .
-git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite' '*.db'
+git ls-files --cached -- data feedbacks logs secrets '*.sqlite' '*.db'
+git ls-files --cached -- public/snapshots
 ```
 
-最后一条命令应无输出。抓取缓存、密钥、个人研究笔记、商业数据源结果和本地数据库不得提交。
+第一条命令应无输出；第二条只能输出 `public/snapshots/current.json`。抓取缓存、密钥、个人研究笔记、商业数据源结果和本地数据库不得提交。
 
 ## 路线图
 

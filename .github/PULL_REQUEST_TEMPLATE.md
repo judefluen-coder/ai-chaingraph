@@ -24,7 +24,8 @@
 - [ ] Demo fixtures are fictional or fully anonymized.
 - [ ] Real company relationships include a public source, factual summary, relationship basis, and verification date.
 - [ ] Named customer or supplier relationships are explicitly supported by the cited public source.
-- [ ] `git ls-files --cached -- data feedbacks logs secrets public/snapshots '*.sqlite' '*.db'` returns no private data paths.
+- [ ] `git ls-files --cached -- data feedbacks logs secrets '*.sqlite' '*.db'` returns no private data paths.
+- [ ] If `public/snapshots/current.json` changed, it is an intentional public release artifact with reviewed provenance.
 
 ## Notes for reviewers
 

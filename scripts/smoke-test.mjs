@@ -26,7 +26,10 @@ import {
 const execFileAsync = promisify(execFile);
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 const graph = JSON.parse(await readFile(new URL("../src/data/demoGraph.json", import.meta.url)));
+const publicSnapshot = JSON.parse(await readFile(new URL("../public/snapshots/current.json", import.meta.url)));
 const schema = JSON.parse(await readFile(new URL("../schemas/chaingraph.schema.json", import.meta.url)));
+
+assert.deepEqual(publicSnapshot, graph, "当前公开 Pages snapshot 需要与经过测试的 demo 数据保持一致");
 
 assert.equal(graph.chains.length, 4, "需要四条一级链路");
 assert.ok(graph.nodes.length >= 20, "需要至少 20 个示例产业节点");
@@ -137,9 +140,11 @@ assert.match(sqliteSchema, /CREATE TABLE IF NOT EXISTS chain/, "SQLite schema �
 assert.match(sqliteSchema, /NASDAQ.*NYSE.*AMEX.*OTC/s, "SQLite schema 需要允许美股交易所");
 
 const gitignore = await readFile(new URL("../.gitignore", import.meta.url), "utf8");
-for (const ignoredPath of ["data/", "feedbacks/", "logs/", "secrets/", "public/snapshots/", "*.sqlite"]) {
+for (const ignoredPath of ["data/", "feedbacks/", "logs/", "secrets/", "*.sqlite"]) {
   assert.ok(gitignore.includes(ignoredPath), `.gitignore 需要覆盖 ${ignoredPath}`);
 }
+assert.ok(gitignore.includes("/public/snapshots/*"), ".gitignore 需要默认忽略未发布的 public snapshot");
+assert.ok(gitignore.includes("!/public/snapshots/current.json"), ".gitignore 需要允许正式发布的 current snapshot");
 
 const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
 const dataLicense = await readFile(new URL("../DATA_LICENSE.md", import.meta.url), "utf8");
