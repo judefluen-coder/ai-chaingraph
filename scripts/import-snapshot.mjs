@@ -69,8 +69,17 @@ try {
   errors.push(error.message);
 }
 
-const acceptedRecords = graph.nodes.length + graph.companies.length + graph.edges.length + graph.evidences.length + graph.quote_snapshots.length;
-const reviewRecords = (graph.review_queue || []).filter((item) => item.status === "pending").length;
+const mappingReviewRecords = graph.edges.filter(
+  (edge) => edge.edge_type === "company_maps_to_industry_node" && edge.review_status !== "accepted",
+).length;
+const queueReviewRecords = (graph.review_queue || []).filter((item) => item.status === "pending").length;
+const reviewRecords = mappingReviewRecords + queueReviewRecords;
+const acceptedRecords = graph.nodes.length
+  + graph.companies.length
+  + graph.edges.length
+  + graph.evidences.length
+  + graph.quote_snapshots.length
+  - mappingReviewRecords;
 const importJob = {
   id: `import:${Date.now()}`,
   dataset_id: datasetId,

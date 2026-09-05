@@ -40,8 +40,15 @@ try {
   graph = graph || emptyGraph(datasetId, now);
 }
 
-const acceptedRecords = graph.nodes.length + graph.companies.length + graph.edges.length + graph.evidences.length + graph.quote_snapshots.length;
-const reviewRecords = graph.edges.filter((edge) => edge.edge_type === "company_maps_to_industry_node" && edge.review_status !== "accepted").length;
+const reviewRecords = graph.edges.filter(
+  (edge) => edge.edge_type === "company_maps_to_industry_node" && edge.review_status !== "accepted",
+).length;
+const acceptedRecords = graph.nodes.length
+  + graph.companies.length
+  + graph.edges.length
+  + graph.evidences.length
+  + graph.quote_snapshots.length
+  - reviewRecords;
 const importJob = {
   id: `import:${Date.now()}`,
   dataset_id: datasetId,
@@ -280,7 +287,7 @@ function buildGraph(records, context) {
       language: cell(row, "language") || "zh",
       reliability: numberCell(row, "evidence_reliability", "reliability") ?? defaultReliability(evidenceLevel),
       mapped_at: context.now,
-      reviewed_at: reviewedAt,
+      reviewed_at: cell(row, "evidence_reviewed_at", "reviewed_at") || reviewedAt,
       reviewer: cell(row, "reviewer") || "human:local-import",
       stale_threshold_days: integerCell(row, "stale_threshold_days") || 365,
       notes: cell(row, "notes") || `Imported from ${context.sourceName}`,

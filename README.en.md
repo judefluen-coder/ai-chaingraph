@@ -41,7 +41,9 @@ The product answers where a company sits in the AI value chain, why the relation
 - Directed relationship graph with automatic layout.
 - Company paths, peer context, evidence timeline, and source links.
 - A-share / US market filtering and search across entities and evidence.
-- Responsive desktop and mobile workspaces.
+- Shareable URLs that preserve the selected chain, company, market, view, and query.
+- Publication readiness covering market gaps, evidence levels, review status, freshness, and entity-level quality alerts.
+- A three-column wide-screen workspace, a two-column desktop layout, and mobile navigation with readable relationship paths.
 - A private browser-local watchlist with JSON/CSV export.
 
 The repository currently uses **fictional demo data** to validate the product and data model. Full real-world A-share and US coverage is not complete yet.
@@ -90,7 +92,24 @@ VITE_CHAINGRAPH_API_BASE /api/graph
   -> src/data/demoGraph.json
 ```
 
-`public/snapshots/current.json` is the only tracked snapshot served by the static site and currently mirrors the fictional demo. All other local snapshots remain ignored. Real data may replace this file only after provenance and licensing checks.
+`public/snapshots/current.json` is the only tracked snapshot served by the static site. It is currently generated as a publication-safe projection of the fictional demo. All other local snapshots remain ignored. Real data may replace this file only after provenance and licensing checks.
+
+Run the publication gate before releasing a real snapshot. It keeps only accepted company mappings, removes review queues, import records, and local source paths, and requires public HTTP(S) sources, publication dates, verification timestamps, and human review metadata:
+
+```bash
+npm run publish:snapshot -- data/snapshots/current.json
+npm run publish:snapshot -- data/snapshots/current.json --write
+```
+
+The first command is read-only. The second writes `public/snapshots/current.json`. `--allow-demo` is reserved for the tracked demo validation command and must not be used to bypass real-data release checks.
+
+AI-assisted curation may record source verification with an `agent:*` identity, but it cannot sign off a release. Real data passes the publication gate only when its source records carry an explicit `human:*` reviewer. Maintainers can generate a local review packet and open every primary source before approval:
+
+```bash
+npm run review:snapshot -- data/snapshots/current.json --write
+```
+
+Review packets are written under the Git-ignored `data/review-packets/` directory, keeping personal review notes out of the public repository.
 
 Start the local API with `npm run api`. Reader endpoints are `GET /api/graph`, `GET /api/search`, and `GET /api/node/:id`. `/api/review` remains a maintainer-workflow compatibility endpoint and is not exposed in the reader UI.
 

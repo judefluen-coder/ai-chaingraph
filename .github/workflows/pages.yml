@@ -39,6 +39,7 @@ jobs:
         run: |
           npm run smoke
           npm run validate:example
+          npm run validate:publication
 
       - name: Build GitHub Pages artifact
         run: npm run build

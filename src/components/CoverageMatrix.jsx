@@ -9,9 +9,9 @@ export function CoverageMatrix({ matrix, activeChain, onScope }) {
           <h2>链路覆盖与证据质量</h2>
         </div>
         <div className="coverageTotals">
-          <span>{matrix.totals.companyCount} 公司</span>
-          <span>{matrix.totals.mappingCount} 映射</span>
-          <span>{matrix.totals.reviewCount} 待审</span>
+          <span>{matrix.totals.companyCount} 收录公司</span>
+          <span>{matrix.totals.publishedCount} 已发布映射</span>
+          <span>{matrix.totals.reviewCount} 未发布</span>
         </div>
       </div>
 
@@ -20,12 +20,13 @@ export function CoverageMatrix({ matrix, activeChain, onScope }) {
           <button
             key={row.chain.id}
             className={`coverageRow ${activeChain === row.chain.id ? "isActive" : ""}`}
+            aria-pressed={activeChain === row.chain.id}
             onClick={() => onScope(activeChain === row.chain.id ? null : row.chain.id)}
           >
             <span className="coverageChain">
               <Grid2X2 size={14} />
               <strong>{row.chain.name}</strong>
-              <small>{row.companyCount} 公司 · {row.topNodeName}</small>
+              <small>{row.companyCount} 收录 · {row.publishedCount} 已发布 · {row.topNodeName}</small>
             </span>
             <span className="marketCount"><small>A股</small><b>{row.marketCounts.a_share}</b></span>
             <span className="marketCount"><small>美股</small><b>{row.marketCounts.us}</b></span>
@@ -34,10 +35,10 @@ export function CoverageMatrix({ matrix, activeChain, onScope }) {
               <i className="level-L2" style={{ "--weight": Math.max(1, row.evidenceCounts.L2) }}>{row.evidenceCounts.L2}</i>
               <i className="level-L3" style={{ "--weight": Math.max(1, row.evidenceCounts.L3) }}>{row.evidenceCounts.L3}</i>
             </span>
-            <span className="qualityCell">
+            <span className="qualityCell" aria-label={`数据发布就绪度 ${row.qualityScore}%`}>
               <Target size={13} />
               {row.qualityScore}%
-              {row.reviewCount > 0 && <small>{row.reviewCount} 待审</small>}
+              {row.reviewCount > 0 && <small>{row.reviewCount} 未发布</small>}
             </span>
           </button>
         ))}

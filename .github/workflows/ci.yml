@@ -40,5 +40,8 @@ jobs:
       - name: Validate tabular import examples
         run: npm run validate:tabular
 
+      - name: Validate public snapshot release boundary
+        run: npm run validate:publication
+
       - name: Build frontend
         run: npm run build

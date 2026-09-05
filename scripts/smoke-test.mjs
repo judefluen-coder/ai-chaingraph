@@ -22,6 +22,9 @@ import {
   getRelationPresentation,
   searchItems,
 } from "../src/lib/graphViewModel.js";
+import { parseWorkspaceSearch, serializeWorkspaceSearch } from "../src/lib/workspaceState.js";
+import { createPublicSnapshot, inspectPublication, isHumanReviewer } from "./publish-snapshot.mjs";
+import { buildReviewPacket } from "./review-snapshot.mjs";
 
 const execFileAsync = promisify(execFile);
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
@@ -29,7 +32,72 @@ const graph = JSON.parse(await readFile(new URL("../src/data/demoGraph.json", im
 const publicSnapshot = JSON.parse(await readFile(new URL("../public/snapshots/current.json", import.meta.url)));
 const schema = JSON.parse(await readFile(new URL("../schemas/chaingraph.schema.json", import.meta.url)));
 
-assert.deepEqual(publicSnapshot, graph, "当前公开 Pages snapshot 需要与经过测试的 demo 数据保持一致");
+assert.deepEqual(publicSnapshot, createPublicSnapshot(graph), "当前公开 Pages snapshot 必须是 demo 数据的公开投影");
+
+const demoPublication = inspectPublication(graph, { allowDemo: true, now: new Date("2026-09-04T00:00:00Z") });
+assert.deepEqual(demoPublication.errors, [], "演示快照需要通过显式 demo 发布预检");
+assert.equal(demoPublication.withheldMappings, 2, "发布预检需要统计未发布映射");
+assert.ok(inspectPublication(graph).errors.some((item) => item.includes("演示数据不能")), "真实发布模式不能误发演示数据");
+
+const realReleaseGraph = structuredClone(graph);
+realReleaseGraph.meta.dataset_type = "local_real";
+realReleaseGraph.meta.source_policy = "local_only";
+for (const edge of realReleaseGraph.edges.filter((item) => item.edge_type === "company_maps_to_industry_node" && item.review_status === "accepted")) {
+  const relation = getRelationPresentation(realReleaseGraph, edge);
+  edge.relation_basis = relation.basis;
+  edge.relation_summary = relation.summary;
+  edge.last_verified_at = relation.lastVerifiedAt;
+  for (const sourceId of edge.source_ids) {
+    const evidence = realReleaseGraph.evidences.find((item) => item.id === sourceId);
+    evidence.url = `https://example.com/sources/${encodeURIComponent(sourceId)}`;
+    evidence.reviewed_at ||= "2026-09-01T00:00:00Z";
+    evidence.reviewer = "human:release-test";
+  }
+}
+const realPublication = inspectPublication(realReleaseGraph, { now: new Date("2026-09-04T00:00:00Z") });
+assert.deepEqual(realPublication.errors, [], "真实快照具备公开来源和审核信息后需要通过发布预检");
+assert.equal(isHumanReviewer("human:release-test"), true, "human:* 审核人需要被发布闸门识别");
+assert.equal(isHumanReviewer("agent:source-verified"), false, "AI 来源核验不能冒充人工审核");
+const releasedGraph = createPublicSnapshot(realReleaseGraph);
+assert.equal(releasedGraph.companies.length, 10, "公开快照只能保留已有正式发布关系的公司");
+assert.ok(releasedGraph.edges.every((edge) => edge.review_status === "accepted" || !edge.review_status), "公开快照不能包含未通过审核的关系");
+assert.ok(releasedGraph.evidences.every((evidence) => !("local_path" in evidence)), "公开快照不能暴露本地证据路径");
+assert.deepEqual(releasedGraph.review_queue, [], "公开快照不能包含审核队列");
+assert.deepEqual(releasedGraph.import_jobs, [], "公开快照不能包含导入记录");
+const brokenReleaseGraph = structuredClone(realReleaseGraph);
+brokenReleaseGraph.evidences.find((item) => item.id === brokenReleaseGraph.edges.find((edge) => edge.edge_type === "company_maps_to_industry_node" && edge.review_status === "accepted").source_ids[0]).url = null;
+assert.ok(inspectPublication(brokenReleaseGraph).errors.some((item) => item.includes("来源 URL")), "真实快照缺少公开 URL 时必须阻止发布");
+const agentReviewedGraph = structuredClone(realReleaseGraph);
+agentReviewedGraph.evidences.find((item) => item.id === agentReviewedGraph.edges.find((edge) => edge.edge_type === "company_maps_to_industry_node" && edge.review_status === "accepted").source_ids[0]).reviewer = "agent:source-verified";
+assert.ok(inspectPublication(agentReviewedGraph).errors.some((item) => item.includes("human:*")), "AI 核验记录不能绕过真实数据人工发布签名");
+const reviewPacket = buildReviewPacket(agentReviewedGraph, { generatedAt: "2026-09-05T00:00:00.000Z" });
+assert.match(reviewPacket, /人工审核包/, "真实 snapshot 需要能生成可读的人工审核包");
+assert.match(reviewPacket, /未签名/, "审核包需要标出尚未取得 human:* 签名的来源");
+assert.match(reviewPacket, /发布阻断项/, "审核包需要列出发布闸门发现的阻断项");
+
+const sharedWorkspace = parseWorkspaceSearch("?view=list&chain=optical_communication&entity=company%3A300801.SZ&market=a_share&q=800G");
+assert.deepEqual(sharedWorkspace, {
+  query: "800G",
+  activeId: "company:300801.SZ",
+  viewMode: "list",
+  mobileTab: "detail",
+  onlyChain: "optical_communication",
+  marketFilter: "a_share",
+}, "分享链接需要恢复研究工作台状态");
+assert.equal(
+  serializeWorkspaceSearch(sharedWorkspace),
+  "?view=list&chain=optical_communication&entity=company%3A300801.SZ&market=a_share&q=800G",
+  "研究工作台状态需要稳定序列化为 URL",
+);
+assert.deepEqual(parseWorkspaceSearch("?view=unknown&market=unknown"), {
+  query: "",
+  activeId: "overview",
+  viewMode: "atlas",
+  mobileTab: "atlas",
+  onlyChain: null,
+  marketFilter: "all",
+}, "非法 URL 参数需要回退到安全默认值");
+assert.equal(parseWorkspaceSearch("?q=液冷").mobileTab, "detail", "移动端从搜索链接进入时需要直接显示结果面板");
 
 assert.equal(graph.chains.length, 4, "需要四条一级链路");
 assert.ok(graph.nodes.length >= 20, "需要至少 20 个示例产业节点");
@@ -132,6 +200,8 @@ assert.ok(schema.$defs.relation_basis, "schema 需要定义面向用户的关系
 assert.ok(schema.$defs.industry_node.required.includes("stage"), "schema 需要强制产业节点声明上下游阶段");
 assert.equal(graph.meta.data_license, "CC-BY-4.0", "公开 demo 需要声明 CC BY 4.0 数据许可证");
 assert.ok(schema.$defs.meta.properties.data_license, "schema 需要支持数据许可证声明");
+assert.ok(schema.$defs.meta.properties.source_policy.enum.includes("public_reviewed_snapshot"), "schema 需要允许发布脚本生成的公开真实快照策略");
+assert.ok(schema.$defs.review_queue_item.properties.issue_type.enum.includes("manual_review"), "schema 需要覆盖本地 API 的默认人工审核类型");
 
 const sqliteSchema = await readFile(new URL("../schemas/sqlite-schema.sql", import.meta.url), "utf8");
 assert.match(sqliteSchema, /CREATE TABLE IF NOT EXISTS dataset/, "SQLite schema 需要 dataset 表");
@@ -140,7 +210,7 @@ assert.match(sqliteSchema, /CREATE TABLE IF NOT EXISTS chain/, "SQLite schema �
 assert.match(sqliteSchema, /NASDAQ.*NYSE.*AMEX.*OTC/s, "SQLite schema 需要允许美股交易所");
 
 const gitignore = await readFile(new URL("../.gitignore", import.meta.url), "utf8");
-for (const ignoredPath of ["data/", "feedbacks/", "logs/", "secrets/", "*.sqlite"]) {
+for (const ignoredPath of ["data/", "feedbacks/", "logs/", "secrets/", "output/", "*.sqlite"]) {
   assert.ok(gitignore.includes(ignoredPath), `.gitignore 需要覆盖 ${ignoredPath}`);
 }
 assert.ok(gitignore.includes("/public/snapshots/*"), ".gitignore 需要默认忽略未发布的 public snapshot");
@@ -167,6 +237,8 @@ assert.match(readme, /观察备注/, "README 需要说明观察列表研究备�
 assert.match(readme, /本地 API/, "README 需要说明本地 API 服务");
 assert.match(readme, /\/api\/review.*维护者|维护者.*\/api\/review/s, "README 需要把审核接口限定为维护者工作流");
 assert.match(packageJson, /validate:tabular/, "package.json 需要提供 tabular 导入示例校验命令");
+assert.match(packageJson, /validate:publication/, "package.json 需要提供公开快照发布预检命令");
+assert.match(packageJson, /review:snapshot/, "package.json 需要提供人工审核包生成命令");
 assert.match(packageJson, /"api": "node scripts\/serve-api\.mjs"/, "package.json 需要提供本地 API 启动命令");
 
 const main = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
@@ -187,7 +259,7 @@ const chainSidebar = await readFile(new URL("../src/components/ChainSidebar.jsx"
 const detailDrawer = await readFile(new URL("../src/components/DetailDrawer.jsx", import.meta.url), "utf8");
 const graphViewport = await readFile(new URL("../src/components/GraphViewport.jsx", import.meta.url), "utf8");
 assert.match(main, /viewMode/, "UI 需要保留视图切换状态");
-assert.match(main, /useState\("atlas"\)/, "UI 默认需要从产业全景开始");
+assert.equal(parseWorkspaceSearch("").viewMode, "atlas", "UI 默认需要从产业全景开始");
 assert.match(main, /IndustryExplorer/, "UI 需要挂载产业链发现首屏");
 assert.match(main, /mobileTab/, "UI 需要提供移动端视图切换状态");
 assert.match(main, /"priority", "tags", "thesis", "next_review_at"/, "观察列表 CSV 导出需要包含研究备注字段");
@@ -201,6 +273,7 @@ assert.match(industryExplorer, /AI 产业全景/, "产业链发现首屏需要�
 assert.match(industryExplorer, /上游/, "产业链发现首屏需要展示上游阶段");
 assert.match(industryExplorer, /核心环节/, "产业链发现首屏需要展示核心环节");
 assert.match(industryExplorer, /下游应用/, "产业链发现首屏需要展示下游阶段");
+assert.match(industryExplorer, /CoverageMatrix/, "产业链总览需要展示覆盖与发布就绪度");
 assert.match(chainSidebar, /产业链导航/, "UI 需要保留产业链导航入口");
 assert.doesNotMatch(detailDrawer, /人工校正|本地审核队列/, "普通用户详情不能暴露维护审核工具");
 assert.match(detailDrawer, /观察列表/, "详情面板需要提供观察列表入口");
@@ -208,6 +281,8 @@ assert.match(detailDrawer, /观察备注/, "详情面板需要提供观察备注
 assert.match(detailDrawer, /下次复核/, "观察列表需要支持下次复核日期");
 assert.match(detailDrawer, /证据时间线/, "详情面板需要提供证据时间线入口");
 assert.match(detailDrawer, /产业链路径对比/, "详情面板需要展示产业链路径对比");
+assert.match(detailDrawer, /数据质量提醒/, "详情面板需要展示实体级数据质量提醒");
+assert.match(detailDrawer, /evidence\.reviewed_at/, "证据卡需要展示审核时间");
 assert.doesNotMatch(detailDrawer, /相关 \{Math\.round|纯度/, "普通用户详情不能展示模糊关系分数");
 assert.match(detailDrawer, /sort\(\(a, b\).*publish_date/s, "证据时间线需要按发布日期排序");
 assert.match(detailDrawer, /onToggleWatchlist/, "公司详情需要支持加入或移出观察列表");
@@ -217,10 +292,13 @@ assert.match(viteConfig, /VITE_BASE_PATH/, "Vite 需要支持 GitHub Pages 子�
 assert.match(loadGraphData, /import\.meta\.env\.BASE_URL/, "public snapshot 路径需要跟随 Vite base");
 assert.match(indexHtml, /%BASE_URL%favicon\.svg/, "favicon 路径需要跟随 GitHub Pages base");
 assert.match(pagesWorkflow, /VITE_BASE_PATH: \/ai-chaingraph\//, "Pages workflow 需要使用仓库子路径构建");
+assert.match(pagesWorkflow, /validate:publication/, "Pages 发布前需要执行公开快照预检");
 assert.match(ciWorkflow, /validate:tabular/, "CI 需要校验 CSV/JSONL tabular 示例");
+assert.match(ciWorkflow, /validate:publication/, "CI 需要校验公开快照发布边界");
 assert.match(importTabular, /parseCsv/, "tabular adapter 需要支持 CSV");
 assert.match(importTabular, /jsonl/, "tabular adapter 需要支持 JSONL");
 assert.match(importTabular, /company_maps_to_industry_node/, "tabular adapter 需要生成公司映射边");
+assert.match(importTabular, /evidence_reviewed_at/, "tabular adapter 需要保留独立于发布状态的来源核验时间");
 assert.match(serveApi, /createApiServer/, "本地 API 需要导出 createApiServer 方便 smoke 测试");
 assert.match(serveApi, /\/api\/graph/, "本地 API 需要提供 /api/graph");
 assert.match(serveApi, /\/api\/search/, "本地 API 需要提供 /api/search");
@@ -248,6 +326,16 @@ assert.equal(duplicateEdge.source_ids.length, 2, "重复映射边需要引用全
 assert.equal(duplicateEdge.evidence_level, "L1", "重复映射边需要使用最强证据等级");
 assert.equal(duplicateEdge.review_status, "accepted", "全部已接受证据合并后仍应保持 accepted");
 assert.equal(duplicateCompany.source_ids.length, 2, "重复映射公司需要引用全部证据");
+
+const { stdout: snapshotImportOutput } = await execFileAsync(
+  process.execPath,
+  ["scripts/import-snapshot.mjs", "examples/fictional-ai-chain.snapshot.json"],
+  { cwd: repoRoot, maxBuffer: 1024 * 1024 },
+);
+const snapshotImportReport = JSON.parse(snapshotImportOutput);
+assert.equal(snapshotImportReport.review_records, 1, "snapshot 导入报告需要统计待审核公司映射");
+assert.equal(snapshotImportReport.accepted_records, 11, "待审核公司映射不能计入已接受记录");
+assert.equal(snapshotImportReport.total_records, 12, "snapshot 导入报告总数需要等于已接受与待审核记录之和");
 
 const { createApiServer } = await import("./serve-api.mjs");
 const { resolveReviewApiBase, submitReviewRecord } = await import("../src/data/reviewTransport.js");

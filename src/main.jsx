@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Database, GitBranch, ListFilter, Map, PanelRight } from "lucide-react";
 import { loadGraphData } from "./data/loadGraphData";
@@ -9,18 +9,23 @@ import { CompanyMapList } from "./components/CompanyMapList";
 import { GraphViewport } from "./components/GraphViewport";
 import { DetailDrawer } from "./components/DetailDrawer";
 import {
+  buildCoverageMatrix,
   buildFlow,
   buildIndustryAtlas,
   buildListRows,
   buildScopedData,
   exportDisclaimer,
   getCompanyMarket,
+  getDataStatus,
   getEntity,
   getMarketOptions,
   getPathSummary,
   searchItems,
 } from "./lib/graphViewModel";
+import { parseWorkspaceSearch, serializeWorkspaceSearch } from "./lib/workspaceState";
 import "./styles.css";
+
+const initialWorkspaceState = parseWorkspaceSearch(typeof window === "undefined" ? "" : window.location.search);
 
 function readStoredWatchlist() {
   try {
@@ -62,17 +67,21 @@ function toWatchlistCsv(records) {
 
 function App() {
   const [graphState, setGraphState] = useState({ data: null, error: null });
-  const [query, setQuery] = useState("");
-  const [activeId, setActiveId] = useState("overview");
-  const [viewMode, setViewMode] = useState("atlas");
-  const [mobileTab, setMobileTab] = useState("atlas");
-  const [onlyChain, setOnlyChain] = useState(null);
-  const [marketFilter, setMarketFilter] = useState("all");
+  const [query, setQuery] = useState(initialWorkspaceState.query);
+  const [activeId, setActiveId] = useState(initialWorkspaceState.activeId);
+  const [viewMode, setViewMode] = useState(initialWorkspaceState.viewMode);
+  const [mobileTab, setMobileTab] = useState(initialWorkspaceState.mobileTab);
+  const [onlyChain, setOnlyChain] = useState(initialWorkspaceState.onlyChain);
+  const [marketFilter, setMarketFilter] = useState(initialWorkspaceState.marketFilter);
   const [searchCollapsed, setSearchCollapsed] = useState(false);
   const [ack, setAck] = useState(() => localStorage.getItem("ai-chaingraph-disclaimer") === "ack");
   const [watchlistRecords, setWatchlistRecords] = useState(readStoredWatchlist);
   const [notice, setNotice] = useState("");
-  const isMobileLayout = useMediaQuery("(max-width: 760px)");
+  const searchOriginTabRef = useRef(null);
+  const chainPaneRef = useRef(null);
+  const centerPaneRef = useRef(null);
+  const detailPaneRef = useRef(null);
+  const isMobileLayout = useMediaQuery("(max-width: 900px)");
   const evidenceFilter = "all";
   const graphData = graphState.data;
 
@@ -95,12 +104,36 @@ function App() {
   }, [watchlistRecords]);
 
   useEffect(() => {
-    setNotice("");
-  }, [activeId]);
+    if (!notice) return undefined;
+    const timer = window.setTimeout(() => setNotice(""), 3200);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
 
   useEffect(() => {
     setSearchCollapsed(false);
   }, [query]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const next = parseWorkspaceSearch(window.location.search);
+      searchOriginTabRef.current = null;
+      setQuery(next.query);
+      setActiveId(next.activeId);
+      setViewMode(next.viewMode);
+      setMobileTab(next.mobileTab);
+      setOnlyChain(next.onlyChain);
+      setMarketFilter(next.marketFilter);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const search = serializeWorkspaceSearch({ query, activeId, viewMode, onlyChain, marketFilter });
+    const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextUrl !== currentUrl) window.history.replaceState(window.history.state, "", nextUrl);
+  }, [query, activeId, viewMode, onlyChain, marketFilter]);
 
   const scopedData = useMemo(() => graphData ? buildScopedData(graphData, onlyChain, marketFilter) : null, [graphData, onlyChain, marketFilter]);
   const flow = useMemo(
@@ -114,6 +147,44 @@ function App() {
   const pathSummary = graphData && active ? getPathSummary(scopedData || graphData, active, marketFilter) : "数据加载中";
   const marketOptions = useMemo(() => graphData ? getMarketOptions(graphData) : ["all"], [graphData]);
   const watchlistIds = useMemo(() => new Set(watchlistRecords.map((record) => record.company_id)), [watchlistRecords]);
+  const coverageMatrix = useMemo(
+    () => graphData ? buildCoverageMatrix(graphData, evidenceFilter, marketFilter) : null,
+    [graphData, evidenceFilter, marketFilter],
+  );
+  const dataStatus = useMemo(
+    () => graphData ? getDataStatus(graphData, graphData.review_queue || []) : null,
+    [graphData],
+  );
+
+  useEffect(() => {
+    if (!graphData) return;
+    const validChain = onlyChain && graphData.chains.some((chain) => chain.id === onlyChain);
+    const validEntity = getEntity(graphData, activeId);
+
+    if (viewMode === "graph" && !validChain) {
+      const firstChainId = graphData.chains[0]?.id || null;
+      setOnlyChain(firstChainId);
+      if (!validEntity || activeId === "overview") setActiveId(firstChainId || "overview");
+    } else {
+      if (onlyChain && !validChain) setOnlyChain(null);
+      if (!validEntity) setActiveId(validChain ? onlyChain : "overview");
+    }
+
+    if (!marketOptions.includes(marketFilter)) setMarketFilter("all");
+  }, [graphData, activeId, onlyChain, marketFilter, marketOptions, viewMode]);
+
+  useEffect(() => {
+    if (!isMobileLayout) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      const pane = mobileTab === "detail"
+        ? detailPaneRef.current
+        : mobileTab === "chain" ? chainPaneRef.current : centerPaneRef.current;
+      const content = pane?.querySelector(".chainSidebar, .detailDrawer, .companyMapList, .graphViewport, .industryExplorer");
+      if (pane) pane.scrollTop = 0;
+      if (content) content.scrollTop = 0;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isMobileLayout, mobileTab, viewMode, activeId, onlyChain]);
 
   function acknowledgeDisclaimer() {
     localStorage.setItem("ai-chaingraph-disclaimer", "ack");
@@ -121,6 +192,7 @@ function App() {
   }
 
   function resetWorkspace() {
+    searchOriginTabRef.current = null;
     setActiveId("overview");
     setOnlyChain(null);
     setQuery("");
@@ -131,7 +203,44 @@ function App() {
 
   function selectEntity(id) {
     setActiveId(id);
-    if (isMobileLayout) setMobileTab("detail");
+    if (isMobileLayout) {
+      searchOriginTabRef.current = null;
+      setMobileTab("detail");
+    }
+  }
+
+  function updateQuery(nextQuery) {
+    if (isMobileLayout && nextQuery && !query) {
+      searchOriginTabRef.current = mobileTab;
+      setMobileTab("detail");
+    }
+    if (isMobileLayout && !nextQuery && query) {
+      setMobileTab(searchOriginTabRef.current || mobileTab);
+      searchOriginTabRef.current = null;
+    }
+    setQuery(nextQuery);
+  }
+
+  async function copyCurrentView() {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(window.location.href);
+      } else {
+        const input = document.createElement("textarea");
+        input.value = window.location.href;
+        input.setAttribute("readonly", "");
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        const copied = document.execCommand("copy");
+        input.remove();
+        if (!copied) throw new Error("Copy command was rejected");
+      }
+      setNotice("已复制当前研究视图链接。");
+    } catch {
+      setNotice("复制失败，请从浏览器地址栏复制当前链接。");
+    }
   }
 
   function focusChain(chainId) {
@@ -222,7 +331,7 @@ function App() {
       {!ack && <DisclaimerModal onAccept={acknowledgeDisclaimer} />}
       <TopBar
         query={query}
-        onQueryChange={setQuery}
+        onQueryChange={updateQuery}
         viewMode={viewMode}
         onViewModeChange={(mode) => {
           if (mode === "graph") {
@@ -236,11 +345,15 @@ function App() {
         onMarketFilterChange={setMarketFilter}
         marketOptions={marketOptions}
         dataVersion={graphData.meta.data_version}
+        dataStatus={dataStatus}
+        onCopyLink={copyCurrentView}
         onReset={resetWorkspace}
       />
 
+      {notice && <p className="statusToast" role="status" aria-live="polite">{notice}</p>}
+
       <main className="workbench">
-        <div className={`mobilePane pane-chain ${mobileTab === "chain" ? "isMobileActive" : ""}`}>
+        <div ref={chainPaneRef} className={`mobilePane pane-chain ${mobileTab === "chain" ? "isMobileActive" : ""}`}>
           <ChainSidebar
             data={graphData}
             activeId={activeId}
@@ -251,12 +364,14 @@ function App() {
           />
         </div>
 
-        <section className={`centerPane mobilePane pane-stocks ${["atlas", "stocks", "graph"].includes(mobileTab) ? "isMobileActive" : ""}`}>
+        <section ref={centerPaneRef} className={`centerPane mobilePane pane-stocks ${["atlas", "stocks", "graph"].includes(mobileTab) ? "isMobileActive" : ""}`}>
           {viewMode === "atlas" ? (
             <IndustryExplorer
               atlas={industryAtlas}
               focusedChainId={onlyChain}
               dataVersion={graphData.meta.data_version}
+              datasetType={graphData.meta.dataset_type}
+              coverageMatrix={coverageMatrix}
               onFocusChain={focusChain}
               onSelectNode={selectEntity}
               onSelectCompany={selectEntity}
@@ -268,6 +383,7 @@ function App() {
               flow={flow}
               pathSummary={pathSummary}
               onSelect={selectEntity}
+              isMobile={isMobileLayout}
             />
           ) : (
             <CompanyMapList
@@ -281,7 +397,7 @@ function App() {
           )}
         </section>
 
-        <div className={`mobilePane pane-detail ${mobileTab === "detail" ? "isMobileActive" : ""}`}>
+        <div ref={detailPaneRef} className={`mobilePane pane-detail ${mobileTab === "detail" ? "isMobileActive" : ""}`}>
           <DetailDrawer
             data={graphData}
             active={active}
@@ -289,7 +405,7 @@ function App() {
             searchResults={searchResults}
             searchCollapsed={searchCollapsed}
             onToggleSearch={() => setSearchCollapsed(!searchCollapsed)}
-            onClearSearch={() => setQuery("")}
+            onClearSearch={() => updateQuery("")}
             onSelect={selectEntity}
             evidenceFilter={evidenceFilter}
             marketFilter={marketFilter}
@@ -299,34 +415,51 @@ function App() {
             onUpdateWatchlist={updateWatchlistRecord}
             onRemoveWatchlist={removeWatchlist}
             onExportWatchlist={exportWatchlist}
-            notice={notice}
           />
         </div>
       </main>
 
       <nav className="mobileTabs" aria-label="移动端视图">
-        <button className={mobileTab === "atlas" ? "isActive" : ""} onClick={() => { setViewMode("atlas"); setMobileTab("atlas"); }}><Map size={16} />产业链</button>
-        <button className={mobileTab === "stocks" ? "isActive" : ""} onClick={() => { setViewMode("list"); setMobileTab("stocks"); }}><ListFilter size={16} />股票池</button>
-        <button className={mobileTab === "graph" ? "isActive" : ""} onClick={() => showChainGraph()}><GitBranch size={16} />关系</button>
-        <button className={mobileTab === "detail" ? "isActive" : ""} onClick={() => { setViewMode("list"); setMobileTab("detail"); }}><PanelRight size={16} />详情</button>
+        <button aria-current={mobileTab === "atlas" ? "page" : undefined} className={mobileTab === "atlas" ? "isActive" : ""} onClick={() => { setViewMode("atlas"); setMobileTab("atlas"); }}><Map size={16} />产业链</button>
+        <button aria-current={mobileTab === "stocks" ? "page" : undefined} className={mobileTab === "stocks" ? "isActive" : ""} onClick={() => { setViewMode("list"); setMobileTab("stocks"); }}><ListFilter size={16} />公司</button>
+        <button aria-current={mobileTab === "graph" ? "page" : undefined} className={mobileTab === "graph" ? "isActive" : ""} onClick={() => showChainGraph()}><GitBranch size={16} />关系</button>
+        <button aria-current={mobileTab === "detail" ? "page" : undefined} className={mobileTab === "detail" ? "isActive" : ""} onClick={() => setMobileTab("detail")}><PanelRight size={16} />{active?.stock_code ? "公司详情" : active?.node_type === "overview" ? "总览详情" : "链路详情"}</button>
       </nav>
     </div>
   );
 }
 
 function DisclaimerModal({ onAccept }) {
+  const acceptButtonRef = useRef(null);
+
+  useEffect(() => {
+    const previousFocus = document.activeElement;
+    acceptButtonRef.current?.focus();
+    const keepFocusInside = (event) => {
+      if (event.key === "Tab") {
+        event.preventDefault();
+        acceptButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", keepFocusInside);
+    return () => {
+      document.removeEventListener("keydown", keepFocusInside);
+      previousFocus?.focus?.();
+    };
+  }, []);
+
   return (
     <div className="modalBackdrop">
-      <section className="disclaimerModal">
-        <h1>重要声明</h1>
-        <p>AI-ChainGraph 是信息组织与产业研究辅助工具，不是投资决策工具。</p>
+      <section className="disclaimerModal" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title" aria-describedby="disclaimer-description">
+        <h1 id="disclaimer-title">重要声明</h1>
+        <p id="disclaimer-description">AI-ChainGraph 是信息组织与产业研究辅助工具，不是投资决策工具。</p>
         <ul>
           <li>本工具不提供、不构成、不暗示任何形式的投资建议、买卖建议或交易策略。</li>
           <li>展示的上市公司、产业环节、关联关系，不代表对投资价值、股价走势或公司经营状况的判断。</li>
           <li>关系依据只说明事实来源类型，不代表公司质量、投资价值或未来表现。</li>
           <li>演示数据只用于本地原型验证。使用真实数据前请自行查证原始来源。</li>
         </ul>
-        <button className="primaryButton" onClick={onAccept}>已知晓并同意，进入地图</button>
+        <button ref={acceptButtonRef} className="primaryButton" onClick={onAccept}>已知晓并同意，进入地图</button>
       </section>
     </div>
   );

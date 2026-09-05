@@ -45,8 +45,10 @@ AI 产业全景
 - 上下游关系图：自动布局产业流向和公司位置，箭头表达关系方向。
 - 公司详情：通过产业链路径对比展示完整路径、可比公司、证据时间线和公开来源。
 - 搜索与市场筛选：支持产业环节、公司、代码、别名、证据文本以及 A股/美股筛选。
+- 可分享研究视图：链路、公司、市场、视图和搜索词会同步到 URL。
+- 数据发布就绪度：总览展示市场覆盖、证据等级、审核状态与缺口提醒，详情展示实体级质量问题。
 - 本地观察列表：观察备注只保存在浏览器，可导出 JSON/CSV。
-- 响应式工作台：桌面三栏；手机使用“产业链 / 股票池 / 关系 / 详情”底部导航。
+- 响应式工作台：宽屏三栏、常规桌面双栏；手机使用“产业链 / 公司 / 关系 / 详情”底部导航，并默认提供可读的关系路径。
 
 当前仓库仍使用**虚构 demo 数据**验证产品和数据模型，尚未完成真实 A股与美股全量覆盖。不要把 demo 公司、价格或证据当作真实市场信息。
 
@@ -104,7 +106,24 @@ VITE_CHAINGRAPH_API_BASE /api/graph
   -> src/data/demoGraph.json
 ```
 
-`public/snapshots/current.json` 是静态站点唯一跟踪的公开发布快照，当前与虚构 demo 保持一致。其他本地 snapshot 默认被 Git 忽略；未来真实数据也只会在通过来源与许可检查后替换这个发布文件。
+`public/snapshots/current.json` 是静态站点唯一跟踪的公开发布快照，当前由虚构 demo 生成，只包含可发布投影。其他本地 snapshot 默认被 Git 忽略；未来真实数据也只会在通过来源与许可检查后替换这个发布文件。
+
+公开真实快照前必须通过发布闸门。它只输出审核状态为 `accepted` 的公司映射，移除审核队列、导入记录和本地来源路径；真实数据还必须具备公开 HTTP(S) 来源、发布日期、核验时间和人工审核记录：
+
+```bash
+npm run publish:snapshot -- data/snapshots/current.json
+npm run publish:snapshot -- data/snapshots/current.json --write
+```
+
+第一条命令只做预检，第二条才会写入 `public/snapshots/current.json`。演示快照验证使用 `npm run validate:publication`，不能用 `--allow-demo` 绕过真实数据发布要求。
+
+AI 可以整理来源并使用 `agent:*` 标记核验过程，但不能代替发布签字。真实数据只有在来源记录使用明确的 `human:*` 审核人后才能通过发布闸门。维护者可先生成本地审核包，逐条打开原始来源检查：
+
+```bash
+npm run review:snapshot -- data/snapshots/current.json --write
+```
+
+审核包写入被 Git 忽略的 `data/review-packets/`，不会把个人审核记录带入公开仓库。
 
 启动本地 API：
 

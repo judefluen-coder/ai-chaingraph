@@ -43,8 +43,15 @@ const productFactSources = new Set(["official_site", "patent"]);
 
 export const dataTypeLabels = {
   demo: "演示数据",
-  local_real: "本地真实",
+  local_real: "真实快照",
   mixed: "混合数据",
+};
+
+export const dataSourceLabels = {
+  api: "API 数据",
+  public_snapshot: "公开快照",
+  demo: "内置演示",
+  local_snapshot: "本地快照",
 };
 
 export const reviewStatusLabels = {
@@ -514,6 +521,8 @@ export function getDataStatus(data, localReviewRecords = []) {
     (edge) => edge.edge_type === "company_maps_to_industry_node" && edge.review_status === "needs_review",
   ).length;
   const datasetType = data.meta.dataset_type || "demo";
+  const source = data.meta.source || (datasetType === "demo" ? "demo" : "local_snapshot");
+  const issueCount = staleCount + expiringCount + feedbackPendingCount + mappingReviewCount;
   const tone = staleCount > 0
     ? "danger"
     : expiringCount > 0 || feedbackPendingCount > 0 || mappingReviewCount > 0
@@ -522,7 +531,10 @@ export function getDataStatus(data, localReviewRecords = []) {
   return {
     datasetType,
     label: dataTypeLabels[datasetType] || datasetType,
+    source,
+    sourceLabel: dataSourceLabels[source] || source,
     tone,
+    issueCount,
     staleCount,
     expiringCount,
     feedbackPendingCount,
@@ -624,6 +636,7 @@ export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter =
       chain,
       companyCount: companyIds.size,
       mappingCount,
+      publishedCount: acceptedCount,
       marketCounts: {
         a_share: marketCompanyIds.a_share.size,
         us: marketCompanyIds.us.size,
@@ -648,6 +661,7 @@ export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter =
     totals: rowsWithAlerts.reduce((acc, row) => ({
       companyCount: acc.companyCount + row.companyCount,
       mappingCount: acc.mappingCount + row.mappingCount,
+      publishedCount: acc.publishedCount + row.publishedCount,
       reviewCount: acc.reviewCount + row.reviewCount,
       marketCounts: {
         a_share: acc.marketCounts.a_share + row.marketCounts.a_share,
@@ -662,6 +676,7 @@ export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter =
     }), {
       companyCount: 0,
       mappingCount: 0,
+      publishedCount: 0,
       reviewCount: 0,
       marketCounts: { a_share: 0, us: 0, unknown: 0 },
       evidenceCounts: { L1: 0, L2: 0, L3: 0 },

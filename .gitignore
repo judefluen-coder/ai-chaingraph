@@ -7,6 +7,7 @@ dist/
 /public/snapshots/*
 !/public/snapshots/current.json
 .playwright-cli/
+/output/
 .DS_Store
 *.log
 *.sqlite
