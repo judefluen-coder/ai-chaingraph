@@ -1,98 +1,127 @@
-import { CalendarClock, GitBranch, Link2, ListFilter, Map, Search, X } from "lucide-react";
-import { getMarketLabel } from "../lib/graphViewModel";
+import { useState } from "react";
+import { Database, GitFork, Github, Search, X } from "lucide-react";
+import { getMarketLabel } from "../lib/transmissionViewModel.js";
 
 export function TopBar({
   query,
   onQueryChange,
-  viewMode,
-  onViewModeChange,
+  searchResults,
+  onSelectSearchResult,
   marketFilter,
   onMarketFilterChange,
-  marketOptions,
   dataVersion,
   dataStatus,
-  onCopyLink,
   onReset,
+  locale,
+  onLocaleChange,
+  searchPlaceholder,
+  copy,
 }) {
-  const isDemo = dataStatus?.datasetType === "demo";
-  const statusTitle = [
-    `版本 ${dataVersion}`,
-    dataStatus?.staleCount ? `${dataStatus.staleCount} 条过期证据` : null,
-    dataStatus?.expiringCount ? `${dataStatus.expiringCount} 条即将过期` : null,
-    dataStatus?.mappingReviewCount ? `${dataStatus.mappingReviewCount} 条映射待审核` : null,
-    dataStatus?.feedbackPendingCount ? `${dataStatus.feedbackPendingCount} 条反馈待处理` : null,
-  ].filter(Boolean).join(" · ");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const showResults = searchOpen && query.trim();
+  const dataStateLabel = dataStatus === "ready" ? copy.dataReady : copy.dataBuilding;
 
   return (
-    <header className="topbar">
-      <button className="brandButton" onClick={onReset}>
-        <GitBranch size={19} />
-        <span>AI产业链研究地图</span>
-        <small>ChainGraph · 关系可追溯 · {isDemo ? "演示数据" : "公开数据"}</small>
+    <header className="txTopbar">
+      <button className="txBrand" type="button" onClick={onReset}>
+        <span className="txBrandMark"><GitFork size={18} strokeWidth={1.8} /></span>
+        <span>
+          <strong>{copy.brand}</strong>
+          <small>{copy.brandTagline}</small>
+        </span>
       </button>
 
-      <div className="searchBox">
-        <Search size={18} />
-        <input
-          aria-label="搜索产业链、环节、公司或代码"
-          value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="搜索产业链、环节、公司或代码"
-        />
-        {query && (
-          <button aria-label="清除搜索" onClick={() => onQueryChange("")}>
-            <X size={16} />
-          </button>
+      <div
+        className="txSearchArea"
+        role="search"
+        onFocus={() => setSearchOpen(true)}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setSearchOpen(false);
+        }}
+      >
+        <div className="txSearchBox">
+          <Search size={18} strokeWidth={1.8} />
+          <input
+            value={query}
+            onChange={(event) => {
+              onQueryChange(event.target.value);
+              setSearchOpen(true);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && searchResults.length === 1) onSelectSearchResult(searchResults[0]);
+              if (event.key === "Escape") setSearchOpen(false);
+            }}
+            placeholder={searchPlaceholder || copy.searchPlaceholder}
+            aria-label={copy.searchLabel}
+            autoComplete="off"
+          />
+          {query && (
+            <button type="button" aria-label={copy.clearSearch} title={copy.clearSearch} onClick={() => onQueryChange("")}>
+              <X size={16} strokeWidth={1.8} />
+            </button>
+          )}
+        </div>
+        {showResults && (
+          <div className="txSearchResults" role="listbox">
+            {searchResults.length === 0 ? (
+              <span className="txSearchEmpty">{copy.noSearchResults}</span>
+            ) : searchResults.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="option"
+                aria-selected="false"
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                }}
+                onClick={() => {
+                  onSelectSearchResult(item);
+                  setSearchOpen(false);
+                }}
+              >
+                <span>
+                  <strong>{item.primary}</strong>
+                  <small>{item.secondary}</small>
+                </span>
+                <em>{item.kind === "issuer" ? getMarketTag(item.secondary) : item.entity.entity_type}</em>
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
-      <nav className="toolbarGroup" aria-label="工作台筛选">
-        <div className="marketSwitch" aria-label="市场筛选">
-          {marketOptions.map((market) => (
+      <nav className="txTopbarTools" aria-label={copy.filters}>
+        <div className="txSegmented txMarketSwitch" aria-label={copy.marketFilter}>
+          {["all", "a_share", "us"].map((market) => (
             <button
               key={market}
+              type="button"
               className={marketFilter === market ? "isActive" : ""}
               aria-pressed={marketFilter === market}
               onClick={() => onMarketFilterChange(market)}
             >
-              {getMarketLabel(market)}
+              {getMarketLabel(market, locale)}
             </button>
           ))}
         </div>
-        <div className="viewSwitch" aria-label="视图切换">
-          <button
-            className={viewMode === "atlas" ? "isActive" : ""}
-            aria-pressed={viewMode === "atlas"}
-            onClick={() => onViewModeChange("atlas")}
-          >
-            <Map size={15} />产业链
-          </button>
-          <button
-            className={viewMode === "list" ? "isActive" : ""}
-            aria-pressed={viewMode === "list"}
-            onClick={() => onViewModeChange("list")}
-          >
-            <ListFilter size={15} />公司
-          </button>
-          <button
-            className={viewMode === "graph" ? "isActive" : ""}
-            aria-pressed={viewMode === "graph"}
-            onClick={() => onViewModeChange("graph")}
-          >
-            <GitBranch size={15} />关系
-          </button>
+        <div className="txSegmented txLanguageSwitch" aria-label={copy.language}>
+          <button type="button" className={locale === "zh" ? "isActive" : ""} aria-pressed={locale === "zh"} onClick={() => onLocaleChange("zh")}>中</button>
+          <button type="button" className={locale === "en" ? "isActive" : ""} aria-pressed={locale === "en"} onClick={() => onLocaleChange("en")}>EN</button>
         </div>
-        <span className={`dataPill status-${dataStatus?.tone || "muted"}`} title={statusTitle}>
-          <CalendarClock size={14} />
-          <span className="dataPillCopy">
-            <strong>{dataStatus?.label || "数据状态"} · {dataStatus?.sourceLabel || "来源待确认"}</strong>
-            <small>{dataVersion}{dataStatus?.issueCount ? ` · ${dataStatus.issueCount} 项待核验` : " · 已通过当前检查"}</small>
-          </span>
+        <a className="txIconLink" href="https://github.com/judefluen-coder/ai-chaingraph" target="_blank" rel="noreferrer" aria-label={copy.github} title={copy.github}>
+          <Github size={18} strokeWidth={1.8} />
+        </a>
+        <span className="txDataState" title={`${dataStateLabel} · ${dataVersion}`}>
+          <Database size={15} strokeWidth={1.8} />
+          <span>{dataStateLabel}</span>
         </span>
-        <button className="shareLinkButton" aria-label="复制当前研究视图链接" title="复制当前研究视图链接" onClick={onCopyLink}>
-          <Link2 size={16} />
-        </button>
       </nav>
     </header>
   );
+}
+
+function getMarketTag(value) {
+  if (/\.(SH|SZ|BJ)\b/.test(value)) return "A";
+  if (value) return "US";
+  return "";
 }

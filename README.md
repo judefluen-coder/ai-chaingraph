@@ -1,218 +1,183 @@
-# AI产业链研究地图 / AI-ChainGraph
+# AI-ChainGraph
 
+> 把“产业链 -> 产业要素 -> 上市公司 -> 原始证据”连成一张可以向上追溯、向下展开的 AI 产业传导知识图谱。
+
+[![在线体验](https://img.shields.io/badge/在线体验-chatgpt.site-2563eb)](https://ai-chaingraph.judefluen.chatgpt.site/)
+[![Version](https://img.shields.io/badge/version-1.1.0-0f766e)](https://github.com/judefluen-coder/ai-chaingraph)
 [![CI](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/ci.yml/badge.svg)](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/ci.yml)
 [![Code License: MIT](https://img.shields.io/badge/code-MIT-2ea44f.svg)](LICENSE)
 [![Data License: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-2ea44f.svg)](DATA_LICENSE.md)
 
-[English](README.en.md) | 简体中文
+[在线体验](https://ai-chaingraph.judefluen.chatgpt.site/) · [GitHub Pages](https://judefluen-coder.github.io/ai-chaingraph/) · [English](README.en.md) · 简体中文
 
-从产业链出发，沿上游、核心环节和下游应用发现 A股与美股公司，并追溯每条关系的公开依据。
+AI-ChainGraph 不是一张“AI 概念股名单”。它从产业依赖关系出发，把材料、芯片、算力基础设施、模型软件、终端和行业应用连接起来，再把 A 股与美股公司放回它们实际参与的产业位置，并保留每条公司关系背后的公开来源。
 
-Start from an AI industry chain, follow the upstream-core-downstream path, discover public companies, and trace every relationship back to public evidence.
+> 本项目用于公开信息组织与产业研究，不提供投资建议、买卖信号、目标价、收益预测或交易策略。
 
-> AI-ChainGraph 是信息组织与产业研究辅助工具，不提供、不构成、不暗示投资建议、买卖建议、收益预测或交易策略。
+![AI-ChainGraph AI 产业传导全景](docs/assets/ai-chaingraph-v1.1-overview.png)
 
-![AI产业链研究地图桌面首屏](docs/assets/ai-chaingraph-desktop.png)
+## 它能解决什么问题
 
-## 为什么做
+研究 AI 产业时，信息通常散落在年报、公告、产品文档和行业资料中。股票软件能告诉你“有哪些概念股”，但很难回答：
 
-传统股票工具通常要求用户先知道公司名称，再搜索它属于什么概念。AI-ChainGraph 把发现顺序反过来：
+- 一家公司究竟位于哪条 AI 产业链、哪个具体环节？
+- 一个产业要素的上游输入、下游去向和跨链依赖是什么？
+- 从 GPU、服务器到数据中心、模型和应用，影响是如何传导的？
+- 某条公司映射来自官方披露，还是仅仅属于宽口径关联？
+- 结论对应哪份公告或监管文件，能否回到原文复核？
 
-```text
-AI 产业全景
-  -> 选择产业链
-  -> 查看上游 / 核心环节 / 下游应用
-  -> 发现 A股与美股公司
-  -> 查看公司路径、关系依据、来源与同行
+AI-ChainGraph 把这些问题放在同一张可交互图谱里回答。
+
+## 你可以用它做什么
+
+| 研究任务 | AI-ChainGraph 提供的能力 |
+| --- | --- |
+| 从产业寻找公司 | 从 6 个能力域、12 条产业链和 111 个产业环节逐层进入，查看对应 A 股与美股公司 |
+| 从公司反查产业位置 | 搜索公司或股票代码，查看公司横跨的产业链、产品、部件、服务和应用位置 |
+| 追踪上下游传导 | 从任意节点向上游、下游或双向展开 1、3、5 跳事实关系 |
+| 比较产业路径 | 把任意实体设为路径起点，寻找它与另一个产业要素或公司之间的最短路径 |
+| 核验公司关系 | 区分 L1 官方披露、L2 行业资料和宽口径映射，并打开对应原始来源 |
+| 做条件推演 | 在事实图谱之上叠加需求、供给、价格、产能、政策或技术变化，观察可能的传导方向 |
+| 跨市场与双语研究 | 支持全部市场、A 股、美股筛选，以及中英文界面与搜索 |
+
+## 两条典型研究路径
+
+```mermaid
+flowchart LR
+    A["产业全景"] --> B["选择产业链"]
+    B --> C["选择产品、部件或服务"]
+    C --> D["查看上下游与跨链关系"]
+    D --> E["发现相关上市公司"]
+    E --> F["核验声明与原始来源"]
+
+    G["搜索公司或股票代码"] --> H["查看公司产业位置"]
+    H --> D
 ```
 
-它回答的是“这家公司在产业链哪里、为什么相关、关系从哪里来”，而不是“应该买哪只股票”。
+## 真实界面
 
-## 产品原则
+### 产业链拆解
 
-- **产业链优先**：默认入口是产业全景，公司搜索只是快捷方式。
-- **关系优先于指标**：不展示相关度百分比、纯度分、潜力分、目标价或推荐评级。
-- **发布即消费**：访问者只看到维护者正式发布的关系，不需要审核、校正或确认数据。
-- **来源可追溯**：公司关系保留事实说明、来源类型、原始链接和最后核验日期。
-- **公开且免费**：软件使用 MIT，项目原创公开数据使用 CC BY 4.0。
-- **面向全球**：目标覆盖 A股与美股，canonical schema 已支持中英文字段；完整双语界面是 v1.0 发布门槛。
+以“AI 芯片与 IP”为例，图谱将 EDA、处理器 IP、模拟芯片、GPU、ASIC、边缘芯片等要素放入同一条有方向的事实关系图，并显示每个要素对应的公司覆盖。
 
-## 当前体验
+![AI 芯片与 IP 产业链](docs/assets/ai-chaingraph-v1.1-chain.png)
 
-- 产业全景首屏：按算力硬件、光通信、PCB/材料、电力与液冷进入链路。
-- 三阶段路径：在同一视图中查看上游、核心环节、下游应用和对应公司。
-- 公司目录：展示公司、产业链位置、关系依据、事实说明和最后核验日期。
-- 上下游关系图：自动布局产业流向和公司位置，箭头表达关系方向。
-- 公司详情：通过产业链路径对比展示完整路径、可比公司、证据时间线和公开来源。
-- 搜索与市场筛选：支持产业环节、公司、代码、别名、证据文本以及 A股/美股筛选。
-- 可分享研究视图：链路、公司、市场、视图和搜索词会同步到 URL。
-- 数据发布就绪度：总览展示市场覆盖、证据等级、审核状态与缺口提醒，详情展示实体级质量问题。
-- 本地观察列表：观察备注只保存在浏览器，可导出 JSON/CSV。
-- 响应式工作台：宽屏三栏、常规桌面双栏；手机使用“产业链 / 公司 / 关系 / 详情”底部导航，并默认提供可读的关系路径。
+### 公司位置与逐边证据
 
-当前仓库仍使用**虚构 demo 数据**验证产品和数据模型，尚未完成真实 A股与美股全量覆盖。不要把 demo 公司、价格或证据当作真实市场信息。
+进入公司后，可以看到它参与的多个产业位置；选择其中一条关系，可以查看关系类型、证据等级、事实摘要、发布日期以及原始文件链接。
 
-## 关系依据
+![超威半导体产业位置与逐边证据](docs/assets/ai-chaingraph-v1.1-evidence.png)
 
-面向用户的关系不依赖模糊分数，而使用三类可解释依据：
+## v1.1 数据规模
 
-| 关系依据 | 含义 | 典型来源 |
-| --- | --- | --- |
-| 官方披露 | 公司直接说明产品、业务、客户或供应关系 | 年报、公告、交易所问答 |
-| 产品事实 | 官方产品资料能够确认产品能力和应用位置 | 公司官网、产品手册、专利 |
-| 产业推导 | 根据公开产业结构连接上下游环节 | 行业资料、多来源交叉验证 |
+当前公开快照更新时间为 **2026-07-18**，覆盖 A 股与美股上市公司。
 
-具名供应商或客户关系只有在公开来源明确点名双方时才发布。产业常识可以连接产业节点，但不能被包装成未经证实的公司供应关系。
+| 数据对象 | 数量 | 说明 |
+| --- | ---: | --- |
+| 能力域 | 6 | 芯片、材料、算力、云、软件、终端与应用等上层分组 |
+| 产业链 | 12 | 从半导体制造到 AI 行业应用 |
+| 产业环节 | 111 | 每条产业链中的细分 segment |
+| 上市公司 / 证券 | 4,537 | 已标准化的发行人与证券实体 |
+| 公司产业映射 | 6,603 | 公司到产品、部件、服务、设备、材料等具体要素的关系 |
+| 产业依赖关系 | 173 | `input_to`、`component_of`、`enables`、`used_in` 等有方向关系 |
+| 证据声明 | 6,621 | 从公开文件中提取并关联到图谱关系的事实声明 |
+| 公开来源 | 4,616 | 巨潮资讯、SEC、交易所、公司官网及公开产品资料 |
 
-`L1 / L2 / L3` 保留为维护者的数据来源分级：
-
-- `L1`：公司或监管机构直接披露，可直接复核。
-- `L2`：产品事实或多来源交叉验证，保留推导边界。
-- `L3`：待维护者补证的公开线索，不进入访问者看到的正式图谱。
-
-## 目标覆盖范围
-
-- A股：上交所、深交所、北交所正常上市普通股。
-- 美股：NASDAQ、NYSE、AMEX 普通股与主要 ADR。
-- 首版不包含：OTC、ETF、基金、SPAC、已退市证券。
-- 产业范围：AI 基础设施、芯片与算力、服务器与存储、光通信、PCB/材料、电力与液冷、模型与软件、终端与行业应用等主要链路。
-- 更新节奏：每周生成数据更新 PR，由维护者合并后发布。
-
-这是 v1.0 的覆盖目标，不是当前 demo 的完成度声明。
-
-## 本地运行
-
-```bash
-npm install
-npm run dev
-```
-
-Vite 会输出本地地址，通常是 `http://127.0.0.1:5173/`。提交前运行：
-
-```bash
-npm run smoke
-npm run validate:example
-npm run validate:tabular
-npm run build
-```
-
-## 数据读取顺序
-
-前端保持本地优先，不依赖付费服务：
-
-```text
-VITE_CHAINGRAPH_API_BASE /api/graph
-  -> /snapshots/current.json
-  -> src/data/demoGraph.json
-```
-
-`public/snapshots/current.json` 是静态站点唯一跟踪的公开发布快照，当前由虚构 demo 生成，只包含可发布投影。其他本地 snapshot 默认被 Git 忽略；未来真实数据也只会在通过来源与许可检查后替换这个发布文件。
-
-公开真实快照前必须通过发布闸门。它只输出审核状态为 `accepted` 的公司映射，移除审核队列、导入记录和本地来源路径；真实数据还必须具备公开 HTTP(S) 来源、发布日期、核验时间和人工审核记录：
-
-```bash
-npm run publish:snapshot -- data/snapshots/current.json
-npm run publish:snapshot -- data/snapshots/current.json --write
-```
-
-第一条命令只做预检，第二条才会写入 `public/snapshots/current.json`。演示快照验证使用 `npm run validate:publication`，不能用 `--allow-demo` 绕过真实数据发布要求。
-
-AI 可以整理来源并使用 `agent:*` 标记核验过程，但不能代替发布签字。真实数据只有在来源记录使用明确的 `human:*` 审核人后才能通过发布闸门。维护者可先生成本地审核包，逐条打开原始来源检查：
-
-```bash
-npm run review:snapshot -- data/snapshots/current.json --write
-```
-
-审核包写入被 Git 忽略的 `data/review-packets/`，不会把个人审核记录带入公开仓库。
-
-启动本地 API：
-
-```bash
-npm run api
-```
-
-只读研究接口包括：
-
-- `GET /api/graph`
-- `GET /api/search?q=光模块`
-- `GET /api/node/:id`
-
-`/api/review` 是维护者本地数据工作流的兼容接口，不在访问者前端中出现。
-
-## 数据导入
-
-校验 canonical snapshot：
-
-```bash
-npm run import:snapshot -- examples/fictional-ai-chain.snapshot.json
-```
-
-CSV/JSONL 表格每行表示“公司 -> 产业节点 -> 证据”的一条映射：
-
-```bash
-npm run validate:tabular
-npm run import:tabular -- examples/fictional-ai-mappings.csv --print-snapshot
-```
-
-导入字段支持产业阶段 `stage`、中英文字段、关系依据 `relation_basis`、事实说明 `relation_summary` 和最后核验时间 `last_verified_at`。同一关系的多条证据会合并并保留全部来源。
-
-本地写入产物位于被 Git 忽略的 `data/snapshots/current.json` 和 `data/import-reports/*.json`。公开发布的数据应经过来源许可检查后，通过独立数据 PR 合并。
-
-## GitHub Pages
-
-仓库包含 `.github/workflows/pages.yml`。仓库公开并在 Settings -> Pages 中选择 GitHub Actions 后，推送到 `main` 会构建静态预览。
+公司可能同时出现在多条产业链和多个产业要素中，因此各链显示的公司数不能直接相加为唯一公司数。
 
 ## 项目结构
 
-```text
-src/components/          产业全景、公司目录、关系图和详情组件
-src/lib/graphViewModel.js 公开图谱的筛选、关系解释和自动布局
-src/data/demoGraph.json  虚构 demo canonical snapshot
-schemas/                 JSON Schema 与 SQLite schema
-scripts/                 snapshot/CSV/JSONL 导入、API 和 smoke test
-examples/                虚构导入示例
-docs/assets/             README 截图
+```mermaid
+flowchart LR
+    A["巨潮资讯与交易所公告"] --> D["source_documents"]
+    B["SEC 监管文件"] --> D
+    C["公司官网与公开产品资料"] --> D
+    D --> E["claims 证据声明"]
+    E --> F["relations 类型化关系"]
+    G["entities 公司与产业实体"] --> F
+    F --> H["传导图算法"]
+    H --> I["全景、产业链、上下游与路径视图"]
+    I --> J["React + React Flow 交互界面"]
 ```
 
-## 贡献数据
+核心数据契约由四部分组成：
 
-欢迎贡献新的产业节点、公司映射、公开来源、双语文案和数据管道。提交关系时至少需要：
+- `entities`：能力域、产业链、产业环节、产品、部件、材料、设备、服务、公司和证券。
+- `relations`：产业依赖、公司产业位置、证券发行关系，以及关系对应的 `claim_ids`。
+- `claims`：可核验的事实摘录及其来源文档 ID。
+- `source_documents`：来源标题、发布日期、URL、语言和关联公司。
 
-- 明确的产业链与上游/核心/下游位置。
-- 可复核的公开来源 URL、标题、发布日期和简短事实摘要。
-- `official_disclosure`、`product_fact` 或 `industry_inference` 之一。
-- 公司证券代码、交易所与稳定 ID。
-- 不复制受版权限制的长篇原文，不提交付费数据源结果或个人账户数据。
+公开站点直接读取 [`public/snapshots/transmission-v1.1.json`](public/snapshots/transmission-v1.1.json)，不依赖付费 API 或登录账户。
 
-开发与数据规范见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+## 技术实现
 
-### 仓库边界与提交安全
+- **React 18 + Vite**：单页应用与静态部署。
+- **React Flow**：可缩放、可交互的关系图。
+- **Dagre**：产业全景、链路和路径的自动布局。
+- **图遍历与最短路径**：支持上游、下游、多跳展开和任意两点路径查询。
+- **双语视图模型**：同一份图谱数据生成中英文界面。
+- **静态公开快照**：GitHub Pages 与 OpenAI Sites 使用同一份 v1.1 数据。
+
+主要目录：
+
+```text
+src/main.jsx                         应用状态、搜索、路径与条件传导入口
+src/lib/transmissionGraph.js         图遍历、最短路径和条件影响计算
+src/lib/transmissionViewModel.js     数据索引、筛选、布局与界面视图模型
+src/components/                      导航、图谱画布和证据详情面板
+public/snapshots/transmission-v1.1.json 公开 v1.1 图谱快照
+scripts/validate-public-snapshot.mjs 发布快照完整性与引用校验
+scripts/build-sites.mjs              OpenAI Sites 静态部署打包
+docs/assets/                         README 项目截图
+```
+
+## 本地运行
+
+需要 Node.js `22.13+`。
 
 ```bash
-pwd
-git rev-parse --show-toplevel
-git remote -v
-git status --short --branch -- .
-git ls-files --cached -- data feedbacks logs secrets '*.sqlite' '*.db'
-git ls-files --cached -- public/snapshots
+git clone https://github.com/judefluen-coder/ai-chaingraph.git
+cd ai-chaingraph
+npm ci
+npm run validate:snapshot
+npm run dev
 ```
 
-第一条命令应无输出；第二条只能输出 `public/snapshots/current.json`。抓取缓存、密钥、个人研究笔记、商业数据源结果和本地数据库不得提交。
+生产构建：
 
-## 路线图
+```bash
+npm run build
+```
 
-- **v0.3 产品基础**：产业链优先首屏、三阶段路径、可解释关系、响应式图谱。
-- **v0.4 双语体验**：中英文切换、双语搜索与缺失翻译检查。
-- **v0.5 公开数据管道**：免费公开来源适配器、实体去重、每周自动数据 PR。
-- **v0.6 覆盖扩展**：按产业链逐批完成真实 A股和美股公司映射。
-- **v1.0**：主要 AI 产业链、目标市场、双语界面和每周更新流程达到公开发布标准。
+Vite 默认会在 `http://127.0.0.1:5173/` 启动开发服务器。推送到 `main` 后，GitHub Actions 会校验完整快照并自动更新 GitHub Pages。
+
+## 数据应该怎样理解
+
+- **L1 官方披露**：公司公告、监管文件或公司正式资料直接支持这条关系。
+- **L2 行业资料**：公开行业资料支持产业要素之间的结构性关系。
+- **具体要素**：证据能够定位到产品、部件、材料、设备或服务层级。
+- **宽口径映射**：来源支持公司与较宽产业范围相关，但不足以得出更具体的产品结论。
+- **条件传导**：仅用于研究假设，不会与已经核验的事实关系混在一起。
+
+覆盖广度不等于结论强度。使用任何公司映射前，都应查看证据等级、摘要和原始来源。
+
+## 贡献
+
+欢迎改进产业本体、实体归一化、关系证据、双语体验、图布局与数据质量校验。提交前请运行：
+
+```bash
+npm run validate:snapshot
+npm run build
+```
+
+数据贡献不得包含付费数据库导出、受限原文、个人账户数据、凭证或未经许可的长篇内容。详细规则见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## License
 
 - 软件代码：MIT，见 [LICENSE](LICENSE)。
-- 项目原创公开数据：CC BY 4.0，见 [DATA_LICENSE.md](DATA_LICENSE.md)。
-- 外部来源内容仍受原权利人的许可条款约束。
+- 项目原创图谱结构与公开数据：CC BY 4.0，见 [DATA_LICENSE.md](DATA_LICENSE.md)。
+- 外部来源文件仍受其原权利人的许可条款约束。
 
 ## 免责声明
 
-AI-ChainGraph 是信息组织与产业研究辅助工具，不是投资决策工具。展示公司与产业环节的关系，只说明公开资料支持该关系，不代表对公司价值、经营质量、股价走势或未来收益的判断。请始终回到原始来源独立核验。
+AI-ChainGraph 是信息组织与产业研究辅助工具，不是投资决策工具。图谱中出现某家公司，只表示当前公开数据将它连接到某个产业要素，不代表对公司价值、经营质量、股价走势或未来收益的判断。请始终回到原始来源独立核验。

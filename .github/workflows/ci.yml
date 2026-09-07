@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  smoke-and-build:
-    name: Smoke test and build
+  validate-and-build:
+    name: Validate v1.1 snapshot and build
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -31,17 +31,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate demo data and boundaries
-        run: npm run smoke
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
 
-      - name: Validate public import example
-        run: npm run validate:example
-
-      - name: Validate tabular import examples
-        run: npm run validate:tabular
-
-      - name: Validate public snapshot release boundary
-        run: npm run validate:publication
+      - name: Validate public transmission snapshot
+        run: npm run validate:snapshot
 
       - name: Build frontend
         run: npm run build

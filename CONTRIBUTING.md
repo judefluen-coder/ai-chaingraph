@@ -1,90 +1,78 @@
 # Contributing to AI-ChainGraph
 
-感谢你愿意参与 AI-ChainGraph。这个项目的目标是做一个清晰、可复核、面向全球投资者的 AI 产业链研究地图。贡献时请优先保护来源合规、关系准确和普通投资者的可读性。
+感谢你愿意参与 AI-ChainGraph。这个项目希望把 AI 产业依赖、上市公司位置和公开证据组织成一张可搜索、可遍历、可复核的知识图谱。
 
 ## 开发环境
 
+需要 Node.js `22.13+`。
+
 ```bash
-npm install
+npm ci
+npm run validate:snapshot
 npm run dev
 ```
 
-提交前请至少运行：
+提交前必须运行：
 
 ```bash
-npm run smoke
-npm run validate:example
-npm run validate:tabular
+npm run validate:snapshot
 npm run build
 ```
 
 ## 可以贡献什么
 
-- 前端体验：更清晰的产业链导航、公司映射列表、详情解释和响应式布局。
-- 数据模型：schema、导入校验、关系依据、实体去重和每周发布流程。
-- 公开数据：欢迎提交有公开来源的真实公司关系和产业节点；不得提交付费数据源结果、受限原文或个人账户数据。
-- 示例数据：`examples/` 与 demo fixture 必须保持虚构，避免测试内容被误认为真实市场信息。
-- 文档：README、路线图、截图、示例 snapshot、使用指南和免责声明。
-- 测试：demo 完整性、schema 边界、导入脚本和核心交互 smoke test。
+- 产业本体：能力域、产业链、环节和产品、部件、材料、设备、服务等类型化实体。
+- 关系模型：更准确的上下游方向、跨链依赖、关系类型和路径表达。
+- 公司映射：A 股与美股公司到具体产业要素的可核验关系。
+- 公开证据：监管文件、交易所公告、公司正式资料和公开行业来源。
+- 前端体验：搜索、图遍历、路径查询、证据详情、双语和响应式布局。
+- 数据质量：实体去重、引用完整性、来源时效和发布快照校验。
 
-## 提 Issue 和 PR
+## 公开数据契约
 
-- Bug 请使用 `Bug report` 模板，并提供最短复现步骤。
-- 数据模型、schema、导入或证据等级建议请使用 `Data or schema request` 模板。
-- 产品体验建议请使用 `Feature request` 模板，并说明它帮助用户理解什么问题。
-- PR 请填写 checklist，尤其是验证命令和数据安全边界。
+正式站点读取 `public/snapshots/transmission-v1.1.json`。修改快照时必须保持：
 
-## 数据安全边界
+- `meta.contract_version` 为当前支持的数据契约版本。
+- `entities`、`relations`、`claims`、`source_documents` 的 ID 唯一。
+- 每条关系的 `from_id` 和 `to_id` 都指向现有实体。
+- 每个 `claim_id` 都能找到声明，每条声明都能找到来源文档。
+- 公开来源使用 HTTPS URL，不提交本地文件路径或登录后链接。
+- `meta.counts` 与快照中的实际记录数一致。
 
-公开仓库可以包含代码、schema、脚本、文档、虚构示例，以及经过来源许可检查的结构化公司与产业关系。以下内容不要提交：
+## 关系与证据规则
 
-- `data/`、`feedbacks/`、`logs/`、`secrets/`，以及 `public/snapshots/` 中除正式发布的 `current.json` 之外的文件
-- SQLite/DB 文件、抓取缓存、第三方商业数据源结果
-- 真实研报原文、公告全文或其他受版权限制的长篇摘录
-- 未脱敏的个人研究记录和人工校正队列
+- 公司关系应尽可能映射到具体产品、部件、材料、设备或服务。
+- 只有宽泛业务依据时，应明确标记为宽口径映射，不夸大成具体产品关系。
+- L1 用于公司或监管机构直接披露；L2 用于公开行业资料支持的结构性依赖。
+- 条件传导是研究假设，不能替代事实边，也不能被表述成确定性结果。
+- 摘要只陈述来源支持的事实，不使用“高潜力”“确定受益”“目标价”等投资判断。
+- 不复制公告或报告全文，只保存用于复核的短摘录和原始链接。
 
-提交前可以用以下命令确认没有误跟踪本地数据：
+## 安全与许可边界
 
-```bash
-git ls-files --cached -- data feedbacks logs secrets '*.sqlite' '*.db'
-git ls-files --cached -- public/snapshots
-```
+不要提交：
 
-第一条命令期望无输出；第二条只能输出 `public/snapshots/current.json`。
+- 付费数据库导出、商业研报全文或受限抓取结果。
+- API 密钥、账户凭证、Cookie、个人交易记录或私有研究笔记。
+- SQLite/DB 文件、抓取缓存、日志和本地临时数据。
+- 未经许可的长篇原文或无法公开复核的关系结论。
 
-## Demo 数据规则
-
-- 公司、证据、行情字段必须是虚构或明确脱敏的演示内容。
-- A股和美股 demo 都可以保留，但不能暗示真实买卖建议。
-- 证据摘要应展示产品能力，不应复制真实受限内容。
-- L3 线索只能用于维护者补证，不能进入访问者看到的正式图谱。
-- 公开导入示例放在 `examples/`，snapshot 示例应能通过 `npm run import:snapshot -- examples/fictional-ai-chain.snapshot.json`，CSV/JSONL 示例应能通过 `npm run validate:tabular`。
-- 同一公司和产业节点的多条证据可以拆成多行导入；导入器会合并映射边并保留全部证据来源。
-
-## 公开关系规则
-
-- 每个产业节点必须声明 `upstream`、`core` 或 `downstream` 阶段。
-- 每条公司关系必须提供 `relation_basis`、`relation_summary`、`last_verified_at` 和至少一个公开来源。
-- `relation_basis` 只能是 `official_disclosure`、`product_fact` 或 `industry_inference`。
-- 具名客户、供应商关系必须由公开来源明确点名双方，不能只靠产业常识推断。
-- 摘要只陈述来源支持的事实，不使用“高潜力”“受益最大”“纯度高”等投资判断。
-- 已发布数据使用 CC BY 4.0；外部来源链接及引用仍遵守原权利人的许可条款。
-- `public/snapshots/current.json` 是面向访问者的正式发布文件，修改它必须与 canonical 数据变更同 PR 并通过 smoke test。
+外部来源仍受原权利人的许可条款约束。项目原创图谱结构、分类与标准化记录适用 [CC BY 4.0](DATA_LICENSE.md)，软件代码适用 [MIT](LICENSE)。
 
 ## Pull Request 检查清单
 
-- [ ] 我已运行 `npm run smoke`。
-- [ ] 我已运行 `npm run validate:example`。
-- [ ] 我已运行 `npm run validate:tabular`。
+- [ ] 我已运行 `npm run validate:snapshot`。
 - [ ] 我已运行 `npm run build`。
-- [ ] 我没有提交商业数据源结果、受限原文、凭证或本地私有记录。
-- [ ] 真实公司关系包含公开来源、事实摘要、关系依据和核验日期。
-- [ ] 如果改动 UI，我已检查桌面、平板和手机主要布局。
-- [ ] 如果改动数据 schema，我已同步更新 demo、导入脚本或文档说明。
+- [ ] 新增关系的实体、声明和来源引用完整。
+- [ ] 公司映射没有把宽泛业务描述夸大为具体产品事实。
+- [ ] 我没有提交商业数据、受限原文、凭证或个人信息。
+- [ ] UI 改动已检查桌面和手机布局。
+- [ ] 中英文文案或字段在适用位置保持一致。
 
 ## 产品原则
 
-- 默认从产业链发现公司，搜索只是快捷方式。
-- 先展示关系事实、来源和时效，不展示模糊量化分数。
-- 不做买卖建议，不暗示收益预期。
-- 让普通投资者能读懂，让研究者能复核。
+- 从产业事实发现公司，而不是从股票推荐反推故事。
+- 关系方向、证据等级和原始来源优先于模糊相关度分数。
+- 事实图谱与条件推演明确分层。
+- 覆盖广度不等于结论强度，所有关键结论都应可回到原始来源。
+- 本项目不提供投资建议。

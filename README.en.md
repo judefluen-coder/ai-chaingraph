@@ -1,155 +1,162 @@
 # AI-ChainGraph
 
+> An evidence-traceable AI industry transmission graph connecting industry chains, typed elements, listed companies, and original public sources.
+
+[![Live](https://img.shields.io/badge/live-chatgpt.site-2563eb)](https://ai-chaingraph.judefluen.chatgpt.site/)
+[![Version](https://img.shields.io/badge/version-1.1.0-0f766e)](https://github.com/judefluen-coder/ai-chaingraph)
 [![CI](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/ci.yml/badge.svg)](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/ci.yml)
 [![Code License: MIT](https://img.shields.io/badge/code-MIT-2ea44f.svg)](LICENSE)
 [![Data License: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-2ea44f.svg)](DATA_LICENSE.md)
 
-English | [简体中文](README.md)
+[Live app](https://ai-chaingraph.judefluen.chatgpt.site/) · [GitHub Pages](https://judefluen-coder.github.io/ai-chaingraph/) · English · [简体中文](README.md)
 
-An evidence-traceable AI industry-chain research map for discovering A-share and US-listed companies from the industry chain, not from a stock search box.
+AI-ChainGraph is not another list of "AI concept stocks." It models directed dependencies from materials and semiconductors through compute infrastructure, models, software, devices, and applications. It then places A-share and US-listed companies back into the industry elements they participate in, with public evidence attached to company mappings.
 
-> AI-ChainGraph organizes public information for industry research. It does not provide investment advice, buy/sell signals, price targets, return forecasts, or trading strategies.
+> This project organizes public information for industry research. It does not provide investment advice, buy/sell signals, price targets, return forecasts, or trading strategies.
 
-![AI-ChainGraph desktop overview](docs/assets/ai-chaingraph-desktop.png)
+![AI-ChainGraph industry transmission overview](docs/assets/ai-chaingraph-v1.1-overview.png)
 
-## Discovery Model
+## What It Helps You Answer
 
-```text
-AI industry atlas
-  -> choose a chain
-  -> inspect upstream / core / downstream stages
-  -> discover A-share and US-listed companies
-  -> inspect company paths, relationship basis, sources, and peers
+- Where does a company actually sit in the AI value chain?
+- What are the upstream inputs, downstream uses, and cross-chain dependencies of an industry element?
+- How can an effect travel from chips and servers to data centers, models, devices, and applications?
+- Is a company mapping backed by direct disclosure, industry evidence, or only a broad association?
+- Which filing or public document supports the relationship?
+
+## Core Workflows
+
+| Research task | Capability |
+| --- | --- |
+| Discover companies from an industry | Navigate 6 capability domains, 12 chains, and 111 industry segments |
+| Reverse-map a company | Search by company or ticker and inspect all mapped products, components, services, and applications |
+| Explore transmission | Traverse upstream, downstream, or both directions at 1, 3, or 5 hops |
+| Compare paths | Set any entity as a path origin and find the shortest path to another entity |
+| Verify relationships | Distinguish L1 official disclosure, L2 industry evidence, and broad mappings; then open the original source |
+| Explore scenarios | Overlay demand, supply, price, capacity, policy, or technology changes without mixing them with fact edges |
+| Work across markets | Filter A-shares and US-listed securities and switch between Chinese and English |
+
+```mermaid
+flowchart LR
+    A["Industry overview"] --> B["Choose a chain"]
+    B --> C["Choose a typed element"]
+    C --> D["Explore upstream and downstream"]
+    D --> E["Discover listed companies"]
+    E --> F["Verify claims and sources"]
+
+    G["Search company or ticker"] --> H["Inspect industry positions"]
+    H --> D
 ```
 
-The product answers where a company sits in the AI value chain, why the relationship exists, and which public source supports it. It does not answer which stock to buy.
+## Product Screens
 
-## Principles
+### Chain-level transmission
 
-- **Chain first:** the default entry point is the industry atlas; company search is a shortcut.
-- **Relationships over scores:** no relevance percentages, purity scores, potential scores, ratings, or price targets in the reader experience.
-- **Published graph:** readers only see relationships released by the maintainer and never need to review or correct data.
-- **Traceable evidence:** each company relationship carries a factual summary, source type, source link, and last verification date.
-- **Open and free:** software is MIT licensed; original public project data is CC BY 4.0.
-- **Global target:** the canonical schema supports Chinese and English fields. A complete bilingual interface is a v1.0 release requirement.
+The AI Chips & IP view connects EDA, processor IP, analog chips, GPUs, ASICs, edge chips, and their listed-company coverage in one directed graph.
 
-## Current Experience
+![AI Chips and IP chain](docs/assets/ai-chaingraph-v1.1-chain.png)
 
-- Chain-first AI industry atlas.
-- Upstream, core, and downstream stage exploration.
-- Company directory with relationship basis, factual explanation, and verification date.
-- Directed relationship graph with automatic layout.
-- Company paths, peer context, evidence timeline, and source links.
-- A-share / US market filtering and search across entities and evidence.
-- Shareable URLs that preserve the selected chain, company, market, view, and query.
-- Publication readiness covering market gaps, evidence levels, review status, freshness, and entity-level quality alerts.
-- A three-column wide-screen workspace, a two-column desktop layout, and mobile navigation with readable relationship paths.
-- A private browser-local watchlist with JSON/CSV export.
+### Company position and edge-level evidence
 
-The repository currently uses **fictional demo data** to validate the product and data model. Full real-world A-share and US coverage is not complete yet.
+Open a company to see its industry positions. Select a mapping to inspect its evidence level, factual excerpt, publication date, and original document.
 
-## Relationship Basis
+![AMD industry position and evidence](docs/assets/ai-chaingraph-v1.1-evidence.png)
 
-| Basis | Meaning | Typical source |
-| --- | --- | --- |
-| `official_disclosure` | The company directly states the product, business, customer, or supplier relationship | Annual reports, filings, exchange Q&A |
-| `product_fact` | Official product materials establish capability and value-chain position | Company websites, product manuals, patents |
-| `industry_inference` | Public industry structure connects upstream and downstream stages | Industry references and cross-source validation |
+## v1.1 Public Snapshot
 
-Named supplier or customer relationships are published only when a public source explicitly identifies both parties. Industry knowledge may connect industry nodes but must not be presented as an unverified company relationship.
+The current snapshot was updated on **2026-07-18**.
 
-## Target Coverage
+| Object | Count |
+| --- | ---: |
+| Capability domains | 6 |
+| Industry chains | 12 |
+| Industry segments | 111 |
+| Issuers / securities | 4,537 |
+| Company-to-element mappings | 6,603 |
+| Directed industry dependencies | 173 |
+| Evidence claims | 6,621 |
+| Public source documents | 4,616 |
 
-- Active common shares on Shanghai, Shenzhen, and Beijing exchanges.
-- Common shares and major ADRs on NASDAQ, NYSE, and AMEX.
-- OTC securities, ETFs, funds, SPACs, and delisted securities are excluded from the first release.
-- Major AI chains from infrastructure and semiconductors to models, software, devices, and industry applications.
-- Weekly data-update pull requests, released after maintainer merge.
+Companies may appear in multiple chains and elements, so chain-level company counts are not unique-company totals.
 
-This is the v1.0 target, not a claim about the current demo dataset.
+## Architecture
+
+```mermaid
+flowchart LR
+    A["CNINFO and exchange filings"] --> D["source_documents"]
+    B["SEC filings"] --> D
+    C["Official product and industry sources"] --> D
+    D --> E["claims"]
+    E --> F["typed relations"]
+    G["company and industry entities"] --> F
+    F --> H["transmission graph algorithms"]
+    H --> I["overview, chain, traversal, and path views"]
+    I --> J["React + React Flow UI"]
+```
+
+The public contract has four core collections:
+
+- `entities`: domains, chains, segments, products, components, materials, equipment, services, issuers, and securities.
+- `relations`: directed dependencies, company positions, security issuance, and their `claim_ids`.
+- `claims`: reviewable factual excerpts linked to source documents.
+- `source_documents`: source metadata, dates, public URLs, language, and issuer references.
+
+The static app reads [`public/snapshots/transmission-v1.1.json`](public/snapshots/transmission-v1.1.json) directly and requires no paid API or user account.
+
+## Technology
+
+- React 18 and Vite
+- React Flow for interactive graph exploration
+- Dagre for automatic directed layouts
+- Graph traversal, shortest-path, and conditional transmission utilities
+- A bilingual view model over one canonical snapshot
+- Static deployment to GitHub Pages and OpenAI Sites
 
 ## Run Locally
 
+Node.js `22.13+` is required.
+
 ```bash
-npm install
+git clone https://github.com/judefluen-coder/ai-chaingraph.git
+cd ai-chaingraph
+npm ci
+npm run validate:snapshot
 npm run dev
 ```
 
-Run the project checks:
+Create a production build with:
 
 ```bash
-npm run smoke
-npm run validate:example
-npm run validate:tabular
 npm run build
 ```
 
-The frontend reads data in this order:
+## Evidence Semantics
 
-```text
-VITE_CHAINGRAPH_API_BASE /api/graph
-  -> /snapshots/current.json
-  -> src/data/demoGraph.json
-```
+- **L1 official disclosure:** a regulatory filing, exchange announcement, or official company material directly supports the mapping.
+- **L2 industry evidence:** public industry material supports a structural dependency between industry elements.
+- **Specific element:** evidence supports a product, component, material, equipment, or service-level position.
+- **Broad mapping:** evidence supports a wider industry association but not a more specific product claim.
+- **Conditional transmission:** a research hypothesis layered over, and visually separated from, verified fact relations.
 
-`public/snapshots/current.json` is the only tracked snapshot served by the static site. It is currently generated as a publication-safe projection of the fictional demo. All other local snapshots remain ignored. Real data may replace this file only after provenance and licensing checks.
-
-Run the publication gate before releasing a real snapshot. It keeps only accepted company mappings, removes review queues, import records, and local source paths, and requires public HTTP(S) sources, publication dates, verification timestamps, and human review metadata:
-
-```bash
-npm run publish:snapshot -- data/snapshots/current.json
-npm run publish:snapshot -- data/snapshots/current.json --write
-```
-
-The first command is read-only. The second writes `public/snapshots/current.json`. `--allow-demo` is reserved for the tracked demo validation command and must not be used to bypass real-data release checks.
-
-AI-assisted curation may record source verification with an `agent:*` identity, but it cannot sign off a release. Real data passes the publication gate only when its source records carry an explicit `human:*` reviewer. Maintainers can generate a local review packet and open every primary source before approval:
-
-```bash
-npm run review:snapshot -- data/snapshots/current.json --write
-```
-
-Review packets are written under the Git-ignored `data/review-packets/` directory, keeping personal review notes out of the public repository.
-
-Start the local API with `npm run api`. Reader endpoints are `GET /api/graph`, `GET /api/search`, and `GET /api/node/:id`. `/api/review` remains a maintainer-workflow compatibility endpoint and is not exposed in the reader UI.
-
-## Data Import
-
-Validate a canonical snapshot:
-
-```bash
-npm run import:snapshot -- examples/fictional-ai-chain.snapshot.json
-```
-
-Validate CSV/JSONL tabular mappings:
-
-```bash
-npm run validate:tabular
-npm run import:tabular -- examples/fictional-ai-mappings.csv --print-snapshot
-```
-
-The importer supports stage placement, bilingual fields, relationship basis, factual summaries, and last-verification timestamps. Multiple evidence rows for one relationship are merged while preserving every source.
+Coverage is not conviction. Always inspect the evidence level, excerpt, and original source before using a company mapping.
 
 ## Contributing
 
-Contributions are welcome for industry nodes, company mappings, public sources, bilingual copy, and data pipelines. Every published relationship should include a stable entity ID, stage placement, public source metadata, a concise factual summary, and one of the three relationship-basis values.
+Contributions are welcome for ontology quality, entity normalization, evidence links, bilingual UX, graph layout, and snapshot validation. Before opening a pull request, run:
 
-Do not submit paid data-source output, copyrighted long-form excerpts, credentials, personal brokerage data, or private research notes. See [CONTRIBUTING.md](CONTRIBUTING.md).
+```bash
+npm run validate:snapshot
+npm run build
+```
 
-## Roadmap
-
-- **v0.3:** chain-first discovery, three-stage paths, explainable relationships, responsive graph.
-- **v0.4:** Chinese/English switch, bilingual search, missing-translation checks.
-- **v0.5:** free public-source adapters, entity resolution, weekly automated data PRs.
-- **v0.6:** progressive real-world A-share and US coverage by industry chain.
-- **v1.0:** major AI chains, target markets, bilingual UX, and weekly updates ready for public release.
+Do not contribute paid-database exports, restricted full text, personal account data, credentials, or unlicensed long-form content. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
 - Software: MIT, see [LICENSE](LICENSE).
-- Original public project data: CC BY 4.0, see [DATA_LICENSE.md](DATA_LICENSE.md).
+- Original graph structure and public project data: CC BY 4.0, see [DATA_LICENSE.md](DATA_LICENSE.md).
 - Linked third-party source material remains subject to its owners' terms.
 
 ## Disclaimer
 
-AI-ChainGraph is an information organization and industry research aid, not an investment decision tool. A displayed relationship only means that public information supports the connection; it does not express a view on company value, business quality, share-price direction, or future returns. Always verify the original source independently.
+AI-ChainGraph is an information organization and industry research aid, not an investment decision tool. A displayed company relationship only means that the current public graph connects the company to an industry element. It does not express a view on company value, business quality, share-price direction, or future returns. Always verify the original source independently.

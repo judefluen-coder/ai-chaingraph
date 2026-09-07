@@ -1,13 +1,14 @@
 node_modules/
 dist/
+.sites/
+/output/
 /data/
 /feedbacks/
 /logs/
 /secrets/
 /public/snapshots/*
-!/public/snapshots/current.json
+!/public/snapshots/transmission-v1.1.json
 .playwright-cli/
-/output/
 .DS_Store
 *.log
 *.sqlite

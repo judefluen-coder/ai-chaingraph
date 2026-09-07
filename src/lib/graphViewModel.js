@@ -1,4 +1,5 @@
 import dagre from "@dagrejs/dagre";
+import { getLocalizedBasisLabel, getLocalizedField } from "./i18n.js";
 
 export const evidenceLabels = {
   L1: "强确证",
@@ -40,18 +41,12 @@ export const stageLabels = {
 const stageOrder = ["upstream", "core", "downstream"];
 const officialDisclosureSources = new Set(["annual_report", "announcement", "irm_qa"]);
 const productFactSources = new Set(["official_site", "patent"]);
+const searchIndexCache = new WeakMap();
 
 export const dataTypeLabels = {
   demo: "演示数据",
-  local_real: "真实快照",
+  local_real: "本地真实",
   mixed: "混合数据",
-};
-
-export const dataSourceLabels = {
-  api: "API 数据",
-  public_snapshot: "公开快照",
-  demo: "内置演示",
-  local_snapshot: "本地快照",
 };
 
 export const reviewStatusLabels = {
@@ -67,7 +62,6 @@ export const exportDisclaimer = "导出数据仅供研究参考，重新分发�
 
 const aShareExchanges = new Set(["SH", "SZ", "BJ"]);
 const usExchanges = new Set(["NASDAQ", "NYSE", "AMEX", "OTC"]);
-
 export function getCompanyMarket(company) {
   if (!company) return "unknown";
   if (company.market) return company.market;
@@ -76,13 +70,11 @@ export function getCompanyMarket(company) {
   return "unknown";
 }
 
-export function getMarketLabel(market) {
-  return {
-    all: "全部市场",
-    a_share: "A股",
-    us: "美股",
-    unknown: "其他",
-  }[market] || market;
+export function getMarketLabel(market, locale = "zh") {
+  const labels = locale === "en"
+    ? { all: "All markets", a_share: "A-shares", us: "US", unknown: "Other" }
+    : { all: "全部市场", a_share: "A股", us: "美股", unknown: "其他" };
+  return labels[market] || market;
 }
 
 export function matchesEvidenceFilter(edge, evidenceFilter) {
@@ -98,9 +90,10 @@ export function isPublishedEdge(edge) {
 }
 
 export function getPublishedMappingEdges(data, marketFilter = "all") {
+  const companiesById = new Map((data.companies || []).map((company) => [company.id, company]));
   return (data.edges || []).filter((edge) => {
     if (edge.edge_type !== "company_maps_to_industry_node" || !isPublishedEdge(edge)) return false;
-    const company = data.companies.find((item) => item.id === edge.to_id);
+    const company = companiesById.get(edge.to_id);
     return company && matchesMarketFilter(company, marketFilter);
   });
 }
@@ -173,31 +166,67 @@ export function buildPublishedGraph(data) {
 }
 
 export function searchItems(data, query) {
-  const keyword = query.trim().toLowerCase();
+  const keyword = String(query || "").trim().toLowerCase();
   if (!keyword) return [];
+  const index = getSearchIndex(data);
+  const exactCompanies = index.exactCompanies.get(keyword);
+  if (exactCompanies?.length) return exactCompanies;
+  const nodeHits = index.nodes.filter((entry) => entry.text.includes(keyword)).map((entry) => entry.item);
+  const companyHits = index.companies.filter((entry) => entry.text.includes(keyword)).map((entry) => entry.item);
+  const evidenceHits = [...new Map(index.evidences
+    .filter((entry) => entry.text.includes(keyword))
+    .map((entry) => [entry.item.url || entry.item.id, entry.item])).values()];
+  return [...nodeHits, ...companyHits, ...evidenceHits];
+}
+
+function getSearchIndex(data) {
+  const cached = searchIndexCache.get(data);
+  if (cached) return cached;
   const publishedMappings = getPublishedMappingEdges(data);
   const publishedCompanyIds = new Set(publishedMappings.map((edge) => edge.to_id));
-  const publishedEdgeIds = new Set(
-    data.edges.filter(isPublishedEdge).map((edge) => edge.id),
-  );
-  const nodeHits = data.nodes.filter((node) =>
-    [node.name, node.name_en, node.description, node.description_en, node.chain, ...(node.aliases || [])].join(" ").toLowerCase().includes(keyword),
-  );
-  const companyHits = data.companies
-    .filter((company) => publishedCompanyIds.has(company.id))
-    .filter((company) =>
-      [company.name, company.name_en, company.stock_code, company.industry, company.industry_en, ...(company.aliases || [])].join(" ").toLowerCase().includes(keyword),
-    );
-  const evidenceHits = data.evidences
-    .filter((evidence) => {
-      if (evidence.target_type === "company") return publishedCompanyIds.has(evidence.target_id);
-      if (evidence.target_type === "edge") return publishedEdgeIds.has(evidence.target_id);
-      return true;
-    })
-    .filter((evidence) =>
-      [evidence.title, evidence.title_en, evidence.excerpt, evidence.excerpt_en, evidence.source_type].join(" ").toLowerCase().includes(keyword),
-    );
-  return [...nodeHits, ...companyHits, ...evidenceHits];
+  const publishedEdgeIds = new Set((data.edges || []).filter(isPublishedEdge).map((edge) => edge.id));
+  const publishedCompanies = (data.companies || []).filter((company) => publishedCompanyIds.has(company.id));
+  const exactCompanies = new Map();
+  for (const company of publishedCompanies) {
+    for (const value of [company.name, company.name_en, company.stock_code]) {
+      const key = normalizeSearchValue(value);
+      if (!key) continue;
+      const matches = exactCompanies.get(key) || [];
+      matches.push(company);
+      exactCompanies.set(key, matches);
+    }
+  }
+  const index = {
+    exactCompanies,
+    nodes: (data.nodes || []).map((node) => ({
+      item: node,
+      text: toSearchText([node.name, node.name_en, node.description, node.description_en, node.chain, ...(node.aliases || [])]),
+    })),
+    companies: publishedCompanies.map((company) => ({
+      item: company,
+      text: toSearchText([company.name, company.name_en, company.stock_code, company.industry, company.industry_en, ...(company.aliases || [])]),
+    })),
+    evidences: (data.evidences || [])
+      .filter((evidence) => {
+        if (evidence.target_type === "company") return publishedCompanyIds.has(evidence.target_id);
+        if (evidence.target_type === "edge") return publishedEdgeIds.has(evidence.target_id);
+        return true;
+      })
+      .map((evidence) => ({
+        item: evidence,
+        text: toSearchText([evidence.title, evidence.title_en, evidence.excerpt, evidence.excerpt_en, evidence.source_type]),
+      })),
+  };
+  searchIndexCache.set(data, index);
+  return index;
+}
+
+function normalizeSearchValue(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function toSearchText(values) {
+  return values.map(normalizeSearchValue).filter(Boolean).join(" ");
 }
 
 export function getSearchTarget(data, item) {
@@ -220,7 +249,7 @@ export function getEvidenceItems(data, edges) {
       .filter(Boolean)
       .map((evidence) => ({ evidence, edge })),
   );
-  return [...new Map(items.map((item) => [item.evidence.id, item])).values()];
+  return [...new Map(items.map((item) => [item.evidence.url || item.evidence.id, item])).values()];
 }
 
 export function getNodeStage(node) {
@@ -327,10 +356,6 @@ export function getEdgeRecency(data, edge) {
     return { status: "expiring", label: "即将过期", recencyFactor: Math.min(...states.map((state) => state.recencyFactor)) };
   }
   return { status: "normal", label: "正常", recencyFactor: Math.min(...states.map((state) => state.recencyFactor)) };
-}
-
-export function getAdjustedRelevance(edge, recencyFactor) {
-  return Math.max(0, Math.min(1, 0.5 * edge.relevance_score + 0.3 * edge.purity_score + 0.2 * recencyFactor));
 }
 
 function evidenceRank(level) {
@@ -456,11 +481,14 @@ function buildCompanyPaths(data, companyId, evidenceFilter) {
         node,
         chain,
         recency,
-        score: getAdjustedRelevance(edge, recency.recencyFactor),
       };
     })
     .filter((path) => path.node && path.chain)
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => (
+      evidenceRank(b.edge.evidence_level) - evidenceRank(a.edge.evidence_level)
+      || String(b.edge.last_verified_at || "").localeCompare(String(a.edge.last_verified_at || ""))
+      || a.node.id.localeCompare(b.node.id)
+    ));
 }
 
 function strongestEdgeLevel(paths) {
@@ -487,7 +515,6 @@ export function buildCompanyPathCompare(data, company, evidenceFilter = "all", m
       const uniqueNodeNames = peerPaths
         .filter((path) => !nodeIds.has(path.node.id))
         .map((path) => path.node.name);
-      const score = peerPaths.reduce((sum, path) => sum + path.score, 0) / Math.max(1, peerPaths.length);
       return {
         company: candidate,
         paths: peerPaths,
@@ -496,7 +523,6 @@ export function buildCompanyPathCompare(data, company, evidenceFilter = "all", m
         uniqueNodeNames,
         strongestEvidenceLevel: strongestEdgeLevel(peerPaths),
         reviewCount: peerPaths.filter((path) => path.edge.review_status !== "accepted").length,
-        score,
       };
     })
     .filter((peer) => peer.paths.length > 0)
@@ -504,7 +530,7 @@ export function buildCompanyPathCompare(data, company, evidenceFilter = "all", m
       b.sharedNodeNames.length - a.sharedNodeNames.length
       || b.paths.length - a.paths.length
       || evidenceRank(b.strongestEvidenceLevel) - evidenceRank(a.strongestEvidenceLevel)
-      || b.score - a.score
+      || a.company.id.localeCompare(b.company.id)
     ))
     .slice(0, 4);
 
@@ -521,8 +547,6 @@ export function getDataStatus(data, localReviewRecords = []) {
     (edge) => edge.edge_type === "company_maps_to_industry_node" && edge.review_status === "needs_review",
   ).length;
   const datasetType = data.meta.dataset_type || "demo";
-  const source = data.meta.source || (datasetType === "demo" ? "demo" : "local_snapshot");
-  const issueCount = staleCount + expiringCount + feedbackPendingCount + mappingReviewCount;
   const tone = staleCount > 0
     ? "danger"
     : expiringCount > 0 || feedbackPendingCount > 0 || mappingReviewCount > 0
@@ -531,10 +555,7 @@ export function getDataStatus(data, localReviewRecords = []) {
   return {
     datasetType,
     label: dataTypeLabels[datasetType] || datasetType,
-    source,
-    sourceLabel: dataSourceLabels[source] || source,
     tone,
-    issueCount,
     staleCount,
     expiringCount,
     feedbackPendingCount,
@@ -636,7 +657,6 @@ export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter =
       chain,
       companyCount: companyIds.size,
       mappingCount,
-      publishedCount: acceptedCount,
       marketCounts: {
         a_share: marketCompanyIds.a_share.size,
         us: marketCompanyIds.us.size,
@@ -661,7 +681,6 @@ export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter =
     totals: rowsWithAlerts.reduce((acc, row) => ({
       companyCount: acc.companyCount + row.companyCount,
       mappingCount: acc.mappingCount + row.mappingCount,
-      publishedCount: acc.publishedCount + row.publishedCount,
       reviewCount: acc.reviewCount + row.reviewCount,
       marketCounts: {
         a_share: acc.marketCounts.a_share + row.marketCounts.a_share,
@@ -676,7 +695,6 @@ export function buildCoverageMatrix(data, evidenceFilter = "all", marketFilter =
     }), {
       companyCount: 0,
       mappingCount: 0,
-      publishedCount: 0,
       reviewCount: 0,
       marketCounts: { a_share: 0, us: 0, unknown: 0 },
       evidenceCounts: { L1: 0, L2: 0, L3: 0 },
@@ -831,14 +849,84 @@ export function buildScopedData(data, onlyChain, marketFilter = "all") {
   };
 }
 
-export function buildFlow(data, activeId, query, evidenceFilter, direction = "LR") {
+export function buildChainOverviewFlow(data, direction = "LR", locale = "zh") {
+  const chainIds = new Set(data.chains.map((chain) => chain.id));
+  const mappings = getPublishedMappingEdges(data);
+  const companiesByChain = mappings.reduce((counts, edge) => {
+    const chainId = data.nodes.find((node) => node.id === edge.from_id)?.chain;
+    if (!chainId) return counts;
+    const companyIds = counts.get(chainId) || new Set();
+    companyIds.add(edge.to_id);
+    counts.set(chainId, companyIds);
+    return counts;
+  }, new Map());
+  const nodeChainById = new Map((data.nodes || []).map((node) => [node.id, node.chain || (chainIds.has(node.id) ? node.id : null)]));
+  const relationPairs = new Map();
+  for (const edge of data.edges || []) {
+    if (["industry_parent", "company_maps_to_industry_node"].includes(edge.edge_type)) continue;
+    const source = nodeChainById.get(edge.from_id);
+    const target = nodeChainById.get(edge.to_id);
+    if (!source || !target || source === target || !chainIds.has(source) || !chainIds.has(target)) continue;
+    relationPairs.set(`${source}|${target}`, { source, target, id: `chain_overview_${source}_${target}` });
+  }
+  const relations = [...relationPairs.values()];
+  const layout = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+  layout.setGraph({
+    rankdir: direction,
+    align: "UL",
+    nodesep: direction === "TB" ? 16 : 30,
+    ranksep: direction === "TB" ? 46 : 92,
+    marginx: direction === "TB" ? 16 : 28,
+    marginy: direction === "TB" ? 16 : 28,
+  });
+  for (const chain of data.chains) layout.setNode(chain.id, { width: 210, height: 68 });
+  for (const relation of relations) layout.setEdge(relation.source, relation.target);
+  dagre.layout(layout);
+
+  const nodes = data.chains.map((chain) => {
+    const point = layout.node(chain.id);
+    const companyCount = companiesByChain.get(chain.id)?.size || 0;
+    return {
+      id: chain.id,
+      type: "mapNode",
+      position: { x: point.x - 105, y: point.y - 34 },
+      data: {
+        title: getLocalizedField(chain, "name", locale),
+        subtitle: locale === "en" ? `Industry chain · ${companyCount} companies` : `产业链 · ${companyCount} 家`,
+        kind: "chainOverview",
+        layoutDirection: direction,
+      },
+      className: "flowNode chainOverviewNode",
+    };
+  });
+  const edges = relations.map((relation) => ({
+    id: relation.id,
+    source: relation.source,
+    target: relation.target,
+    label: locale === "en" ? "Capability flow" : "能力支撑",
+    className: "flowEdge chainOverviewEdge",
+  }));
+  return { nodes, edges };
+}
+
+export function buildFlow(data, activeId, query, evidenceFilter, direction = "LR", locale = "zh") {
+  const companyCountLabel = (count) => locale === "en" ? `${count} ${count === 1 ? "company" : "companies"}` : `${count} 家`;
   const matched = new Set(searchItems(data, query).map((item) => item.id));
   const eligibleEdges = data.edges.filter((edge) => matchesEvidenceFilter(edge, evidenceFilter) && isPublishedEdge(edge));
-  const hasProductFlow = eligibleEdges.some((edge) => edge.edge_type !== "industry_parent" && edge.edge_type !== "company_maps_to_industry_node");
-  const explicitEdges = hasProductFlow ? eligibleEdges.filter((edge) => edge.edge_type !== "industry_parent") : eligibleEdges;
+  const mappingEdges = eligibleEdges.filter((edge) => edge.edge_type === "company_maps_to_industry_node");
+  const industryEdges = eligibleEdges.filter((edge) => edge.edge_type !== "company_maps_to_industry_node");
+  const hasProductFlow = industryEdges.some((edge) => edge.edge_type !== "industry_parent");
+  const explicitIndustryEdges = hasProductFlow ? industryEdges.filter((edge) => edge.edge_type !== "industry_parent") : industryEdges;
+  const selectedMappingEdges = activeId === "overview"
+    ? mappingEdges
+    : mappingEdges.filter((edge) => (
+        edge.from_id === activeId
+        || edge.to_id === activeId
+        || (query.trim() && (matched.has(edge.from_id) || matched.has(edge.to_id)))
+      ));
   const implicitHierarchyEdges = hasProductFlow ? [] : data.nodes
     .filter((node) => node.parent_id)
-    .filter((node) => !explicitEdges.some((edge) => edge.edge_type === "industry_parent" && edge.from_id === node.parent_id && edge.to_id === node.id))
+    .filter((node) => !explicitIndustryEdges.some((edge) => edge.edge_type === "industry_parent" && edge.from_id === node.parent_id && edge.to_id === node.id))
     .map((node) => ({
       id: `implicit_parent_${node.parent_id}_${node.id}`,
       from_id: node.parent_id,
@@ -846,7 +934,7 @@ export function buildFlow(data, activeId, query, evidenceFilter, direction = "LR
       edge_type: "industry_parent",
       source_ids: [],
     }));
-  const visibleEdges = explicitEdges.concat(implicitHierarchyEdges);
+  const visibleEdges = explicitIndustryEdges.concat(implicitHierarchyEdges, selectedMappingEdges);
   const visibleCompanyIds = new Set(
     visibleEdges
       .filter((edge) => edge.edge_type === "company_maps_to_industry_node")
@@ -874,10 +962,10 @@ export function buildFlow(data, activeId, query, evidenceFilter, direction = "LR
       type: "mapNode",
       position: { x: 0, y: 0 },
       data: {
-        title: node.name,
+        title: getLocalizedField(node, "name", locale),
         subtitle: node.node_type === "chain"
-          ? `${typeLabels[node.node_type]} · ${visibleCompanyCountByChain.get(node.id)?.size || 0} 家`
-          : `${stageLabels[getNodeStage(node)]} · ${visibleCompanyCountByNode.get(node.id)?.size || 0} 家`,
+          ? `${locale === "en" ? "Industry chain" : typeLabels[node.node_type]} · ${companyCountLabel(visibleCompanyCountByChain.get(node.id)?.size || 0)}`
+          : `${locale === "en" ? { upstream: "Upstream", core: "Core", downstream: "Downstream" }[getNodeStage(node)] : stageLabels[getNodeStage(node)]} · ${companyCountLabel(visibleCompanyCountByNode.get(node.id)?.size || 0)}`,
         kind: "industry",
         layoutDirection: direction,
       },
@@ -893,8 +981,8 @@ export function buildFlow(data, activeId, query, evidenceFilter, direction = "LR
       type: "mapNode",
       position: { x: 0, y: 0 },
       data: {
-        title: company.name,
-        subtitle: `${company.stock_code} · ${getMarketLabel(getCompanyMarket(company))}`,
+        title: getLocalizedField(company, "name", locale),
+        subtitle: `${company.stock_code} · ${getMarketLabel(getCompanyMarket(company), locale)}`,
         kind: "company",
         layoutDirection: direction,
       },
@@ -930,8 +1018,18 @@ export function buildFlow(data, activeId, query, evidenceFilter, direction = "LR
       target: edge.to_id,
       animated: edge.from_id === activeId || edge.to_id === activeId,
       label: edge.edge_type === "company_maps_to_industry_node"
-        ? relation.label
-        : edge.edge_type === "industry_parent" ? "产业层级" : edgeTypeLabels[edge.edge_type] || "产业关系",
+        ? getLocalizedBasisLabel(relation.basis, locale)
+        : locale === "en"
+          ? {
+              industry_parent: "Industry hierarchy",
+              product_upstream_material: "Upstream material",
+              product_downstream_application: "Downstream flow",
+              industry_contains_product: "Contains product",
+              company_belongs_industry: "Industry membership",
+              company_main_product: "Core product",
+              company_supplies_product: "Product supply",
+            }[edge.edge_type] || "Industry relationship"
+          : edge.edge_type === "industry_parent" ? "产业层级" : edgeTypeLabels[edge.edge_type] || "产业关系",
       className: [
         "flowEdge",
         `basis-${relation.basis}`,

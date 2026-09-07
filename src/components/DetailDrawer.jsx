@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import {
   buildCompanyPathCompare,
-  buildEntityQualityAlerts,
   edgeTypeLabels,
   getCompanyMarket,
   getEvidenceFreshness,
@@ -24,12 +23,6 @@ import {
   isPublishedEdge,
   typeLabels,
 } from "../lib/graphViewModel";
-
-const priorityLabels = {
-  high: "高",
-  medium: "中",
-  low: "低",
-};
 
 export function DetailDrawer({
   data,
@@ -48,6 +41,7 @@ export function DetailDrawer({
   onUpdateWatchlist,
   onRemoveWatchlist,
   onExportWatchlist,
+  notice,
 }) {
   return (
     <aside className="detailDrawer">
@@ -66,6 +60,7 @@ export function DetailDrawer({
       <DetailPanel
         data={data}
         active={active}
+        notice={notice}
         evidenceFilter={evidenceFilter}
         marketFilter={marketFilter}
         watchlistRecords={watchlistRecords}
@@ -79,6 +74,7 @@ export function DetailDrawer({
         data={data}
         records={watchlistRecords}
         onSelect={onSelect}
+        onUpdate={onUpdateWatchlist}
         onRemove={onRemoveWatchlist}
         onExport={onExportWatchlist}
       />
@@ -115,9 +111,7 @@ function SearchPanel({ data, results, query, collapsed, onToggle, onClear, onSel
   );
 }
 
-function DetailPanel({ data, active, evidenceFilter, marketFilter, watchlistRecords, watchlistIds, onToggleWatchlist, onUpdateWatchlist, onSelect }) {
-  const qualityAlerts = buildEntityQualityAlerts(data, active, evidenceFilter, marketFilter);
-
+function DetailPanel({ data, active, notice, evidenceFilter, marketFilter, watchlistRecords, watchlistIds, onToggleWatchlist, onUpdateWatchlist, onSelect }) {
   if (active?.node_type === "overview") {
     const publishedStats = getPublishedGraphStats(data, marketFilter);
     return (
@@ -135,7 +129,6 @@ function DetailPanel({ data, active, evidenceFilter, marketFilter, watchlistReco
           <span className="basisBadge basis-product_fact">产品事实</span>
           <span className="basisBadge basis-industry_inference">产业推导</span>
         </div>
-        <DataQualityPanel alerts={qualityAlerts} />
         <RiskNote />
       </section>
     );
@@ -172,7 +165,6 @@ function DetailPanel({ data, active, evidenceFilter, marketFilter, watchlistReco
           <p>{firstRelation?.summary || "暂无已绑定产业链映射。"}</p>
           {firstRelation?.lastVerifiedAt && <small>最后核验：{String(firstRelation.lastVerifiedAt).slice(0, 10)}</small>}
         </section>
-        <DataQualityPanel alerts={qualityAlerts} />
         <PathComparePanel data={data} compare={pathCompare} onSelect={onSelect} />
         {isWatched && (
           <WatchlistMemo
@@ -183,6 +175,7 @@ function DetailPanel({ data, active, evidenceFilter, marketFilter, watchlistReco
         <EvidenceTimeline items={evidenceItems} />
         <EvidenceList items={evidenceItems} />
         <RiskNote />
+        {notice && <p className="noticeText">{notice}</p>}
       </section>
     );
   }
@@ -199,11 +192,11 @@ function DetailPanel({ data, active, evidenceFilter, marketFilter, watchlistReco
       <PanelTitle icon={<GitBranch size={17} />} title={active.name} label={typeLabels[active.node_type]} />
       <p className="muted">{active.description || chain?.description}</p>
       <div className="pathBox">{chain?.name} / {active.name}</div>
-      <DataQualityPanel alerts={qualityAlerts} />
       <CompanyList data={data} mappings={mappingEdges} />
       <EvidenceTimeline items={evidenceItems} />
       <EvidenceList items={evidenceItems} />
       <RiskNote />
+      {notice && <p className="noticeText">{notice}</p>}
     </section>
   );
 }
@@ -245,7 +238,7 @@ function PathComparePanel({ data, compare, onSelect }) {
   );
 }
 
-function WatchlistPanel({ data, records, onSelect, onRemove, onExport }) {
+function WatchlistPanel({ data, records, onSelect, onUpdate, onRemove, onExport }) {
   return (
     <section className="sideCard watchlistPanel">
       <div className="queueHead">
@@ -273,11 +266,11 @@ function WatchlistPanel({ data, records, onSelect, onRemove, onExport }) {
                 <button className="iconButton" aria-label={`移除 ${name}`} onClick={() => onRemove(record.company_id)}>
                   <Trash2 size={15} />
                 </button>
-                <div className="watchSummary">
-                  <span>{priorityLabels[record.priority] || "中"}优先级</span>
-                  {record.tags && <span>{record.tags}</span>}
-                  {record.next_review_at && <span>复核 {record.next_review_at}</span>}
-                </div>
+                <WatchlistMemo
+                  record={record}
+                  compact
+                  onChange={(patch) => onUpdate(record.company_id, patch)}
+                />
               </article>
             );
           })}
@@ -398,7 +391,6 @@ function EvidenceTimeline({ items }) {
 function EvidenceCard({ evidence, edge }) {
   const freshness = getEvidenceFreshness(evidence);
   const relation = getRelationPresentation({ evidences: [evidence] }, edge);
-  const sourceDomain = getSourceDomain(evidence.url);
   return (
     <article className={`evidenceCard level-${evidence.level} freshness-${freshness.status}`}>
       <div><span>{relation.label}</span><strong>{evidence.title}</strong></div>
@@ -408,48 +400,9 @@ function EvidenceCard({ evidence, edge }) {
         <b className={`freshness-${freshness.status}`}>{freshness.label}</b>
       </div>
       <small>{evidence.source_type} · {evidence.publish_date} · 核验 {String(relation.lastVerifiedAt || "待补").slice(0, 10)}</small>
-      <div className="evidenceAuditMeta">
-        <span>{sourceDomain || "无外部来源链接"}</span>
-        <span>{evidence.reviewed_at ? `已审核 ${String(evidence.reviewed_at).slice(0, 10)}` : "待人工审核"}</span>
-        {evidence.reviewer && <span>{evidence.reviewer}</span>}
-      </div>
-      {evidence.url && <a href={evidence.url} target="_blank" rel="noreferrer"><ExternalLink size={13} />打开 {sourceDomain || "公开来源"}</a>}
+      {evidence.url && <a href={evidence.url} target="_blank" rel="noreferrer"><ExternalLink size={13} />打开公开来源</a>}
     </article>
   );
-}
-
-function DataQualityPanel({ alerts }) {
-  if (!alerts?.length) {
-    return (
-      <section className="dataQualityPanel isClear" aria-label="数据质量检查">
-        <CheckCircle2 size={15} />
-        <div><strong>当前检查未发现阻断项</strong><small>仍应回到原始来源独立核验。</small></div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="dataQualityPanel" aria-label="数据质量提醒">
-      <header><AlertTriangle size={15} /><strong>数据质量提醒</strong><span>{alerts.length} 项</span></header>
-      <ul>
-        {alerts.map((alert) => (
-          <li className={`severity-${alert.severity || "watch"}`} key={`${alert.type}:${alert.target_id}:${alert.title}`}>
-            <strong>{alert.title}</strong>
-            <small>{alert.body}</small>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function getSourceDomain(url) {
-  if (!url) return null;
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return null;
-  }
 }
 
 function PanelTitle({ icon, title, label }) {

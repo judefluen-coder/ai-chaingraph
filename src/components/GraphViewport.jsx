@@ -1,98 +1,212 @@
-import React, { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import ReactFlow, { Background, Controls, Handle, MarkerType, Position } from "reactflow";
 import "reactflow/dist/style.css";
-import { ArrowRight, GitBranch, ListTree } from "lucide-react";
+import { ArrowRight, GitCompareArrows, Route, X } from "lucide-react";
 
-const nodeTypes = {
-  mapNode: MapNode,
-};
+const nodeTypes = { transmissionNode: TransmissionNode };
 
-export function GraphViewport({ flow, pathSummary, onSelect, isMobile = false }) {
-  const [mobileMode, setMobileMode] = useState("paths");
+export function GraphViewport({
+  flow,
+  title,
+  subtitle,
+  breadcrumbs,
+  statusLabel,
+  queryControls,
+  activeRelationId,
+  onSelect,
+  onSelectRelation,
+  copy,
+}) {
+  const canvasRef = useRef(null);
+  const flowInstanceRef = useRef(null);
+  const fitFrameRef = useRef(null);
+  const isVertical = flow.nodes.some((node) => node.data?.layoutDirection === "TB");
+  const fitViewOptions = useMemo(() => ({ padding: isVertical ? 0.1 : 0.16, minZoom: isVertical ? 0.58 : 0.2, maxZoom: 1.04 }), [isVertical]);
+  const renderedEdges = useMemo(() => flow.edges.map((edge) => ({
+    ...edge,
+    className: `${edge.className || ""}${edge.id === activeRelationId ? " isSelected" : ""}`.trim(),
+    markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15 },
+  })), [flow.edges, activeRelationId]);
+
+  const fitGraph = useCallback(() => {
+    if (!flowInstanceRef.current || flow.nodes.length === 0) return;
+    if (fitFrameRef.current) cancelAnimationFrame(fitFrameRef.current);
+    fitFrameRef.current = requestAnimationFrame(() => {
+      fitFrameRef.current = requestAnimationFrame(() => flowInstanceRef.current?.fitView(fitViewOptions));
+    });
+  }, [fitViewOptions, flow.nodes.length]);
+
+  useEffect(() => {
+    fitGraph();
+  }, [fitGraph, flow.nodes, flow.meta?.mode]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+    const observer = new ResizeObserver(fitGraph);
+    observer.observe(canvas);
+    return () => {
+      observer.disconnect();
+      if (fitFrameRef.current) cancelAnimationFrame(fitFrameRef.current);
+    };
+  }, [fitGraph]);
 
   return (
-    <section className="graphViewport">
-      <div className="graphHeader">
-        <div>
-          <span className="eyebrow">聚焦产业链</span>
-          <h2>上下游关系图</h2>
-          <p>{pathSummary}</p>
+    <section className="txGraphViewport">
+      <header className="txGraphHeader">
+        <div className="txGraphHeading">
+          <div className="txGraphContext">
+            <span>{copy.graphEyebrow}</span>
+            {statusLabel && <em>{statusLabel}</em>}
+          </div>
+          {breadcrumbs?.length > 0 && (
+            <div className="txBreadcrumbs" aria-label={copy.industryPosition}>
+              {breadcrumbs.map((item, index) => (
+                <span key={`${item}-${index}`}>{index > 0 && <ArrowRight size={12} strokeWidth={1.8} />}{item}</span>
+              ))}
+            </div>
+          )}
+          <h1>{title}</h1>
+          <p>{subtitle}</p>
         </div>
-        <span className="graphBadge"><GitBranch size={14} />点击节点查看事实来源</span>
-      </div>
-      {isMobile && (
-        <div className="mobileGraphSwitch" role="group" aria-label="关系视图模式">
-          <button aria-pressed={mobileMode === "paths"} className={mobileMode === "paths" ? "isActive" : ""} onClick={() => setMobileMode("paths")}>
-            <ListTree size={15} />关系路径
-          </button>
-          <button aria-pressed={mobileMode === "graph"} className={mobileMode === "graph" ? "isActive" : ""} onClick={() => setMobileMode("graph")}>
-            <GitBranch size={15} />图谱
-          </button>
-        </div>
-      )}
-      {isMobile && mobileMode === "paths" ? (
-        <MobileRelationList flow={flow} onSelect={onSelect} />
-      ) : <div className="graphCanvas">
+        <GraphQueryControls controls={queryControls} copy={copy} />
+      </header>
+
+      <GraphStats meta={flow.meta} copy={copy} />
+
+      <div className="txGraphCanvas" ref={canvasRef}>
+        {flow.nodes.length === 0 && (
+          <div className="txGraphEmpty">
+            <Route size={24} strokeWidth={1.6} />
+            <strong>{copy.noPath}</strong>
+          </div>
+        )}
         <ReactFlow
+          key={`${flow.meta?.mode || "graph"}-${isVertical ? "vertical" : "horizontal"}`}
           nodes={flow.nodes}
-          edges={flow.edges}
+          edges={renderedEdges}
           nodeTypes={nodeTypes}
           onNodeClick={(_, node) => onSelect(node.id)}
+          onEdgeClick={(_, edge) => {
+            const relationId = edge.data?.relationId;
+            if (relationId) onSelectRelation(relationId);
+          }}
           nodesDraggable={false}
           nodesConnectable={false}
+          edgesFocusable
           fitView
-          fitViewOptions={{ padding: isMobile ? 0.22 : 0.16, minZoom: isMobile ? 0.42 : 0.5, maxZoom: isMobile ? 0.9 : 1.05 }}
-          minZoom={0.28}
-          maxZoom={1.6}
-          defaultEdgeOptions={{ markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 } }}
+          fitViewOptions={fitViewOptions}
+          onInit={(instance) => {
+            flowInstanceRef.current = instance;
+            fitGraph();
+          }}
+          minZoom={0.16}
+          maxZoom={1.55}
+          onlyRenderVisibleElements
+          defaultEdgeOptions={{ markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15 } }}
         >
-          <Background color="#263126" gap={22} size={1} />
-          <Controls position={isMobile ? "top-right" : "bottom-left"} showInteractive={false} />
+          <Background color="#d8dee8" gap={24} size={1} />
+          <Controls position="bottom-left" showInteractive={false} fitViewOptions={fitViewOptions} />
         </ReactFlow>
-      </div>}
+        <div className="txGraphLegend" aria-label={copy.factDirection}>
+          <span><i className="isFact" />{copy.factDirection}</span>
+          <span><i className="isCross" />{copy.crossChain}</span>
+          {flow.meta?.mode === "shock" && <span><i className="isConditional" />{copy.conditionalLayer}</span>}
+        </div>
+      </div>
     </section>
   );
 }
 
-function MobileRelationList({ flow, onSelect }) {
-  const nodesById = useMemo(() => new Map(flow.nodes.map((node) => [node.id, node])), [flow.nodes]);
-
-  if (flow.edges.length === 0) {
-    return <div className="emptyState"><strong>当前范围暂无可展示关系</strong><span>可以切换产业链或市场后再查看。</span></div>;
-  }
-
+function GraphQueryControls({ controls, copy }) {
+  if (!controls) return null;
   return (
-    <div className="mobileRelationList" aria-label="上下游关系路径">
-      {flow.edges.map((edge) => {
-        const source = nodesById.get(edge.source);
-        const target = nodesById.get(edge.target);
-        if (!source || !target) return null;
-        return (
-          <button key={edge.id} onClick={() => onSelect(target.id)} aria-label={`查看 ${target.data.title}：${source.data.title} 到 ${target.data.title}`}>
-            <span className="relationEntity">
-              <strong>{source.data.title}</strong>
-              <small>{source.data.subtitle}</small>
-            </span>
-            <span className="relationDirection"><em>{edge.label}</em><ArrowRight size={16} /></span>
-            <span className="relationEntity">
-              <strong>{target.data.title}</strong>
-              <small>{target.data.subtitle}</small>
-            </span>
+    <div className="txGraphControls">
+      {controls.path && (
+        <div className="txPathStatus">
+          <Route size={16} strokeWidth={1.8} />
+          <span><small>{copy.pathStart}</small><strong>{controls.path.startLabel}</strong></span>
+          <ArrowRight size={15} strokeWidth={1.8} />
+          <span><small>{copy.pathTarget}</small><strong>{controls.path.targetLabel || copy.awaitingTarget}</strong></span>
+          <button type="button" aria-label={copy.cancelPath} title={copy.cancelPath} onClick={controls.path.onCancel}>
+            <X size={16} strokeWidth={1.8} />
           </button>
-        );
-      })}
+        </div>
+      )}
+      {controls.shock && (
+        <div className="txShockStatus">
+          <GitCompareArrows size={16} strokeWidth={1.8} />
+          <span>{controls.shock.label}</span>
+          <button type="button" aria-label={copy.clearEvent} title={copy.clearEvent} onClick={controls.shock.onClear}>
+            <X size={16} strokeWidth={1.8} />
+          </button>
+        </div>
+      )}
+      {controls.showDirection && (
+        <div className="txControlGroup">
+          <span>{copy.traversalDirection}</span>
+          <div className="txSegmented">
+            {[
+              ["upstream", copy.upstream],
+              ["downstream", copy.downstream],
+              ["both", copy.both],
+            ].map(([value, label]) => (
+              <button key={value} type="button" className={controls.direction === value ? "isActive" : ""} aria-pressed={controls.direction === value} onClick={() => controls.onDirectionChange(value)}>{label}</button>
+            ))}
+          </div>
+        </div>
+      )}
+      {controls.showDepth && (
+        <div className="txControlGroup">
+          <span>{copy.traversalDepth}</span>
+          <div className="txSegmented">
+            {[
+              [1, copy.direct],
+              [3, copy.threeHops],
+              [5, copy.fiveHops],
+            ].map(([value, label]) => (
+              <button key={value} type="button" className={controls.depth === value ? "isActive" : ""} aria-pressed={controls.depth === value} onClick={() => controls.onDepthChange(value)}>{label}</button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function MapNode({ data }) {
-  const subtitle = useMemo(() => data.subtitle || "", [data.subtitle]);
+function GraphStats({ meta, copy }) {
+  if (!meta) return null;
+  let items = [];
+  if (meta.mode === "overview") {
+    items = [[copy.domains, meta.domain_count], [copy.chains, meta.chain_count], [copy.relations, meta.dependency_relation_count]];
+  } else if (meta.mode === "chain") {
+    items = [[copy.elements, meta.element_count], [copy.relations, meta.relation_count], [copy.crossChain, meta.cross_chain_relation_count], [copy.companies, meta.issuer_count]];
+  } else if (meta.mode === "path") {
+    items = meta.found ? [[copy.pathHops, meta.hops], [copy.crossChainHops, meta.cross_chain_hops]] : [];
+  } else {
+    items = [[copy.directNodes, meta.direct_element_count], [copy.indirectNodes, meta.indirect_element_count], [copy.chains, meta.chain_count], [copy.companies, meta.issuer_count]];
+  }
+  if (items.length === 0) return null;
+  return (
+    <div className="txGraphStats">
+      {items.map(([label, value]) => <span key={label}><strong>{Number(value || 0).toLocaleString()}</strong>{label}</span>)}
+      {meta.hidden_node_count > 0 && <em>{copy.visibleLimit} · +{meta.hidden_node_count}</em>}
+    </div>
+  );
+}
+
+function TransmissionNode({ data }) {
   const vertical = data.layoutDirection === "TB";
   return (
-    <div className={`flowNodeInner ${data.kind === "company" ? "companyNodeInner" : ""}`}>
+    <div className="txNodeBody">
       <Handle type="target" position={vertical ? Position.Top : Position.Left} />
-      <span>{data.title}</span>
-      <small>{subtitle}</small>
+      <div className="txNodeEyebrow">
+        <span>{data.eyebrow}</span>
+        {data.external && <em>{data.chainLabel}</em>}
+      </div>
+      <strong>{data.title}</strong>
+      <small>{data.subtitle}</small>
+      {data.conditionalEffect && <b>{data.conditionalEffect}</b>}
       <Handle type="source" position={vertical ? Position.Bottom : Position.Right} />
     </div>
   );

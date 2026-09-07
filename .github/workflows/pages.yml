@@ -35,11 +35,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate demo data and public example
-        run: |
-          npm run smoke
-          npm run validate:example
-          npm run validate:publication
+      - name: Validate public transmission snapshot
+        run: npm run validate:snapshot
 
       - name: Build GitHub Pages artifact
         run: npm run build

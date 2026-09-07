@@ -1,8 +1,6 @@
 {
   "meta": {
     "name": "AI-ChainGraph demo dataset",
-    "dataset_type": "demo",
-    "source_policy": "public_demo_only",
     "data_version": "demo-2026-06-26",
     "data_license": "CC-BY-4.0",
     "updated_at": "2026-06-26T16:30:00+08:00",

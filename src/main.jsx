@@ -1,92 +1,76 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Database, GitBranch, ListFilter, Map, PanelRight } from "lucide-react";
-import { loadGraphData } from "./data/loadGraphData";
-import { TopBar } from "./components/TopBar";
-import { ChainSidebar } from "./components/ChainSidebar";
-import { IndustryExplorer } from "./components/IndustryExplorer";
-import { CompanyMapList } from "./components/CompanyMapList";
-import { GraphViewport } from "./components/GraphViewport";
-import { DetailDrawer } from "./components/DetailDrawer";
+import { Database, RefreshCw } from "lucide-react";
+import { loadGraphData } from "./data/loadGraphData.js";
+import { ChainNavigator } from "./components/ChainNavigator.jsx";
+import { GraphDetailPanel } from "./components/GraphDetailPanel.jsx";
+import { GraphViewport } from "./components/GraphViewport.jsx";
+import { TopBar } from "./components/TopBar.jsx";
 import {
-  buildCoverageMatrix,
-  buildFlow,
-  buildIndustryAtlas,
-  buildListRows,
-  buildScopedData,
-  exportDisclaimer,
-  getCompanyMarket,
-  getDataStatus,
-  getEntity,
-  getMarketOptions,
-  getPathSummary,
-  searchItems,
-} from "./lib/graphViewModel";
-import { parseWorkspaceSearch, serializeWorkspaceSearch } from "./lib/workspaceState";
-import "./styles.css";
+  buildChainFlow,
+  buildDetailModel,
+  buildOverviewFlow,
+  buildPathFlow,
+  buildRelationDetailModel,
+  buildTraversalFlow,
+  createGraphViewIndex,
+  getEntityChainId,
+  getEntityContext,
+  getEntityTypeLabel,
+  getIndustryNavigation,
+  localize,
+  searchTransmissionGraph,
+} from "./lib/transmissionViewModel.js";
+import {
+  buildShockOverlay,
+  findShortestTransmissionPath,
+  traverseTransmissionGraph,
+} from "./lib/transmissionGraph.js";
+import { getCopy, translations } from "./lib/i18n.js";
+import "./transmission.css";
 
-const initialWorkspaceState = parseWorkspaceSearch(typeof window === "undefined" ? "" : window.location.search);
-
-function readStoredWatchlist() {
-  try {
-    const records = JSON.parse(localStorage.getItem("ai-chaingraph-watchlist") || "[]");
-    return Array.isArray(records) ? records.map(normalizeWatchlistRecord) : [];
-  } catch {
-    return [];
-  }
-}
-
-function normalizeWatchlistRecord(record) {
-  return {
-    priority: "medium",
-    tags: "",
-    thesis: "",
-    next_review_at: "",
-    ...record,
-  };
-}
-
-function writeStoredWatchlist(records) {
-  localStorage.setItem("ai-chaingraph-watchlist", JSON.stringify(records, null, 2));
-}
-
-function downloadText(filename, mimeType, content) {
-  const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-function toWatchlistCsv(records) {
-  const headers = ["company_id", "stock_code", "name", "market", "industry", "priority", "tags", "thesis", "next_review_at", "added_at", "updated_at"];
-  const rows = records.map((record) => headers.map((header) => JSON.stringify(record[header] ?? "")).join(","));
-  return [`# ${exportDisclaimer}`, headers.join(","), ...rows].join("\n");
-}
+const eventCopyKeys = {
+  price_up: "eventPriceUp",
+  price_down: "eventPriceDown",
+  supply_up: "eventSupplyUp",
+  supply_down: "eventSupplyDown",
+  demand_up: "eventDemandUp",
+  demand_down: "eventDemandDown",
+  capacity_up: "eventCapacityUp",
+  capacity_down: "eventCapacityDown",
+  policy_change: "eventPolicy",
+  technology_shift: "eventTechnology",
+};
 
 function App() {
   const [graphState, setGraphState] = useState({ data: null, error: null });
-  const [query, setQuery] = useState(initialWorkspaceState.query);
-  const [activeId, setActiveId] = useState(initialWorkspaceState.activeId);
-  const [viewMode, setViewMode] = useState(initialWorkspaceState.viewMode);
-  const [mobileTab, setMobileTab] = useState(initialWorkspaceState.mobileTab);
-  const [onlyChain, setOnlyChain] = useState(initialWorkspaceState.onlyChain);
-  const [marketFilter, setMarketFilter] = useState(initialWorkspaceState.marketFilter);
-  const [searchCollapsed, setSearchCollapsed] = useState(false);
-  const [ack, setAck] = useState(() => localStorage.getItem("ai-chaingraph-disclaimer") === "ack");
-  const [watchlistRecords, setWatchlistRecords] = useState(readStoredWatchlist);
-  const [notice, setNotice] = useState("");
-  const searchOriginTabRef = useRef(null);
-  const chainPaneRef = useRef(null);
-  const centerPaneRef = useRef(null);
-  const detailPaneRef = useRef(null);
-  const isMobileLayout = useMediaQuery("(max-width: 900px)");
-  const evidenceFilter = "all";
-  const graphData = graphState.data;
+  const [reloadKey, setReloadKey] = useState(0);
+  const [query, setQuery] = useState("");
+  const [activeId, setActiveId] = useState(null);
+  const [activeRelationId, setActiveRelationId] = useState(null);
+  const [selectedChainId, setSelectedChainId] = useState(null);
+  const [marketFilter, setMarketFilter] = useState("all");
+  const [direction, setDirection] = useState("downstream");
+  const [depth, setDepth] = useState(3);
+  const [pathStartId, setPathStartId] = useState(null);
+  const [pathTargetId, setPathTargetId] = useState(null);
+  const [shockSpec, setShockSpec] = useState(null);
+  const [locale, setLocale] = useState(() => localStorage.getItem("ai-chaingraph-locale") || (navigator.language?.toLowerCase().startsWith("zh") ? "zh" : "en"));
+  const [acknowledged, setAcknowledged] = useState(() => localStorage.getItem("ai-chaingraph-disclaimer") === "ack");
+  const isNarrow = useMediaQuery("(max-width: 760px)");
+  const graph = graphState.data;
+  const copy = getCopy(locale);
+  const layoutDirection = isNarrow ? "TB" : "LR";
+
+  useEffect(() => {
+    localStorage.setItem("ai-chaingraph-locale", locale);
+    document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+    document.title = locale === "zh" ? "AI产业传导研究地图 / AI-ChainGraph" : "AI Industry Transmission Map / AI-ChainGraph";
+  }, [locale]);
 
   useEffect(() => {
     let alive = true;
+    setGraphState({ data: null, error: null });
     loadGraphData()
       .then((data) => {
         if (alive) setGraphState({ data, error: null });
@@ -97,388 +81,352 @@ function App() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [reloadKey]);
 
-  useEffect(() => {
-    writeStoredWatchlist(watchlistRecords);
-  }, [watchlistRecords]);
+  const index = useMemo(() => graph ? createGraphViewIndex(graph) : null, [graph]);
+  const navigation = useMemo(() => graph ? getIndustryNavigation(graph) : [], [graph]);
+  const searchResults = useMemo(() => graph ? searchTransmissionGraph(graph, query, { locale, market: marketFilter, limit: 10 }) : [], [graph, query, locale, marketFilter]);
+  const activeEntity = activeId ? index?.entitiesById.get(activeId) : null;
+  const selectedChain = selectedChainId ? index?.entitiesById.get(selectedChainId) : null;
+  const detail = useMemo(() => graph && activeId ? buildDetailModel(graph, activeId, { locale, market: marketFilter }) : null, [graph, activeId, locale, marketFilter]);
+  const relationDetail = useMemo(() => graph && activeRelationId ? buildRelationDetailModel(graph, activeRelationId) : null, [graph, activeRelationId]);
 
-  useEffect(() => {
-    if (!notice) return undefined;
-    const timer = window.setTimeout(() => setNotice(""), 3200);
-    return () => window.clearTimeout(timer);
-  }, [notice]);
-
-  useEffect(() => {
-    setSearchCollapsed(false);
-  }, [query]);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      const next = parseWorkspaceSearch(window.location.search);
-      searchOriginTabRef.current = null;
-      setQuery(next.query);
-      setActiveId(next.activeId);
-      setViewMode(next.viewMode);
-      setMobileTab(next.mobileTab);
-      setOnlyChain(next.onlyChain);
-      setMarketFilter(next.marketFilter);
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  useEffect(() => {
-    const search = serializeWorkspaceSearch({ query, activeId, viewMode, onlyChain, marketFilter });
-    const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
-    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    if (nextUrl !== currentUrl) window.history.replaceState(window.history.state, "", nextUrl);
-  }, [query, activeId, viewMode, onlyChain, marketFilter]);
-
-  const scopedData = useMemo(() => graphData ? buildScopedData(graphData, onlyChain, marketFilter) : null, [graphData, onlyChain, marketFilter]);
-  const flow = useMemo(
-    () => scopedData ? buildFlow(scopedData, activeId, query, evidenceFilter, isMobileLayout ? "TB" : "LR") : { nodes: [], edges: [] },
-    [scopedData, activeId, query, evidenceFilter, isMobileLayout],
-  );
-  const listRows = useMemo(() => graphData ? buildListRows(graphData, evidenceFilter, onlyChain, query, marketFilter) : [], [graphData, evidenceFilter, onlyChain, query, marketFilter]);
-  const industryAtlas = useMemo(() => graphData ? buildIndustryAtlas(graphData, marketFilter) : [], [graphData, marketFilter]);
-  const searchResults = useMemo(() => graphData ? searchItems(graphData, query) : [], [graphData, query]);
-  const active = graphData ? getEntity(graphData, activeId) : null;
-  const pathSummary = graphData && active ? getPathSummary(scopedData || graphData, active, marketFilter) : "数据加载中";
-  const marketOptions = useMemo(() => graphData ? getMarketOptions(graphData) : ["all"], [graphData]);
-  const watchlistIds = useMemo(() => new Set(watchlistRecords.map((record) => record.company_id)), [watchlistRecords]);
-  const coverageMatrix = useMemo(
-    () => graphData ? buildCoverageMatrix(graphData, evidenceFilter, marketFilter) : null,
-    [graphData, evidenceFilter, marketFilter],
-  );
-  const dataStatus = useMemo(
-    () => graphData ? getDataStatus(graphData, graphData.review_queue || []) : null,
-    [graphData],
-  );
-
-  useEffect(() => {
-    if (!graphData) return;
-    const validChain = onlyChain && graphData.chains.some((chain) => chain.id === onlyChain);
-    const validEntity = getEntity(graphData, activeId);
-
-    if (viewMode === "graph" && !validChain) {
-      const firstChainId = graphData.chains[0]?.id || null;
-      setOnlyChain(firstChainId);
-      if (!validEntity || activeId === "overview") setActiveId(firstChainId || "overview");
-    } else {
-      if (onlyChain && !validChain) setOnlyChain(null);
-      if (!validEntity) setActiveId(validChain ? onlyChain : "overview");
+  const shockOverlay = useMemo(() => {
+    if (!graph || !shockSpec) return null;
+    try {
+      return buildShockOverlay(graph, shockSpec, { maxDepth: depth });
+    } catch (error) {
+      console.warn("Unable to build conditional transmission overlay.", error);
+      return null;
     }
+  }, [graph, shockSpec, depth]);
 
-    if (!marketOptions.includes(marketFilter)) setMarketFilter("all");
-  }, [graphData, activeId, onlyChain, marketFilter, marketOptions, viewMode]);
+  const traversal = useMemo(() => {
+    if (!graph || !activeId || pathTargetId) return null;
+    if (shockOverlay) return shockOverlay.fact_traversal;
+    return traverseTransmissionGraph(graph, activeId, { direction, maxDepth: depth });
+  }, [graph, activeId, direction, depth, pathTargetId, shockOverlay]);
 
-  useEffect(() => {
-    if (!isMobileLayout) return undefined;
-    const frame = window.requestAnimationFrame(() => {
-      const pane = mobileTab === "detail"
-        ? detailPaneRef.current
-        : mobileTab === "chain" ? chainPaneRef.current : centerPaneRef.current;
-      const content = pane?.querySelector(".chainSidebar, .detailDrawer, .companyMapList, .graphViewport, .industryExplorer");
-      if (pane) pane.scrollTop = 0;
-      if (content) content.scrollTop = 0;
+  const pathResult = useMemo(() => {
+    if (!graph || !pathStartId || !pathTargetId) return null;
+    return findShortestTransmissionPath(graph, pathStartId, pathTargetId, { direction, maxDepth: 12 });
+  }, [graph, pathStartId, pathTargetId, direction]);
+
+  const flow = useMemo(() => {
+    if (!graph) return { nodes: [], edges: [], meta: null };
+    if (pathResult) return buildPathFlow(graph, pathResult, { locale, market: marketFilter, layoutDirection });
+    if (traversal) return buildTraversalFlow(graph, traversal, {
+      locale,
+      market: marketFilter,
+      layoutDirection,
+      targetId: activeId,
+      shockOverlay,
     });
-    return () => window.cancelAnimationFrame(frame);
-  }, [isMobileLayout, mobileTab, viewMode, activeId, onlyChain]);
+    if (selectedChainId) return buildChainFlow(graph, selectedChainId, { locale, market: marketFilter, direction: layoutDirection });
+    return buildOverviewFlow(graph, { locale, market: marketFilter, direction: layoutDirection });
+  }, [graph, pathResult, traversal, selectedChainId, locale, marketFilter, layoutDirection, activeId, shockOverlay]);
+
+  const presentation = useMemo(() => graph ? getScopePresentation({
+    graph,
+    index,
+    locale,
+    copy,
+    activeId,
+    activeEntity,
+    detail,
+    selectedChain,
+    pathStartId,
+    pathTargetId,
+    pathResult,
+    shockSpec,
+  }) : null, [graph, index, locale, copy, activeId, activeEntity, detail, selectedChain, pathStartId, pathTargetId, pathResult, shockSpec]);
+
+  function resetWorkspace() {
+    setQuery("");
+    setActiveId(null);
+    setActiveRelationId(null);
+    setSelectedChainId(null);
+    setMarketFilter("all");
+    setDirection("downstream");
+    setDepth(3);
+    setPathStartId(null);
+    setPathTargetId(null);
+    setShockSpec(null);
+  }
+
+  function selectChain(chainId) {
+    setSelectedChainId(chainId);
+    setActiveId(null);
+    setActiveRelationId(null);
+    setPathStartId(null);
+    setPathTargetId(null);
+    setShockSpec(null);
+    setQuery("");
+  }
+
+  function selectEntity(entityId) {
+    const entity = index?.entitiesById.get(entityId);
+    if (!entity) return;
+    if (pathStartId && !pathTargetId && entityId !== pathStartId) {
+      setPathTargetId(entityId);
+      setActiveRelationId(null);
+      setQuery("");
+      return;
+    }
+    if (entity.entity_type === "chain") {
+      selectChain(entity.id);
+      return;
+    }
+    if (pathTargetId) {
+      setPathStartId(null);
+      setPathTargetId(null);
+    }
+    setActiveId(entityId);
+    setActiveRelationId(null);
+    setShockSpec(null);
+    const chainId = getEntityChainId(graph, entityId);
+    if (chainId) setSelectedChainId(chainId);
+  }
+
+  function selectSearchResult(item) {
+    if (pathStartId && !pathTargetId && item.id !== pathStartId) {
+      setPathTargetId(item.id);
+      setActiveRelationId(null);
+      setQuery("");
+      return;
+    }
+    selectEntity(item.id);
+    setQuery("");
+  }
+
+  function selectRelation(relationId) {
+    const relation = index?.relationsById.get(relationId);
+    if (!relation) return;
+    setActiveRelationId(relationId);
+    if (!activeId) {
+      setActiveId(relation.from_id);
+      const chainId = getEntityChainId(graph, relation.from_id);
+      if (chainId) setSelectedChainId(chainId);
+    }
+  }
+
+  function exploreDirection(value) {
+    setDirection(value);
+    setPathStartId(null);
+    setPathTargetId(null);
+    setShockSpec(null);
+  }
+
+  function startPath(entityId) {
+    setActiveId(entityId);
+    setPathStartId(entityId);
+    setPathTargetId(null);
+    setActiveRelationId(null);
+    setShockSpec(null);
+  }
+
+  function runShock(shockType) {
+    if (!graph || !activeId) return;
+    const entity = index.entitiesById.get(activeId);
+    const copyKey = eventCopyKeys[shockType];
+    setPathStartId(null);
+    setPathTargetId(null);
+    setActiveRelationId(null);
+    setShockSpec({
+      id: `event:ui:${shockType}:${activeId}`,
+      target_id: activeId,
+      shock_type: shockType,
+      title: `${localize(entity, "name", "zh")}：${translations.zh[copyKey]}`,
+      title_en: `${localize(entity, "name", "en")}: ${translations.en[copyKey]}`,
+      observed_at: graph.meta.updated_at,
+      status: "scenario",
+    });
+  }
+
+  function closeDetail() {
+    setActiveId(null);
+    setActiveRelationId(null);
+    setPathStartId(null);
+    setPathTargetId(null);
+    setShockSpec(null);
+  }
 
   function acknowledgeDisclaimer() {
     localStorage.setItem("ai-chaingraph-disclaimer", "ack");
-    setAck(true);
+    setAcknowledged(true);
   }
 
-  function resetWorkspace() {
-    searchOriginTabRef.current = null;
-    setActiveId("overview");
-    setOnlyChain(null);
-    setQuery("");
-    setMarketFilter("all");
-    setViewMode("atlas");
-    setMobileTab("atlas");
-  }
-
-  function selectEntity(id) {
-    setActiveId(id);
-    if (isMobileLayout) {
-      searchOriginTabRef.current = null;
-      setMobileTab("detail");
-    }
-  }
-
-  function updateQuery(nextQuery) {
-    if (isMobileLayout && nextQuery && !query) {
-      searchOriginTabRef.current = mobileTab;
-      setMobileTab("detail");
-    }
-    if (isMobileLayout && !nextQuery && query) {
-      setMobileTab(searchOriginTabRef.current || mobileTab);
-      searchOriginTabRef.current = null;
-    }
-    setQuery(nextQuery);
-  }
-
-  async function copyCurrentView() {
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(window.location.href);
-      } else {
-        const input = document.createElement("textarea");
-        input.value = window.location.href;
-        input.setAttribute("readonly", "");
-        input.style.position = "fixed";
-        input.style.opacity = "0";
-        document.body.appendChild(input);
-        input.select();
-        const copied = document.execCommand("copy");
-        input.remove();
-        if (!copied) throw new Error("Copy command was rejected");
-      }
-      setNotice("已复制当前研究视图链接。");
-    } catch {
-      setNotice("复制失败，请从浏览器地址栏复制当前链接。");
-    }
-  }
-
-  function focusChain(chainId) {
-    setOnlyChain(chainId);
-    setActiveId(chainId || "overview");
-    setViewMode("atlas");
-    setMobileTab("atlas");
-  }
-
-  function showChainCompanies(chainId) {
-    setOnlyChain(chainId);
-    setActiveId(chainId);
-    setViewMode("list");
-    setMobileTab("stocks");
-  }
-
-  function showChainGraph(chainId) {
-    const nextChainId = chainId || onlyChain || graphData.chains[0]?.id;
-    setOnlyChain(nextChainId);
-    setActiveId(nextChainId);
-    setViewMode("graph");
-    setMobileTab("graph");
-  }
-
-  function toggleWatchlist(company) {
-    if (!company?.stock_code) return;
-    const isWatched = watchlistIds.has(company.id);
-    if (isWatched) {
-      setWatchlistRecords((records) => records.filter((record) => record.company_id !== company.id));
-      setNotice(`${company.name} 已移出观察列表。`);
-      return;
-    }
-    setWatchlistRecords((records) => records.some((record) => record.company_id === company.id) ? records : records.concat({
-      company_id: company.id,
-      stock_code: company.stock_code,
-      name: company.name,
-      market: getCompanyMarket(company),
-      industry: company.industry || "",
-      priority: "medium",
-      tags: "",
-      thesis: "",
-      next_review_at: "",
-      added_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
-    setNotice(`${company.name} 已加入观察列表。`);
-  }
-
-  function updateWatchlistRecord(companyId, patch) {
-    setWatchlistRecords((records) => records.map((record) => (
-      record.company_id === companyId
-        ? normalizeWatchlistRecord({ ...record, ...patch, updated_at: new Date().toISOString() })
-        : record
-    )));
-  }
-
-  function removeWatchlist(companyId) {
-    const record = watchlistRecords.find((item) => item.company_id === companyId);
-    setWatchlistRecords((records) => records.filter((item) => item.company_id !== companyId));
-    if (record) setNotice(`${record.name} 已移出观察列表。`);
-  }
-
-  function exportWatchlist(format) {
-    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-    if (format === "csv") {
-      downloadText(`ai-chaingraph-watchlist-${stamp}.csv`, "text/csv;charset=utf-8", toWatchlistCsv(watchlistRecords));
-      return;
-    }
-    downloadText(
-      `ai-chaingraph-watchlist-${stamp}.json`,
-      "application/json;charset=utf-8",
-      JSON.stringify({ disclaimer: exportDisclaimer, exported_at: new Date().toISOString(), records: watchlistRecords }, null, 2),
-    );
-  }
-
-  if (!graphData) {
+  if (!graph) {
     return (
-      <div className="appShell loadingShell">
-        <Database size={26} />
-        <strong>正在加载 AI 产业链地图</strong>
-        <span>{graphState.error ? `加载失败：${graphState.error.message}` : "尝试 API、本地 snapshot，然后回退演示数据。"}</span>
+      <div className="txLoadingShell">
+        <Database size={26} strokeWidth={1.7} />
+        <strong>{graphState.error ? copy.loadFailed : copy.loading}</strong>
+        <span>{graphState.error ? graphState.error.message : copy.loadingData}</span>
+        {graphState.error && <button type="button" onClick={() => setReloadKey((value) => value + 1)}><RefreshCw size={16} strokeWidth={1.8} />{copy.retry}</button>}
       </div>
     );
   }
 
+  const pathStartLabel = pathStartId ? getEntityLabel(index, pathStartId, locale) : "";
+  const pathTargetLabel = pathTargetId ? getEntityLabel(index, pathTargetId, locale) : "";
+  const queryControls = {
+    showDirection: Boolean(activeId) && !shockOverlay,
+    showDepth: Boolean(activeId) && !pathTargetId && !shockOverlay,
+    direction,
+    depth,
+    onDirectionChange: (value) => {
+      setDirection(value);
+      setShockSpec(null);
+    },
+    onDepthChange: setDepth,
+    path: pathStartId ? {
+      startLabel: pathStartLabel,
+      targetLabel: pathTargetLabel,
+      onCancel: () => {
+        setPathStartId(null);
+        setPathTargetId(null);
+      },
+    } : null,
+    shock: shockOverlay ? {
+      label: localize(shockOverlay.event, "title", locale),
+      onClear: () => setShockSpec(null),
+    } : null,
+  };
+
   return (
-    <div className="appShell">
-      {!ack && <DisclaimerModal onAccept={acknowledgeDisclaimer} />}
+    <div className="txAppShell">
+      {!acknowledged && <DisclaimerModal copy={copy} onAccept={acknowledgeDisclaimer} />}
       <TopBar
         query={query}
-        onQueryChange={updateQuery}
-        viewMode={viewMode}
-        onViewModeChange={(mode) => {
-          if (mode === "graph") {
-            showChainGraph();
-            return;
-          }
-          setViewMode(mode);
-          setMobileTab(mode === "atlas" ? "atlas" : "stocks");
-        }}
+        onQueryChange={setQuery}
+        searchResults={searchResults}
+        onSelectSearchResult={selectSearchResult}
         marketFilter={marketFilter}
         onMarketFilterChange={setMarketFilter}
-        marketOptions={marketOptions}
-        dataVersion={graphData.meta.data_version}
-        dataStatus={dataStatus}
-        onCopyLink={copyCurrentView}
+        dataVersion={graph.meta.data_version}
+        dataStatus={graph.meta.status}
         onReset={resetWorkspace}
+        locale={locale}
+        onLocaleChange={setLocale}
+        searchPlaceholder={pathStartId && !pathTargetId ? copy.pathTargetPlaceholder : copy.searchPlaceholder}
+        copy={copy}
       />
-
-      {notice && <p className="statusToast" role="status" aria-live="polite">{notice}</p>}
-
-      <main className="workbench">
-        <div ref={chainPaneRef} className={`mobilePane pane-chain ${mobileTab === "chain" ? "isMobileActive" : ""}`}>
-          <ChainSidebar
-            data={graphData}
-            activeId={activeId}
-            query={query}
-            onlyChain={onlyChain}
-            onSelect={selectEntity}
-            onScope={focusChain}
+      <ChainNavigator
+        navigation={navigation}
+        activeChainId={selectedChainId}
+        onOverview={() => selectChain(null)}
+        onSelect={selectChain}
+        locale={locale}
+        copy={copy}
+      />
+      <main className={`txWorkspace ${detail ? "hasDetail" : ""}`}>
+        <GraphViewport
+          flow={flow}
+          title={presentation.title}
+          subtitle={presentation.subtitle}
+          breadcrumbs={presentation.breadcrumbs}
+          statusLabel={graph.meta.status === "building" ? copy.coverageBuilding : null}
+          queryControls={queryControls}
+          activeRelationId={activeRelationId}
+          onSelect={selectEntity}
+          onSelectRelation={selectRelation}
+          copy={copy}
+        />
+        {detail && (
+          <GraphDetailPanel
+            detail={detail}
+            relationDetail={relationDetail}
+            locale={locale}
+            copy={copy}
+            pathStartId={pathStartId}
+            shockOverlay={shockOverlay}
+            onSelectEntity={selectEntity}
+            onSelectRelation={selectRelation}
+            onExploreDirection={exploreDirection}
+            onSetPathStart={startPath}
+            onRunShock={runShock}
+            onClearShock={() => setShockSpec(null)}
+            onClose={closeDetail}
           />
-        </div>
-
-        <section ref={centerPaneRef} className={`centerPane mobilePane pane-stocks ${["atlas", "stocks", "graph"].includes(mobileTab) ? "isMobileActive" : ""}`}>
-          {viewMode === "atlas" ? (
-            <IndustryExplorer
-              atlas={industryAtlas}
-              focusedChainId={onlyChain}
-              dataVersion={graphData.meta.data_version}
-              datasetType={graphData.meta.dataset_type}
-              coverageMatrix={coverageMatrix}
-              onFocusChain={focusChain}
-              onSelectNode={selectEntity}
-              onSelectCompany={selectEntity}
-              onViewGraph={showChainGraph}
-              onViewCompanies={showChainCompanies}
-            />
-          ) : viewMode === "graph" ? (
-            <GraphViewport
-              flow={flow}
-              pathSummary={pathSummary}
-              onSelect={selectEntity}
-              isMobile={isMobileLayout}
-            />
-          ) : (
-            <CompanyMapList
-              rows={listRows}
-              activeId={activeId}
-              marketFilter={marketFilter}
-              query={query}
-              onSelect={selectEntity}
-              onViewGraph={() => showChainGraph(onlyChain)}
-            />
-          )}
-        </section>
-
-        <div ref={detailPaneRef} className={`mobilePane pane-detail ${mobileTab === "detail" ? "isMobileActive" : ""}`}>
-          <DetailDrawer
-            data={graphData}
-            active={active}
-            query={query}
-            searchResults={searchResults}
-            searchCollapsed={searchCollapsed}
-            onToggleSearch={() => setSearchCollapsed(!searchCollapsed)}
-            onClearSearch={() => updateQuery("")}
-            onSelect={selectEntity}
-            evidenceFilter={evidenceFilter}
-            marketFilter={marketFilter}
-            watchlistRecords={watchlistRecords}
-            watchlistIds={watchlistIds}
-            onToggleWatchlist={toggleWatchlist}
-            onUpdateWatchlist={updateWatchlistRecord}
-            onRemoveWatchlist={removeWatchlist}
-            onExportWatchlist={exportWatchlist}
-          />
-        </div>
+        )}
       </main>
-
-      <nav className="mobileTabs" aria-label="移动端视图">
-        <button aria-current={mobileTab === "atlas" ? "page" : undefined} className={mobileTab === "atlas" ? "isActive" : ""} onClick={() => { setViewMode("atlas"); setMobileTab("atlas"); }}><Map size={16} />产业链</button>
-        <button aria-current={mobileTab === "stocks" ? "page" : undefined} className={mobileTab === "stocks" ? "isActive" : ""} onClick={() => { setViewMode("list"); setMobileTab("stocks"); }}><ListFilter size={16} />公司</button>
-        <button aria-current={mobileTab === "graph" ? "page" : undefined} className={mobileTab === "graph" ? "isActive" : ""} onClick={() => showChainGraph()}><GitBranch size={16} />关系</button>
-        <button aria-current={mobileTab === "detail" ? "page" : undefined} className={mobileTab === "detail" ? "isActive" : ""} onClick={() => setMobileTab("detail")}><PanelRight size={16} />{active?.stock_code ? "公司详情" : active?.node_type === "overview" ? "总览详情" : "链路详情"}</button>
-      </nav>
     </div>
   );
 }
 
-function DisclaimerModal({ onAccept }) {
-  const acceptButtonRef = useRef(null);
-
-  useEffect(() => {
-    const previousFocus = document.activeElement;
-    acceptButtonRef.current?.focus();
-    const keepFocusInside = (event) => {
-      if (event.key === "Tab") {
-        event.preventDefault();
-        acceptButtonRef.current?.focus();
-      }
+function getScopePresentation({ graph, index, locale, copy, activeEntity, detail, selectedChain, pathStartId, pathTargetId, pathResult, shockSpec }) {
+  if (pathStartId && pathTargetId) {
+    const start = getEntityLabel(index, pathStartId, locale);
+    const target = getEntityLabel(index, pathTargetId, locale);
+    return {
+      title: `${start} → ${target}`,
+      subtitle: pathResult?.found
+        ? locale === "en" ? `${pathResult.hops} factual hops across ${pathResult.cross_chain_hops} chain boundaries.` : `${pathResult.hops} 跳事实关系，跨越 ${pathResult.cross_chain_hops} 次产业链边界。`
+        : copy.noPath,
+      breadcrumbs: [copy.path],
     };
-    document.addEventListener("keydown", keepFocusInside);
-    return () => {
-      document.removeEventListener("keydown", keepFocusInside);
-      previousFocus?.focus?.();
+  }
+  if (activeEntity && detail) {
+    const context = detail.context || getEntityContext(graph, activeEntity.id);
+    const breadcrumbs = [context?.domain, context?.chain, context?.segment].filter(Boolean).map((entity) => localize(entity, "name", locale));
+    const entity = detail.entity;
+    return {
+      title: shockSpec ? localize(shockSpec, "title", locale) : localize(entity, "name", locale),
+      subtitle: detail.kind === "issuer"
+        ? localize(entity, "industry", locale) || `${detail.mappings.length} ${copy.companyPositions}`
+        : [getEntityTypeLabel(entity.entity_type, locale), localize(context?.chain, "name", locale)].filter(Boolean).join(" · "),
+      breadcrumbs,
     };
-  }, []);
+  }
+  if (selectedChain) {
+    const domainId = index.domainByChain.get(selectedChain.id);
+    const domain = index.entitiesById.get(domainId);
+    return {
+      title: localize(selectedChain, "name", locale),
+      subtitle: localize(selectedChain, "description", locale),
+      breadcrumbs: [localize(domain, "name", locale)],
+    };
+  }
+  return { title: copy.overviewTitle, subtitle: copy.overviewSubtitle, breadcrumbs: [] };
+}
 
+function getEntityLabel(index, entityId, locale) {
+  const entity = index?.entitiesById.get(entityId);
+  if (!entity) return entityId;
+  if (entity.entity_type === "security") {
+    const issuer = index.entitiesById.get(index.issuerBySecurity.get(entity.id));
+    return localize(issuer || entity, "name", locale);
+  }
+  return localize(entity, "name", locale);
+}
+
+function DisclaimerModal({ copy, onAccept }) {
   return (
-    <div className="modalBackdrop">
-      <section className="disclaimerModal" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title" aria-describedby="disclaimer-description">
-        <h1 id="disclaimer-title">重要声明</h1>
-        <p id="disclaimer-description">AI-ChainGraph 是信息组织与产业研究辅助工具，不是投资决策工具。</p>
+    <div className="txModalBackdrop" role="presentation">
+      <section className="txDisclaimer" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title">
+        <Database size={24} strokeWidth={1.7} />
+        <h1 id="disclaimer-title">{copy.disclaimerTitle}</h1>
+        <p>{copy.disclaimerBody}</p>
         <ul>
-          <li>本工具不提供、不构成、不暗示任何形式的投资建议、买卖建议或交易策略。</li>
-          <li>展示的上市公司、产业环节、关联关系，不代表对投资价值、股价走势或公司经营状况的判断。</li>
-          <li>关系依据只说明事实来源类型，不代表公司质量、投资价值或未来表现。</li>
-          <li>演示数据只用于本地原型验证。使用真实数据前请自行查证原始来源。</li>
+          <li>{copy.disclaimerFact}</li>
+          <li>{copy.disclaimerInference}</li>
+          <li>{copy.disclaimerVerify}</li>
         </ul>
-        <button ref={acceptButtonRef} className="primaryButton" onClick={onAccept}>已知晓并同意，进入地图</button>
+        <button type="button" className="txPrimaryButton" autoFocus onClick={onAccept}>{copy.disclaimerAccept}</button>
       </section>
     </div>
   );
 }
 
 function useMediaQuery(query) {
-  const [matches, setMatches] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia(query).matches;
-  });
-
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
   useEffect(() => {
     const mediaQuery = window.matchMedia(query);
-    const updateMatches = () => setMatches(mediaQuery.matches);
-    updateMatches();
-    mediaQuery.addEventListener("change", updateMatches);
-    return () => mediaQuery.removeEventListener("change", updateMatches);
+    const update = () => setMatches(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener("change", update);
+    return () => mediaQuery.removeEventListener("change", update);
   }, [query]);
-
   return matches;
 }
 

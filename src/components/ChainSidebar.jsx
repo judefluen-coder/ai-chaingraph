@@ -19,7 +19,6 @@ export function ChainSidebar({
 
       <button
         className={`chainRoot ${activeId === "overview" ? "isActive" : ""}`}
-        aria-current={activeId === "overview" ? "page" : undefined}
         onClick={() => onScope(null)}
       >
         <span>AI 产业链总览</span>
@@ -61,12 +60,7 @@ function ChainGroup({ chain, data, activeId, query, scoped, onSelect, onScope })
 
   return (
     <section className={`chainGroup ${scoped ? "isScoped" : ""}`}>
-      <button
-        className={`chainButton ${activeId === chain.id || scoped ? "isActive" : ""}`}
-        aria-current={activeId === chain.id ? "page" : undefined}
-        aria-expanded={expanded}
-        onClick={onScope}
-      >
+      <button className={`chainButton ${activeId === chain.id || scoped ? "isActive" : ""}`} onClick={onScope}>
         {expanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
         <span>{chain.name}</span>
         <small>{chainCompanyCount} 家</small>
@@ -74,7 +68,7 @@ function ChainGroup({ chain, data, activeId, query, scoped, onSelect, onScope })
       </button>
       {expanded && direct.map((node) => (
         <div key={node.id} className="chainBranch">
-          <button className={`nodeButton ${activeId === node.id ? "isActive" : ""}`} aria-current={activeId === node.id ? "page" : undefined} onClick={() => onSelect(node.id)}>
+          <button className={`nodeButton ${activeId === node.id ? "isActive" : ""}`} onClick={() => onSelect(node.id)}>
             <span>{node.name}</span>
             <small>{companyCountForNode(node.id)} 家</small>
             {matched.has(node.id) && <b>命中</b>}
@@ -83,7 +77,6 @@ function ChainGroup({ chain, data, activeId, query, scoped, onSelect, onScope })
             <button
               key={child.id}
               className={`nodeButton child ${activeId === child.id ? "isActive" : ""}`}
-              aria-current={activeId === child.id ? "page" : undefined}
               onClick={() => onSelect(child.id)}
             >
               <span>{child.name}</span>

@@ -7,14 +7,11 @@ import {
   GitBranch,
   ListFilter,
 } from "lucide-react";
-import { CoverageMatrix } from "./CoverageMatrix";
 
 export function IndustryExplorer({
   atlas,
   focusedChainId,
   dataVersion,
-  datasetType,
-  coverageMatrix,
   onFocusChain,
   onSelectNode,
   onSelectCompany,
@@ -109,7 +106,7 @@ export function IndustryExplorer({
         </div>
         <div className="versionNote">
           <CalendarClock size={16} />
-          <span>{datasetType === "demo" ? "演示数据" : "公开数据"}</span>
+          <span>每周更新</span>
           <small>{dataVersion}</small>
         </div>
       </header>
@@ -122,10 +119,6 @@ export function IndustryExplorer({
         <b>{atlas.reduce((sum, item) => sum + item.sourceCount, 0)}</b>
         <span>个公开来源</span>
       </div>
-
-      {coverageMatrix && (
-        <CoverageMatrix matrix={coverageMatrix} activeChain={focusedChainId} onScope={onFocusChain} />
-      )}
 
       <div className="chainDiscoveryGrid">
         {atlas.map((item, index) => (

@@ -1,21 +1,17 @@
 {
   "name": "ai-chaingraph",
-  "version": "0.3.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
+    "build:sites": "npm run build && node scripts/build-sites.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "api": "node scripts/serve-api.mjs",
-    "smoke": "node scripts/smoke-test.mjs",
-    "validate:example": "node scripts/import-snapshot.mjs examples/fictional-ai-chain.snapshot.json",
-    "validate:tabular": "node scripts/import-tabular.mjs examples/fictional-ai-mappings.csv && node scripts/import-tabular.mjs examples/fictional-ai-mappings.jsonl && node scripts/import-tabular.mjs examples/fictional-ai-mappings-duplicates.csv",
-    "validate:publication": "node scripts/publish-snapshot.mjs public/snapshots/current.json --allow-demo --require-projected",
-    "review:snapshot": "node scripts/review-snapshot.mjs",
-    "import:snapshot": "node scripts/import-snapshot.mjs",
-    "import:tabular": "node scripts/import-tabular.mjs",
-    "publish:snapshot": "node scripts/publish-snapshot.mjs"
+    "validate:snapshot": "node scripts/validate-public-snapshot.mjs"
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.0.0",
