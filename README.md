@@ -3,8 +3,9 @@
 > 把“产业链 -> 产业要素 -> 上市公司 -> 原始证据”连成一张可以向上追溯、向下展开的 AI 产业传导知识图谱。
 
 [![在线体验](https://img.shields.io/badge/在线体验-chatgpt.site-2563eb)](https://ai-chaingraph.judefluen.chatgpt.site/)
-[![Version](https://img.shields.io/badge/version-1.1.0-0f766e)](https://github.com/judefluen-coder/ai-chaingraph)
+[![Version](https://img.shields.io/badge/version-1.2.0-0f766e)](https://github.com/judefluen-coder/ai-chaingraph)
 [![CI](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/ci.yml/badge.svg)](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/ci.yml)
+[![Weekly data quality](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/weekly-data-quality.yml/badge.svg)](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/weekly-data-quality.yml)
 [![Code License: MIT](https://img.shields.io/badge/code-MIT-2ea44f.svg)](LICENSE)
 [![Data License: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-2ea44f.svg)](DATA_LICENSE.md)
 
@@ -70,9 +71,9 @@ flowchart LR
 
 ![超威半导体产业位置与逐边证据](docs/assets/ai-chaingraph-v1.1-evidence.png)
 
-## v1.1 数据规模
+## v1.2 数据规模
 
-当前公开快照更新时间为 **2026-07-18**，覆盖 A 股与美股上市公司。
+当前公开快照于 **2026-09-07** 完成关系深化，覆盖 A 股与美股上市公司。底层公开来源截止 **2026-07-12**，此后按周检查新增披露并分别记录检查时间与数据变更时间。
 
 | 数据对象 | 数量 | 说明 |
 | --- | ---: | --- |
@@ -80,12 +81,25 @@ flowchart LR
 | 产业链 | 12 | 从半导体制造到 AI 行业应用 |
 | 产业环节 | 111 | 每条产业链中的细分 segment |
 | 上市公司 / 证券 | 4,537 | 已标准化的发行人与证券实体 |
-| 公司产业映射 | 6,603 | 公司到产品、部件、服务、设备、材料等具体要素的关系 |
+| 公司产业映射 | 6,609 | 其中 5,984 条具体动作关系，625 条仍保留为宽口径映射 |
+| 具备具体关系的公司 | 4,233 | 占全部公司的 93.3%，其余 304 家等待更多可验证证据 |
 | 产业依赖关系 | 173 | `input_to`、`component_of`、`enables`、`used_in` 等有方向关系 |
 | 证据声明 | 6,621 | 从公开文件中提取并关联到图谱关系的事实声明 |
 | 公开来源 | 4,616 | 巨潮资讯、SEC、交易所、公司官网及公开产品资料 |
 
 公司可能同时出现在多条产业链和多个产业要素中，因此各链显示的公司数不能直接相加为唯一公司数。
+
+## 每周更新机制
+
+项目采用“自动检查、证据准入、验证后发布”的周更流程，而不是把爬虫结果直接写进正式图谱：
+
+1. 每周一检查上周新增的监管文件、交易所公告和公司正式披露，优先处理仍为宽口径映射的公司及覆盖不足的产业环节。
+2. 新关系以审核批次进入 [`data/weekly-candidates/`](data/weekly-candidates/README.md)，必须包含公开 HTTPS 来源、可复核声明、明确动作和 L1/L2 证据等级。
+3. `npm run update:weekly` 导入审核批次，并用可追溯规则把已有证据中动作明确的宽口径关系提升为具体关系。
+4. 快照校验、关系深度审计和前端构建全部通过后，才允许提交 GitHub 并发布到原 OpenAI Sites 地址。
+5. GitHub Actions 每周检查最近核验时间不得超过 8 天，且具备具体关系的公司比例不得低于 90%。
+
+每次检查结果写入 [`public/snapshots/update-status.json`](public/snapshots/update-status.json)。完整流程与证据政策见 [`docs/WEEKLY_UPDATES.md`](docs/WEEKLY_UPDATES.md)。
 
 ## 项目结构
 
@@ -120,7 +134,7 @@ flowchart LR
 - **双语视图模型**：同一份图谱数据生成中英文界面。
 - **研究工作区**：左侧产业导航、右侧范围检查器，以及浏览器本地观察列表与研究备注。
 - **可恢复 URL 状态**：保存当前实体、关系、产业链、查询方向、深度、路径和条件推演。
-- **静态公开快照**：GitHub Pages 与 OpenAI Sites 使用同一份 v1.1 数据。
+- **审核后周更快照**：GitHub Pages 与 OpenAI Sites 使用同一份数据版本，并保留最近检查、数据变更和来源截止日期。
 
 主要目录：
 
@@ -132,6 +146,10 @@ src/lib/workspaceState.js            可复制、可恢复的研究视图 URL �
 src/lib/watchlist.js                 本地观察列表、研究备注与 CSV 导出
 src/components/                      导航、图谱画布和证据详情面板
 public/snapshots/transmission-v1.1.json 公开 v1.1 图谱快照
+public/snapshots/update-status.json     每周检查状态与关系质量指标
+data/weekly-candidates/                 审核后的增量证据批次
+scripts/update-weekly-snapshot.mjs      批次导入、关系深化与周更状态生成
+scripts/audit-relationship-depth.mjs    关系深度、覆盖分布与周更时效审计
 scripts/validate-public-snapshot.mjs 发布快照完整性与引用校验
 scripts/build-sites.mjs              OpenAI Sites 静态部署打包
 docs/assets/                         README 项目截图
@@ -173,6 +191,7 @@ Vite 默认会在 `http://127.0.0.1:5173/` 启动开发服务器。推送到 `ma
 
 ```bash
 npm run validate:snapshot
+npm run audit:relationships
 npm run build
 ```
 

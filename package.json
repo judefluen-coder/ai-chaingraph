@@ -1,6 +1,6 @@
 {
   "name": "ai-chaingraph",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -11,7 +11,10 @@
     "build": "vite build",
     "build:sites": "npm run build && node scripts/build-sites.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "validate:snapshot": "node scripts/validate-public-snapshot.mjs"
+    "test": "node --test",
+    "validate:snapshot": "node scripts/validate-public-snapshot.mjs",
+    "audit:relationships": "node scripts/audit-relationship-depth.mjs",
+    "update:weekly": "node scripts/update-weekly-snapshot.mjs"
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.0.0",

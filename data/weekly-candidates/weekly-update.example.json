@@ -1,0 +1,45 @@
+{
+  "batch_id": "weekly-YYYY-MM-DD-sequence",
+  "review_status": "approved",
+  "reviewer": "researcher-or-automation-id",
+  "reviewed_at": "YYYY-MM-DDTHH:mm:ss.sssZ",
+  "source_documents": [
+    {
+      "id": "source:stable-hash",
+      "source_type": "exchange_filing",
+      "title": "Official disclosure title",
+      "title_en": "Official disclosure title",
+      "url": "https://example.com/official-source",
+      "publish_date": "YYYY-MM-DD",
+      "language": "zh",
+      "issuer_id": "issuer:existing-id"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim:stable-hash",
+      "source_document_id": "source:stable-hash",
+      "excerpt": "A concise evidence-backed relationship statement.",
+      "excerpt_en": "A concise evidence-backed relationship statement.",
+      "language": "zh",
+      "reviewed_at": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:stable-hash",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:existing-id",
+      "to_id": "component:existing-id",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": [
+        "claim:stable-hash"
+      ],
+      "attributes": {
+        "legacy_chain_id": "existing-chain-id",
+        "legacy_segment_id": "existing-segment-id"
+      }
+    }
+  ]
+}

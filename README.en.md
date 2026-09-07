@@ -3,8 +3,9 @@
 > An evidence-traceable AI industry transmission graph connecting industry chains, typed elements, listed companies, and original public sources.
 
 [![Live](https://img.shields.io/badge/live-chatgpt.site-2563eb)](https://ai-chaingraph.judefluen.chatgpt.site/)
-[![Version](https://img.shields.io/badge/version-1.1.0-0f766e)](https://github.com/judefluen-coder/ai-chaingraph)
+[![Version](https://img.shields.io/badge/version-1.2.0-0f766e)](https://github.com/judefluen-coder/ai-chaingraph)
 [![CI](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/ci.yml/badge.svg)](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/ci.yml)
+[![Weekly data quality](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/weekly-data-quality.yml/badge.svg)](https://github.com/judefluen-coder/ai-chaingraph/actions/workflows/weekly-data-quality.yml)
 [![Code License: MIT](https://img.shields.io/badge/code-MIT-2ea44f.svg)](LICENSE)
 [![Data License: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-2ea44f.svg)](DATA_LICENSE.md)
 
@@ -64,9 +65,9 @@ Open a company to see its industry positions. Select a mapping to inspect its ev
 
 ![AMD industry position and evidence](docs/assets/ai-chaingraph-v1.1-evidence.png)
 
-## v1.1 Public Snapshot
+## v1.2 Public Snapshot
 
-The current snapshot was updated on **2026-07-18**.
+The relationship layer was refreshed on **2026-09-07**. Underlying public sources currently run through **2026-07-12**; new disclosures are checked weekly with separate check and change timestamps.
 
 | Object | Count |
 | --- | ---: |
@@ -74,12 +75,25 @@ The current snapshot was updated on **2026-07-18**.
 | Industry chains | 12 |
 | Industry segments | 111 |
 | Issuers / securities | 4,537 |
-| Company-to-element mappings | 6,603 |
+| Company-to-element mappings | 6,609 (5,984 specific; 625 broad) |
+| Issuers with specific relations | 4,233 (93.3%) |
 | Directed industry dependencies | 173 |
 | Evidence claims | 6,621 |
 | Public source documents | 4,616 |
 
 Companies may appear in multiple chains and elements, so chain-level company counts are not unique-company totals.
+
+## Weekly Update Mechanism
+
+The project uses a reviewed weekly cycle instead of writing crawler output directly into the public graph:
+
+1. Every Monday, inspect new regulatory filings, exchange announcements, and official company disclosures, prioritizing broad-only issuers and under-covered segments.
+2. Approved relationships enter through [`data/weekly-candidates/`](data/weekly-candidates/README.md) with a public HTTPS source, reviewable claim, explicit action, and L1/L2 evidence level.
+3. `npm run update:weekly` imports approved batches and promotes existing broad mappings only when their linked evidence contains an explicit issuer action.
+4. Snapshot validation, relationship-depth auditing, and the production build must pass before GitHub and the existing OpenAI Sites project are updated.
+5. A scheduled GitHub Actions gate verifies that the latest check is no more than eight days old and that at least 90% of issuers retain a specific relationship.
+
+Each run writes [`public/snapshots/update-status.json`](public/snapshots/update-status.json). See [`docs/WEEKLY_UPDATES.md`](docs/WEEKLY_UPDATES.md) for the complete process and evidence policy.
 
 ## Architecture
 
@@ -114,7 +128,7 @@ The static app reads [`public/snapshots/transmission-v1.1.json`](public/snapshot
 - A bilingual view model over one canonical snapshot
 - A left-side research workspace, persistent scope inspector, local watchlist, and research notes
 - Restorable URL state for entities, relationships, chains, traversal, paths, and scenarios
-- Static deployment to GitHub Pages and OpenAI Sites
+- A reviewed weekly snapshot shared by GitHub Pages and OpenAI Sites
 
 ## Run Locally
 
@@ -150,6 +164,7 @@ Contributions are welcome for ontology quality, entity normalization, evidence l
 
 ```bash
 npm run validate:snapshot
+npm run audit:relationships
 npm run build
 ```
 

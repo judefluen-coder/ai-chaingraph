@@ -24,6 +24,8 @@ export function ChainNavigator({
   onMarketFilterChange,
   dataVersion,
   dataStatus,
+  dataRefresh,
+  relationshipQuality,
   onReset,
   onCopyLink,
   watchlistRecords,
@@ -36,6 +38,10 @@ export function ChainNavigator({
   const [openDomains, setOpenDomains] = useState(() => new Set(navigation.map(({ domain }) => domain.id)));
   const [watchlistOpen, setWatchlistOpen] = useState(true);
   const dataStateLabel = dataStatus === "ready" ? copy.dataReady : copy.dataBuilding;
+  const checkedDate = dataRefresh?.last_checked_at?.slice(0, 10) || "-";
+  const specificRate = relationshipQuality
+    ? `${Math.round(relationshipQuality.specific_issuer_rate * 100)}%`
+    : "-";
 
   useEffect(() => {
     setOpenDomains((current) => {
@@ -151,10 +157,13 @@ export function ChainNavigator({
             <button type="button" className="txUtilityButton" aria-label={copy.exportWatchlist} title={copy.exportWatchlist} disabled={watchlistRecords.length === 0} onClick={onExportWatchlist}><Download size={16} strokeWidth={1.8} /></button>
             <a className="txUtilityButton" href="https://github.com/judefluen-coder/ai-chaingraph" target="_blank" rel="noreferrer" aria-label={copy.github} title={copy.github}><Github size={16} strokeWidth={1.8} /></a>
           </div>
-          <div className="txSidebarDataState" title={`${dataStateLabel} · ${dataVersion}`}>
+          <div
+            className="txSidebarDataState"
+            title={`${dataStateLabel} · ${copy.weeklyRefresh} · ${copy.checkedOn} ${checkedDate} · ${copy.specificRelationshipRate} ${specificRate}`}
+          >
             <Database size={14} strokeWidth={1.8} />
-            <span>{dataStateLabel}</span>
-            <small>{dataVersion}</small>
+            <span>{dataStateLabel} · {copy.weeklyRefresh}</span>
+            <small>{dataVersion} · {specificRate}</small>
           </div>
         </footer>
       </aside>

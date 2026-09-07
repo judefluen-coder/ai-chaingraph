@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.0.0",
+  "data_version": "1.2.0",
+  "checked_at": "2026-09-07T11:09:19.654Z",
+  "changed_at": "2026-09-07T11:09:19.654Z",
+  "next_scheduled_at": "2026-09-14T11:09:19.654Z",
+  "source_cutoff_date": "2026-07-12",
+  "cadence": "weekly",
+  "changed": true,
+  "imported": {
+    "batches": 0,
+    "sources": 0,
+    "claims": 0,
+    "relations": 0
+  },
+  "promotions": {
+    "promotedRelations": 0,
+    "reclassifiedRelations": 1,
+    "revertedRelations": 0,
+    "promotionsByType": {
+      "issuer_distributes": 1
+    }
+  },
+  "last_change_summary": {
+    "imported": {
+      "batches": 0,
+      "sources": 0,
+      "claims": 0,
+      "relations": 0
+    },
+    "promotions": {
+      "promotedRelations": 0,
+      "reclassifiedRelations": 1,
+      "revertedRelations": 0,
+      "promotionsByType": {
+        "issuer_distributes": 1
+      }
+    }
+  },
+  "quality": {
+    "issuers_total": 4537,
+    "issuers_mapped": 4537,
+    "issuers_unmapped": 0,
+    "issuers_with_specific_relations": 4233,
+    "issuers_generic_only": 304,
+    "specific_issuer_rate": 0.933,
+    "issuer_relations_total": 6609,
+    "specific_relations": 5984,
+    "generic_relations": 625,
+    "specific_relation_rate": 0.9054,
+    "evidence_levels": {
+      "L1": 6565,
+      "L2": 44
+    },
+    "segments_total": 111,
+    "segments_covered": 111,
+    "median_mappings_per_segment": 22,
+    "sparse_segments": [
+      {
+        "segment_id": "segment:hbm",
+        "name": "高带宽存储HBM",
+        "mapping_count": 1
+      },
+      {
+        "segment_id": "segment:pcb_base_laminates",
+        "name": "PCB基础覆铜板",
+        "mapping_count": 1
+      },
+      {
+        "segment_id": "segment:laminate_functional_fillers",
+        "name": "覆铜板功能填料",
+        "mapping_count": 2
+      },
+      {
+        "segment_id": "segment:advanced_foundry",
+        "name": "先进制程晶圆代工",
+        "mapping_count": 4
+      },
+      {
+        "segment_id": "segment:ai_device_distribution_channels",
+        "name": "AI终端分销与渠道",
+        "mapping_count": 4
+      },
+      {
+        "segment_id": "segment:data_center_facility_components",
+        "name": "数据中心机电与设施部件",
+        "mapping_count": 4
+      },
+      {
+        "segment_id": "segment:thermal_management_manufacturing_equipment",
+        "name": "热管理制造装备",
+        "mapping_count": 4
+      }
+    ],
+    "largest_segments": [
+      {
+        "segment_id": "segment:finance_content_public_ai",
+        "name": "金融、内容与公共服务AI",
+        "mapping_count": 696
+      },
+      {
+        "segment_id": "segment:industrial_ai",
+        "name": "工业AI",
+        "mapping_count": 562
+      },
+      {
+        "segment_id": "segment:healthcare_ai",
+        "name": "医疗AI",
+        "mapping_count": 296
+      },
+      {
+        "segment_id": "segment:industrial_service_robots",
+        "name": "工业与服务机器人",
+        "mapping_count": 278
+      },
+      {
+        "segment_id": "segment:ai_sensors",
+        "name": "AI传感器与机器视觉",
+        "mapping_count": 276
+      }
+    ]
+  }
+}

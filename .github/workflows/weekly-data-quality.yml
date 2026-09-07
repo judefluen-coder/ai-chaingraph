@@ -1,20 +1,16 @@
-name: CI
+name: Weekly data quality gate
 
 on:
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: "30 2 * * 1"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  validate-and-build:
-    name: Validate v1.1 snapshot and build
+  verify-weekly-refresh:
+    name: Verify weekly graph refresh
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -31,14 +27,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
-
       - name: Test weekly relationship pipeline
         run: npm test
 
-      - name: Validate public transmission snapshot
+      - name: Validate public snapshot
         run: npm run validate:snapshot
+
+      - name: Enforce relationship depth and weekly freshness
+        run: npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8
 
       - name: Build frontend
         run: npm run build

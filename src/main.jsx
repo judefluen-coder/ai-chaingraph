@@ -420,6 +420,8 @@ function App() {
         onMarketFilterChange={setMarketFilter}
         dataVersion={graph.meta.data_version}
         dataStatus={graph.meta.status}
+        dataRefresh={graph.meta.refresh}
+        relationshipQuality={graph.meta.quality}
         onReset={resetWorkspace}
         onCopyLink={copyResearchLink}
         watchlistRecords={watchlistRecords}

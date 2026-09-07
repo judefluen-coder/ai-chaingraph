@@ -1,0 +1,88 @@
+{
+  "batch_id": "weekly-2026-09-07-depth-balance",
+  "review_status": "approved",
+  "reviewer": "codex:evidence-reclassification",
+  "reviewed_at": "2026-09-07T11:00:00.000Z",
+  "source_documents": [],
+  "claims": [],
+  "relations": [
+    {
+      "id": "relation:issuer_element:weekly-gfs-advanced-foundry",
+      "relation_type": "issuer_provides",
+      "from_id": "issuer:sec-cik-0001709048",
+      "to_id": "product:advanced_foundry",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:031754ff827799af218d2929"],
+      "attributes": {
+        "legacy_chain_id": "semiconductor_manufacturing",
+        "legacy_segment_id": "advanced_foundry"
+      }
+    },
+    {
+      "id": "relation:issuer_element:weekly-yasheng-agriculture-ai",
+      "relation_type": "issuer_integrates",
+      "from_id": "issuer:cn-sh-600251",
+      "to_id": "application:agriculture_ai",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:1fc76faab01918a2e6e235fe"],
+      "attributes": {
+        "legacy_chain_id": "ai_industry_applications",
+        "legacy_segment_id": "agriculture_ai"
+      }
+    },
+    {
+      "id": "relation:issuer_element:weekly-huapeng-agriculture-ai",
+      "relation_type": "issuer_provides",
+      "from_id": "issuer:cn-sz-002512",
+      "to_id": "application:agriculture_ai",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:4de19971818051e16de5b830"],
+      "attributes": {
+        "legacy_chain_id": "ai_industry_applications",
+        "legacy_segment_id": "agriculture_ai"
+      }
+    },
+    {
+      "id": "relation:issuer_element:weekly-power-generation-600841",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-600841",
+      "to_id": "equipment:data_center_power_generation",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:6e1f697f7b4c7ca901908050"],
+      "attributes": {
+        "legacy_chain_id": "data_center_power_cooling",
+        "legacy_segment_id": "data_center_power_generation"
+      }
+    },
+    {
+      "id": "relation:issuer_element:weekly-power-generation-000880",
+      "relation_type": "issuer_provides",
+      "from_id": "issuer:cn-sz-000880",
+      "to_id": "equipment:data_center_power_generation",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:600bc4c396c49e9ee7aa78b9"],
+      "attributes": {
+        "legacy_chain_id": "data_center_power_cooling",
+        "legacy_segment_id": "data_center_power_generation"
+      }
+    },
+    {
+      "id": "relation:issuer_element:weekly-himax-ai-asic",
+      "relation_type": "issuer_develops",
+      "from_id": "issuer:sec-cik-0001342338",
+      "to_id": "product:ai_asic",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:1ca127dadbf483787d96b22f"],
+      "attributes": {
+        "legacy_chain_id": "ai_chips_ip",
+        "legacy_segment_id": "ai_asic"
+      }
+    }
+  ]
+}
