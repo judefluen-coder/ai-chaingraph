@@ -1,34 +1,43 @@
-import { useState } from "react";
-import { Database, GitFork, Github, Search, X } from "lucide-react";
-import { getMarketLabel } from "../lib/transmissionViewModel.js";
+import { useEffect, useId, useState } from "react";
+import { Menu, Search, X } from "lucide-react";
 
 export function TopBar({
   query,
   onQueryChange,
   searchResults,
   onSelectSearchResult,
-  marketFilter,
-  onMarketFilterChange,
-  dataVersion,
-  dataStatus,
-  onReset,
-  locale,
-  onLocaleChange,
+  onOpenNavigation,
+  navigationOpen,
   searchPlaceholder,
   copy,
 }) {
+  const listboxId = useId();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const showResults = searchOpen && query.trim();
-  const dataStateLabel = dataStatus === "ready" ? copy.dataReady : copy.dataBuilding;
+
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [query]);
+
+  function selectResult(item) {
+    if (!item) return;
+    onSelectSearchResult(item);
+    setSearchOpen(false);
+    setActiveIndex(-1);
+  }
 
   return (
     <header className="txTopbar">
-      <button className="txBrand" type="button" onClick={onReset}>
-        <span className="txBrandMark"><GitFork size={18} strokeWidth={1.8} /></span>
-        <span>
-          <strong>{copy.brand}</strong>
-          <small>{copy.brandTagline}</small>
-        </span>
+      <button
+        className="txMobileMenu"
+        type="button"
+        aria-label={copy.openNavigation}
+        title={copy.openNavigation}
+        aria-expanded={navigationOpen}
+        onClick={onOpenNavigation}
+      >
+        <Menu size={19} strokeWidth={1.8} />
       </button>
 
       <div
@@ -43,13 +52,29 @@ export function TopBar({
           <Search size={18} strokeWidth={1.8} />
           <input
             value={query}
+            role="combobox"
+            aria-controls={listboxId}
+            aria-expanded={Boolean(showResults)}
+            aria-activedescendant={activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined}
             onChange={(event) => {
               onQueryChange(event.target.value);
               setSearchOpen(true);
             }}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && searchResults.length === 1) onSelectSearchResult(searchResults[0]);
-              if (event.key === "Escape") setSearchOpen(false);
+              if (event.key === "ArrowDown" && searchResults.length > 0) {
+                event.preventDefault();
+                setSearchOpen(true);
+                setActiveIndex((index) => Math.min(index + 1, searchResults.length - 1));
+              }
+              if (event.key === "ArrowUp" && searchResults.length > 0) {
+                event.preventDefault();
+                setActiveIndex((index) => Math.max(index - 1, 0));
+              }
+              if (event.key === "Enter") selectResult(searchResults[activeIndex] || (searchResults.length === 1 ? searchResults[0] : null));
+              if (event.key === "Escape") {
+                setSearchOpen(false);
+                setActiveIndex(-1);
+              }
             }}
             placeholder={searchPlaceholder || copy.searchPlaceholder}
             aria-label={copy.searchLabel}
@@ -62,22 +87,20 @@ export function TopBar({
           )}
         </div>
         {showResults && (
-          <div className="txSearchResults" role="listbox">
+          <div className="txSearchResults" role="listbox" id={listboxId}>
             {searchResults.length === 0 ? (
               <span className="txSearchEmpty">{copy.noSearchResults}</span>
-            ) : searchResults.map((item) => (
+            ) : searchResults.map((item, index) => (
               <button
                 key={item.id}
+                id={`${listboxId}-${index}`}
                 type="button"
                 role="option"
-                aria-selected="false"
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                }}
-                onClick={() => {
-                  onSelectSearchResult(item);
-                  setSearchOpen(false);
-                }}
+                aria-selected={activeIndex === index}
+                className={activeIndex === index ? "isActive" : ""}
+                onPointerDown={(event) => event.preventDefault()}
+                onPointerEnter={() => setActiveIndex(index)}
+                onClick={() => selectResult(item)}
               >
                 <span>
                   <strong>{item.primary}</strong>
@@ -89,33 +112,6 @@ export function TopBar({
           </div>
         )}
       </div>
-
-      <nav className="txTopbarTools" aria-label={copy.filters}>
-        <div className="txSegmented txMarketSwitch" aria-label={copy.marketFilter}>
-          {["all", "a_share", "us"].map((market) => (
-            <button
-              key={market}
-              type="button"
-              className={marketFilter === market ? "isActive" : ""}
-              aria-pressed={marketFilter === market}
-              onClick={() => onMarketFilterChange(market)}
-            >
-              {getMarketLabel(market, locale)}
-            </button>
-          ))}
-        </div>
-        <div className="txSegmented txLanguageSwitch" aria-label={copy.language}>
-          <button type="button" className={locale === "zh" ? "isActive" : ""} aria-pressed={locale === "zh"} onClick={() => onLocaleChange("zh")}>中</button>
-          <button type="button" className={locale === "en" ? "isActive" : ""} aria-pressed={locale === "en"} onClick={() => onLocaleChange("en")}>EN</button>
-        </div>
-        <a className="txIconLink" href="https://github.com/judefluen-coder/ai-chaingraph" target="_blank" rel="noreferrer" aria-label={copy.github} title={copy.github}>
-          <Github size={18} strokeWidth={1.8} />
-        </a>
-        <span className="txDataState" title={`${dataStateLabel} · ${dataVersion}`}>
-          <Database size={15} strokeWidth={1.8} />
-          <span>{dataStateLabel}</span>
-        </span>
-      </nav>
     </header>
   );
 }

@@ -17,7 +17,7 @@ function normalizeGraphData(data, source) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, { cache: "default" });
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
   return response.json();
 }

@@ -8,6 +8,7 @@ import {
   FileText,
   GitCompareArrows,
   Route,
+  Star,
   X,
 } from "lucide-react";
 import {
@@ -38,6 +39,9 @@ export function GraphDetailPanel({
   copy,
   pathStartId,
   shockOverlay,
+  watchRecord,
+  onToggleWatchlist,
+  onUpdateWatchlist,
   onSelectEntity,
   onSelectRelation,
   onExploreDirection,
@@ -72,6 +76,12 @@ export function GraphDetailPanel({
       </header>
 
       <div className="txDetailActions">
+        {detail.kind === "issuer" && (
+          <button type="button" className={watchRecord ? "isActive" : ""} aria-pressed={Boolean(watchRecord)} onClick={onToggleWatchlist}>
+            <Star size={16} strokeWidth={1.8} fill={watchRecord ? "currentColor" : "none"} />
+            {watchRecord ? copy.watching : copy.addToWatchlist}
+          </button>
+        )}
         {detail.kind === "element" && (
           <>
             <button type="button" onClick={() => onExploreDirection("upstream")}><ArrowDownLeft size={16} strokeWidth={1.8} />{copy.upstream}</button>
@@ -83,7 +93,7 @@ export function GraphDetailPanel({
         </button>
       </div>
 
-      {detail.context && <ContextSection context={detail.context} locale={locale} copy={copy} />}
+      {detail.kind !== "issuer" && detail.context && <ContextSection context={detail.context} locale={locale} copy={copy} />}
       {relationDetail && <RelationEvidence detail={relationDetail} locale={locale} copy={copy} />}
 
       {detail.kind === "issuer" ? (
@@ -112,6 +122,10 @@ export function GraphDetailPanel({
             copy={copy}
           />
         </>
+      )}
+
+      {detail.kind === "issuer" && watchRecord && (
+        <ResearchNote record={watchRecord} copy={copy} onUpdate={onUpdateWatchlist} />
       )}
 
       <details className="txConditionalSection" open={Boolean(shockOverlay)}>
@@ -287,4 +301,37 @@ function EvidenceBadge({ relation, copy }) {
     className = "isOntology";
   }
   return <em className={`txEvidenceBadge ${className}`}>{label}</em>;
+}
+
+function ResearchNote({ record, copy, onUpdate }) {
+  return (
+    <section className="txDetailSection txResearchNote">
+      <div className="txSectionHeading">
+        <h3>{copy.researchNote}</h3>
+        <span>{record.updated_at ? String(record.updated_at).slice(0, 10) : ""}</span>
+      </div>
+      <div className="txResearchNoteGrid">
+        <label>
+          <span>{copy.priority}</span>
+          <select value={record.priority} onChange={(event) => onUpdate({ priority: event.target.value })}>
+            <option value="high">{copy.priority_high}</option>
+            <option value="medium">{copy.priority_medium}</option>
+            <option value="low">{copy.priority_low}</option>
+          </select>
+        </label>
+        <label>
+          <span>{copy.nextReview}</span>
+          <input type="date" value={record.next_review_at} onChange={(event) => onUpdate({ next_review_at: event.target.value })} />
+        </label>
+        <label className="isWide">
+          <span>{copy.tags}</span>
+          <input value={record.tags} placeholder={copy.tagsPlaceholder} onChange={(event) => onUpdate({ tags: event.target.value })} />
+        </label>
+        <label className="isWide">
+          <span>{copy.thesis}</span>
+          <textarea value={record.thesis} placeholder={copy.thesisPlaceholder} rows={4} onChange={(event) => onUpdate({ thesis: event.target.value })} />
+        </label>
+      </div>
+    </section>
+  );
 }

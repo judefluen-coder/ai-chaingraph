@@ -1,134 +1,163 @@
-import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Grid2X2, X } from "lucide-react";
-import { localize } from "../lib/transmissionViewModel.js";
+import { useEffect, useState } from "react";
+import {
+  ChevronDown,
+  Database,
+  Download,
+  Github,
+  GitFork,
+  Link2,
+  Network,
+  Star,
+  X,
+} from "lucide-react";
+import { getMarketLabel, localize } from "../lib/transmissionViewModel.js";
 
-export function ChainNavigator({ navigation, activeChainId, onOverview, onSelect, locale, copy }) {
-  const rootRef = useRef(null);
-  const scrollerRef = useRef(null);
-  const [directoryOpen, setDirectoryOpen] = useState(false);
-  const [scrollState, setScrollState] = useState({ left: false, right: false });
-  const chains = navigation.flatMap((group) => group.chains);
+export function ChainNavigator({
+  navigation,
+  activeChainId,
+  activeEntityId,
+  onOverview,
+  onSelect,
+  locale,
+  onLocaleChange,
+  marketFilter,
+  onMarketFilterChange,
+  dataVersion,
+  dataStatus,
+  onReset,
+  onCopyLink,
+  watchlistRecords,
+  onSelectWatchlist,
+  onExportWatchlist,
+  open,
+  onClose,
+  copy,
+}) {
+  const [openDomains, setOpenDomains] = useState(() => new Set(navigation.map(({ domain }) => domain.id)));
+  const [watchlistOpen, setWatchlistOpen] = useState(true);
+  const dataStateLabel = dataStatus === "ready" ? copy.dataReady : copy.dataBuilding;
 
   useEffect(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return undefined;
-    const update = () => setScrollState({
-      left: scroller.scrollLeft > 2,
-      right: scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 2,
+    setOpenDomains((current) => {
+      const next = new Set(current);
+      navigation.forEach(({ domain }) => next.add(domain.id));
+      return next;
     });
-    const observer = new ResizeObserver(update);
-    observer.observe(scroller);
-    scroller.addEventListener("scroll", update, { passive: true });
-    update();
-    return () => {
-      observer.disconnect();
-      scroller.removeEventListener("scroll", update);
-    };
-  }, [chains.length, locale]);
-
-  useEffect(() => {
-    if (!directoryOpen) return undefined;
-    const closeOnOutside = (event) => {
-      if (!rootRef.current?.contains(event.target)) setDirectoryOpen(false);
-    };
-    document.addEventListener("pointerdown", closeOnOutside);
-    return () => document.removeEventListener("pointerdown", closeOnOutside);
-  }, [directoryOpen]);
-
-  function scrollByPage(direction) {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    scroller.scrollBy({ left: direction * Math.max(260, scroller.clientWidth * 0.72), behavior: "smooth" });
-  }
+  }, [navigation]);
 
   function selectChain(chainId) {
     onSelect(chainId);
-    setDirectoryOpen(false);
+    onClose();
+  }
+
+  function toggleDomain(domainId) {
+    setOpenDomains((current) => {
+      const next = new Set(current);
+      if (next.has(domainId)) next.delete(domainId);
+      else next.add(domainId);
+      return next;
+    });
   }
 
   return (
-    <nav className="txChainNav" aria-label={copy.allChains} ref={rootRef}>
-      <span className="txChainNavLabel">{copy.industryEntry}</span>
-      <button type="button" className={`txOverviewButton ${activeChainId ? "" : "isActive"}`} onClick={onOverview}>
-        {copy.overview}
-      </button>
-      <button
-        className="txChainScrollButton"
-        type="button"
-        aria-label={copy.previousChains}
-        title={copy.previousChains}
-        disabled={!scrollState.left}
-        onClick={() => scrollByPage(-1)}
-      >
-        <ChevronLeft size={17} strokeWidth={1.8} />
-      </button>
-      <div className="txChainScroller" ref={scrollerRef}>
-        {chains.map((chain) => (
-          <button
-            key={chain.id}
-            type="button"
-            data-chain-id={chain.id}
-            className={activeChainId === chain.id ? "isActive" : ""}
-            aria-pressed={activeChainId === chain.id}
-            onClick={() => selectChain(chain.id)}
-          >
-            {localize(chain, "name", locale)}
+    <>
+      <button className={`txSidebarBackdrop ${open ? "isVisible" : ""}`} type="button" aria-label={copy.closeNavigation} onClick={onClose} />
+      <aside className={`txSidebar ${open ? "isOpen" : ""}`} aria-label={copy.workspaceNavigation}>
+        <header className="txSidebarHeader">
+          <button className="txSidebarBrand" type="button" onClick={() => { onReset(); onClose(); }}>
+            <span><GitFork size={18} strokeWidth={1.8} /></span>
+            <span><strong>{copy.brand}</strong><small>{copy.brandTagline}</small></span>
           </button>
-        ))}
-      </div>
-      <button
-        className="txChainScrollButton"
-        type="button"
-        aria-label={copy.nextChains}
-        title={copy.nextChains}
-        disabled={!scrollState.right}
-        onClick={() => scrollByPage(1)}
-      >
-        <ChevronRight size={17} strokeWidth={1.8} />
-      </button>
-      <button
-        type="button"
-        className={`txDirectoryButton ${directoryOpen ? "isActive" : ""}`}
-        aria-expanded={directoryOpen}
-        onClick={() => setDirectoryOpen((value) => !value)}
-      >
-        <Grid2X2 size={16} strokeWidth={1.8} />
-        <span>{chains.length}</span>
-      </button>
+          <button className="txSidebarClose" type="button" aria-label={copy.closeNavigation} title={copy.closeNavigation} onClick={onClose}>
+            <X size={18} strokeWidth={1.8} />
+          </button>
+        </header>
 
-      {directoryOpen && (
-        <section className="txChainDirectory" aria-label={copy.chainDirectory}>
-          <header>
-            <div>
-              <strong>{copy.chainDirectory}</strong>
-              <span>{navigation.length} {copy.domains} · {chains.length} {copy.chains}</span>
-            </div>
-            <button type="button" className="txIconButton" aria-label={copy.closeDirectory} title={copy.closeDirectory} onClick={() => setDirectoryOpen(false)}>
-              <X size={18} strokeWidth={1.8} />
+        <div className="txSidebarScroll">
+          <nav className="txPrimaryNav" aria-label={copy.workspaceNavigation}>
+            <button type="button" className={!activeChainId && !activeEntityId ? "isActive" : ""} onClick={() => { onOverview(); onClose(); }}>
+              <Network size={17} strokeWidth={1.8} />
+              <span>{copy.overview}</span>
             </button>
-          </header>
-          <div className="txDomainDirectory">
-            {navigation.map(({ domain, chains: domainChains }) => (
-              <section key={domain.id}>
-                <h2>{localize(domain, "name", locale)}</h2>
-                <div>
-                  {domainChains.map((chain) => (
-                    <button
-                      key={chain.id}
-                      type="button"
-                      className={activeChainId === chain.id ? "isActive" : ""}
-                      onClick={() => selectChain(chain.id)}
-                    >
-                      <span>{localize(chain, "name", locale)}</span>
-                      <ChevronRight size={15} strokeWidth={1.8} />
+          </nav>
+
+          <section className="txSidebarSection">
+            <div className="txSidebarSectionLabel">{copy.industryEntry}</div>
+            <div className="txDomainList">
+              {navigation.map(({ domain, chains }) => {
+                const expanded = openDomains.has(domain.id);
+                return (
+                  <section key={domain.id}>
+                    <button type="button" className="txDomainHeading" aria-expanded={expanded} onClick={() => toggleDomain(domain.id)}>
+                      <span>{localize(domain, "name", locale)}</span>
+                      <ChevronDown className={expanded ? "isExpanded" : ""} size={15} strokeWidth={1.8} />
                     </button>
-                  ))}
-                </div>
-              </section>
-            ))}
+                    {expanded && (
+                      <div className="txSidebarChains">
+                        {chains.map((chain) => (
+                          <button
+                            key={chain.id}
+                            type="button"
+                            className={activeChainId === chain.id ? "isActive" : ""}
+                            aria-pressed={activeChainId === chain.id}
+                            onClick={() => selectChain(chain.id)}
+                          >
+                            <span>{localize(chain, "name", locale)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="txSidebarSection txWatchlistNav">
+            <button type="button" className="txWatchlistHeading" aria-expanded={watchlistOpen} onClick={() => setWatchlistOpen((value) => !value)}>
+              <span><Star size={15} strokeWidth={1.8} />{copy.watchlist}</span>
+              <span>{watchlistRecords.length}<ChevronDown className={watchlistOpen ? "isExpanded" : ""} size={15} strokeWidth={1.8} /></span>
+            </button>
+            {watchlistOpen && (
+              <div className="txWatchlistItems">
+                {watchlistRecords.length === 0 ? <p>{copy.watchlistEmpty}</p> : watchlistRecords.map((record) => (
+                  <button key={record.issuer_id} type="button" className={activeEntityId === record.issuer_id ? "isActive" : ""} onClick={() => { onSelectWatchlist(record.issuer_id); onClose(); }}>
+                    <span><strong>{locale === "en" ? record.name_en || record.name : record.name}</strong><small>{record.codes || record.industry}</small></span>
+                    <em className={`priority-${record.priority}`}>{copy[`priority_${record.priority}`]}</em>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        <footer className="txSidebarFooter">
+          <div className="txSidebarFilter">
+            <span>{copy.marketFilter}</span>
+            <div className="txSegmented">
+              {["all", "a_share", "us"].map((market) => (
+                <button key={market} type="button" className={marketFilter === market ? "isActive" : ""} aria-pressed={marketFilter === market} onClick={() => onMarketFilterChange(market)}>
+                  {getMarketLabel(market, locale)}
+                </button>
+              ))}
+            </div>
           </div>
-        </section>
-      )}
-    </nav>
+          <div className="txSidebarUtilities">
+            <div className="txSegmented txSidebarLanguage" aria-label={copy.language}>
+              <button type="button" className={locale === "zh" ? "isActive" : ""} aria-pressed={locale === "zh"} onClick={() => onLocaleChange("zh")}>中</button>
+              <button type="button" className={locale === "en" ? "isActive" : ""} aria-pressed={locale === "en"} onClick={() => onLocaleChange("en")}>EN</button>
+            </div>
+            <button type="button" className="txUtilityButton" aria-label={copy.copyResearchLink} title={copy.copyResearchLink} onClick={onCopyLink}><Link2 size={16} strokeWidth={1.8} /></button>
+            <button type="button" className="txUtilityButton" aria-label={copy.exportWatchlist} title={copy.exportWatchlist} disabled={watchlistRecords.length === 0} onClick={onExportWatchlist}><Download size={16} strokeWidth={1.8} /></button>
+            <a className="txUtilityButton" href="https://github.com/judefluen-coder/ai-chaingraph" target="_blank" rel="noreferrer" aria-label={copy.github} title={copy.github}><Github size={16} strokeWidth={1.8} /></a>
+          </div>
+          <div className="txSidebarDataState" title={`${dataStateLabel} · ${dataVersion}`}>
+            <Database size={14} strokeWidth={1.8} />
+            <span>{dataStateLabel}</span>
+            <small>{dataVersion}</small>
+          </div>
+        </footer>
+      </aside>
+    </>
   );
 }

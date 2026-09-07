@@ -34,6 +34,8 @@ AI-ChainGraph is not another list of "AI concept stocks." It models directed dep
 | Compare paths | Set any entity as a path origin and find the shortest path to another entity |
 | Verify relationships | Distinguish L1 official disclosure, L2 industry evidence, and broad mappings; then open the original source |
 | Explore scenarios | Overlay demand, supply, price, capacity, policy, or technology changes without mixing them with fact edges |
+| Build a research watchlist | Save companies locally with priority, tags, review dates, and research notes, then export them as CSV |
+| Share research context | Encode the company, relationship, chain, direction, and depth in the URL so the same view can be restored |
 | Work across markets | Filter A-shares and US-listed securities and switch between Chinese and English |
 
 ```mermaid
@@ -110,6 +112,8 @@ The static app reads [`public/snapshots/transmission-v1.1.json`](public/snapshot
 - Dagre for automatic directed layouts
 - Graph traversal, shortest-path, and conditional transmission utilities
 - A bilingual view model over one canonical snapshot
+- A left-side research workspace, persistent scope inspector, local watchlist, and research notes
+- Restorable URL state for entities, relationships, chains, traversal, paths, and scenarios
 - Static deployment to GitHub Pages and OpenAI Sites
 
 ## Run Locally

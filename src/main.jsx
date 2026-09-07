@@ -5,6 +5,7 @@ import { loadGraphData } from "./data/loadGraphData.js";
 import { ChainNavigator } from "./components/ChainNavigator.jsx";
 import { GraphDetailPanel } from "./components/GraphDetailPanel.jsx";
 import { GraphViewport } from "./components/GraphViewport.jsx";
+import { ScopeInspector } from "./components/ScopeInspector.jsx";
 import { TopBar } from "./components/TopBar.jsx";
 import {
   buildChainFlow,
@@ -14,6 +15,7 @@ import {
   buildRelationDetailModel,
   buildTraversalFlow,
   createGraphViewIndex,
+  formatSecurityCode,
   getEntityChainId,
   getEntityContext,
   getEntityTypeLabel,
@@ -27,6 +29,8 @@ import {
   traverseTransmissionGraph,
 } from "./lib/transmissionGraph.js";
 import { getCopy, translations } from "./lib/i18n.js";
+import { parseWorkspaceSearch, serializeWorkspaceSearch } from "./lib/workspaceState.js";
+import { createWatchlistRecord, downloadWatchlist, readWatchlist, writeWatchlist } from "./lib/watchlist.js";
 import "./transmission.css";
 
 const eventCopyKeys = {
@@ -42,21 +46,26 @@ const eventCopyKeys = {
   technology_shift: "eventTechnology",
 };
 
+const initialWorkspaceState = parseWorkspaceSearch(typeof window === "undefined" ? "" : window.location.search);
+
 function App() {
   const [graphState, setGraphState] = useState({ data: null, error: null });
   const [reloadKey, setReloadKey] = useState(0);
-  const [query, setQuery] = useState("");
-  const [activeId, setActiveId] = useState(null);
-  const [activeRelationId, setActiveRelationId] = useState(null);
-  const [selectedChainId, setSelectedChainId] = useState(null);
-  const [marketFilter, setMarketFilter] = useState("all");
-  const [direction, setDirection] = useState("downstream");
-  const [depth, setDepth] = useState(3);
-  const [pathStartId, setPathStartId] = useState(null);
-  const [pathTargetId, setPathTargetId] = useState(null);
-  const [shockSpec, setShockSpec] = useState(null);
-  const [locale, setLocale] = useState(() => localStorage.getItem("ai-chaingraph-locale") || (navigator.language?.toLowerCase().startsWith("zh") ? "zh" : "en"));
+  const [query, setQuery] = useState(initialWorkspaceState.query);
+  const [activeId, setActiveId] = useState(initialWorkspaceState.activeId);
+  const [activeRelationId, setActiveRelationId] = useState(initialWorkspaceState.activeRelationId);
+  const [selectedChainId, setSelectedChainId] = useState(initialWorkspaceState.selectedChainId);
+  const [marketFilter, setMarketFilter] = useState(initialWorkspaceState.marketFilter);
+  const [direction, setDirection] = useState(initialWorkspaceState.direction);
+  const [depth, setDepth] = useState(initialWorkspaceState.depth);
+  const [pathStartId, setPathStartId] = useState(initialWorkspaceState.pathStartId);
+  const [pathTargetId, setPathTargetId] = useState(initialWorkspaceState.pathTargetId);
+  const [shockType, setShockType] = useState(initialWorkspaceState.shockType);
+  const [locale, setLocale] = useState(() => initialWorkspaceState.locale || localStorage.getItem("ai-chaingraph-locale") || (navigator.language?.toLowerCase().startsWith("zh") ? "zh" : "en"));
   const [acknowledged, setAcknowledged] = useState(() => localStorage.getItem("ai-chaingraph-disclaimer") === "ack");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [watchlistRecords, setWatchlistRecords] = useState(readWatchlist);
+  const [notice, setNotice] = useState("");
   const isNarrow = useMediaQuery("(max-width: 760px)");
   const graph = graphState.data;
   const copy = getCopy(locale);
@@ -67,6 +76,16 @@ function App() {
     document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
     document.title = locale === "zh" ? "AI产业传导研究地图 / AI-ChainGraph" : "AI Industry Transmission Map / AI-ChainGraph";
   }, [locale]);
+
+  useEffect(() => {
+    writeWatchlist(watchlistRecords);
+  }, [watchlistRecords]);
+
+  useEffect(() => {
+    if (!notice) return undefined;
+    const timer = window.setTimeout(() => setNotice(""), 2800);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
 
   useEffect(() => {
     let alive = true;
@@ -83,13 +102,69 @@ function App() {
     };
   }, [reloadKey]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const next = parseWorkspaceSearch(window.location.search);
+      setQuery(next.query);
+      setActiveId(next.activeId);
+      setActiveRelationId(next.activeRelationId);
+      setSelectedChainId(next.selectedChainId);
+      setMarketFilter(next.marketFilter);
+      setDirection(next.direction);
+      setDepth(next.depth);
+      setPathStartId(next.pathStartId);
+      setPathTargetId(next.pathTargetId);
+      setShockType(next.shockType);
+      if (next.locale) setLocale(next.locale);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const search = serializeWorkspaceSearch({
+      query,
+      activeId,
+      activeRelationId,
+      selectedChainId,
+      marketFilter,
+      direction,
+      depth,
+      pathStartId,
+      pathTargetId,
+      shockType,
+      locale,
+    });
+    const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextUrl !== currentUrl) window.history.replaceState(window.history.state, "", nextUrl);
+  }, [query, activeId, activeRelationId, selectedChainId, marketFilter, direction, depth, pathStartId, pathTargetId, shockType, locale]);
+
   const index = useMemo(() => graph ? createGraphViewIndex(graph) : null, [graph]);
   const navigation = useMemo(() => graph ? getIndustryNavigation(graph) : [], [graph]);
   const searchResults = useMemo(() => graph ? searchTransmissionGraph(graph, query, { locale, market: marketFilter, limit: 10 }) : [], [graph, query, locale, marketFilter]);
   const activeEntity = activeId ? index?.entitiesById.get(activeId) : null;
   const selectedChain = selectedChainId ? index?.entitiesById.get(selectedChainId) : null;
+  const chainElements = selectedChainId ? index?.elementsByChain.get(selectedChainId) || [] : [];
   const detail = useMemo(() => graph && activeId ? buildDetailModel(graph, activeId, { locale, market: marketFilter }) : null, [graph, activeId, locale, marketFilter]);
   const relationDetail = useMemo(() => graph && activeRelationId ? buildRelationDetailModel(graph, activeRelationId) : null, [graph, activeRelationId]);
+  const watchRecord = detail?.kind === "issuer" ? watchlistRecords.find((record) => record.issuer_id === detail.entity.id) || null : null;
+
+  const shockSpec = useMemo(() => {
+    if (!graph || !activeId || !shockType) return null;
+    const entity = index?.entitiesById.get(activeId);
+    const copyKey = eventCopyKeys[shockType];
+    if (!entity || !copyKey) return null;
+    return {
+      id: `event:ui:${shockType}:${activeId}`,
+      target_id: activeId,
+      shock_type: shockType,
+      title: `${localize(entity, "name", "zh")}：${translations.zh[copyKey]}`,
+      title_en: `${localize(entity, "name", "en")}: ${translations.en[copyKey]}`,
+      observed_at: graph.meta.updated_at,
+      status: "scenario",
+    };
+  }, [graph, index, activeId, shockType]);
 
   const shockOverlay = useMemo(() => {
     if (!graph || !shockSpec) return null;
@@ -151,7 +226,7 @@ function App() {
     setDepth(3);
     setPathStartId(null);
     setPathTargetId(null);
-    setShockSpec(null);
+    setShockType(null);
   }
 
   function selectChain(chainId) {
@@ -160,7 +235,7 @@ function App() {
     setActiveRelationId(null);
     setPathStartId(null);
     setPathTargetId(null);
-    setShockSpec(null);
+    setShockType(null);
     setQuery("");
   }
 
@@ -183,9 +258,14 @@ function App() {
     }
     setActiveId(entityId);
     setActiveRelationId(null);
-    setShockSpec(null);
-    const chainId = getEntityChainId(graph, entityId);
-    if (chainId) setSelectedChainId(chainId);
+    setShockType(null);
+    if (entity.entity_type === "issuer" || entity.entity_type === "security") {
+      setSelectedChainId(null);
+      setDepth(1);
+    } else {
+      const chainId = getEntityChainId(graph, entityId);
+      if (chainId) setSelectedChainId(chainId);
+    }
   }
 
   function selectSearchResult(item) {
@@ -214,7 +294,7 @@ function App() {
     setDirection(value);
     setPathStartId(null);
     setPathTargetId(null);
-    setShockSpec(null);
+    setShockType(null);
   }
 
   function startPath(entityId) {
@@ -222,25 +302,15 @@ function App() {
     setPathStartId(entityId);
     setPathTargetId(null);
     setActiveRelationId(null);
-    setShockSpec(null);
+    setShockType(null);
   }
 
   function runShock(shockType) {
-    if (!graph || !activeId) return;
-    const entity = index.entitiesById.get(activeId);
-    const copyKey = eventCopyKeys[shockType];
+    if (!graph || !activeId || !eventCopyKeys[shockType]) return;
     setPathStartId(null);
     setPathTargetId(null);
     setActiveRelationId(null);
-    setShockSpec({
-      id: `event:ui:${shockType}:${activeId}`,
-      target_id: activeId,
-      shock_type: shockType,
-      title: `${localize(entity, "name", "zh")}：${translations.zh[copyKey]}`,
-      title_en: `${localize(entity, "name", "en")}: ${translations.en[copyKey]}`,
-      observed_at: graph.meta.updated_at,
-      status: "scenario",
-    });
+    setShockType(shockType);
   }
 
   function closeDetail() {
@@ -248,12 +318,43 @@ function App() {
     setActiveRelationId(null);
     setPathStartId(null);
     setPathTargetId(null);
-    setShockSpec(null);
+    setShockType(null);
   }
 
   function acknowledgeDisclaimer() {
     localStorage.setItem("ai-chaingraph-disclaimer", "ack");
     setAcknowledged(true);
+  }
+
+  function toggleWatchlist() {
+    if (detail?.kind !== "issuer") return;
+    const issuerId = detail.entity.id;
+    if (watchRecord) {
+      setWatchlistRecords((records) => records.filter((record) => record.issuer_id !== issuerId));
+      setNotice(copy.removedFromWatchlist);
+      return;
+    }
+    const codes = detail.securities.map(formatSecurityCode).filter(Boolean).join(" · ");
+    setWatchlistRecords((records) => records.concat(createWatchlistRecord({ issuer: detail.entity, codes })));
+    setNotice(copy.addedToWatchlist);
+  }
+
+  function updateWatchlistRecord(patch) {
+    if (!watchRecord) return;
+    setWatchlistRecords((records) => records.map((record) => (
+      record.issuer_id === watchRecord.issuer_id
+        ? { ...record, ...patch, updated_at: new Date().toISOString() }
+        : record
+    )));
+  }
+
+  async function copyResearchLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setNotice(copy.linkCopied);
+    } catch {
+      setNotice(copy.linkCopyFailed);
+    }
   }
 
   if (!graph) {
@@ -276,7 +377,7 @@ function App() {
     depth,
     onDirectionChange: (value) => {
       setDirection(value);
-      setShockSpec(null);
+      setShockType(null);
     },
     onDepthChange: setDepth,
     path: pathStartId ? {
@@ -289,37 +390,46 @@ function App() {
     } : null,
     shock: shockOverlay ? {
       label: localize(shockOverlay.event, "title", locale),
-      onClear: () => setShockSpec(null),
+      onClear: () => setShockType(null),
     } : null,
   };
 
   return (
     <div className="txAppShell">
       {!acknowledged && <DisclaimerModal copy={copy} onAccept={acknowledgeDisclaimer} />}
+      {notice && <p className="txStatusToast" role="status" aria-live="polite">{notice}</p>}
       <TopBar
         query={query}
         onQueryChange={setQuery}
         searchResults={searchResults}
         onSelectSearchResult={selectSearchResult}
-        marketFilter={marketFilter}
-        onMarketFilterChange={setMarketFilter}
-        dataVersion={graph.meta.data_version}
-        dataStatus={graph.meta.status}
-        onReset={resetWorkspace}
-        locale={locale}
-        onLocaleChange={setLocale}
+        onOpenNavigation={() => setSidebarOpen((value) => !value)}
+        navigationOpen={sidebarOpen}
         searchPlaceholder={pathStartId && !pathTargetId ? copy.pathTargetPlaceholder : copy.searchPlaceholder}
         copy={copy}
       />
       <ChainNavigator
         navigation={navigation}
         activeChainId={selectedChainId}
+        activeEntityId={activeId}
         onOverview={() => selectChain(null)}
         onSelect={selectChain}
         locale={locale}
+        onLocaleChange={setLocale}
+        marketFilter={marketFilter}
+        onMarketFilterChange={setMarketFilter}
+        dataVersion={graph.meta.data_version}
+        dataStatus={graph.meta.status}
+        onReset={resetWorkspace}
+        onCopyLink={copyResearchLink}
+        watchlistRecords={watchlistRecords}
+        onSelectWatchlist={selectEntity}
+        onExportWatchlist={() => downloadWatchlist(watchlistRecords)}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
         copy={copy}
       />
-      <main className={`txWorkspace ${detail ? "hasDetail" : ""}`}>
+      <main className={`txWorkspace hasInspector ${detail ? "hasDetail" : ""}`}>
         <GraphViewport
           flow={flow}
           title={presentation.title}
@@ -332,7 +442,7 @@ function App() {
           onSelectRelation={selectRelation}
           copy={copy}
         />
-        {detail && (
+        {detail ? (
           <GraphDetailPanel
             detail={detail}
             relationDetail={relationDetail}
@@ -340,13 +450,27 @@ function App() {
             copy={copy}
             pathStartId={pathStartId}
             shockOverlay={shockOverlay}
+            watchRecord={watchRecord}
+            onToggleWatchlist={toggleWatchlist}
+            onUpdateWatchlist={updateWatchlistRecord}
             onSelectEntity={selectEntity}
             onSelectRelation={selectRelation}
             onExploreDirection={exploreDirection}
             onSetPathStart={startPath}
             onRunShock={runShock}
-            onClearShock={() => setShockSpec(null)}
+            onClearShock={() => setShockType(null)}
             onClose={closeDetail}
+          />
+        ) : (
+          <ScopeInspector
+            selectedChain={selectedChain}
+            chainElements={chainElements}
+            navigation={navigation}
+            meta={flow.meta}
+            locale={locale}
+            copy={copy}
+            onSelectChain={selectChain}
+            onSelectEntity={selectEntity}
           />
         )}
       </main>
@@ -367,14 +491,19 @@ function getScopePresentation({ graph, index, locale, copy, activeEntity, detail
     };
   }
   if (activeEntity && detail) {
-    const context = detail.context || getEntityContext(graph, activeEntity.id);
-    const breadcrumbs = [context?.domain, context?.chain, context?.segment].filter(Boolean).map((entity) => localize(entity, "name", locale));
     const entity = detail.entity;
+    if (detail.kind === "issuer") {
+      return {
+        title: shockSpec ? localize(shockSpec, "title", locale) : localize(entity, "name", locale),
+        subtitle: [localize(entity, "industry", locale), `${detail.mappings.length} ${copy.companyPositions}`].filter(Boolean).join(" · "),
+        breadcrumbs: [copy.multiChainCompany],
+      };
+    }
+    const context = detail.context || getEntityContext(graph, activeEntity.id);
+    const breadcrumbs = [context?.domain, context?.chain, context?.segment].filter(Boolean).map((item) => localize(item, "name", locale));
     return {
       title: shockSpec ? localize(shockSpec, "title", locale) : localize(entity, "name", locale),
-      subtitle: detail.kind === "issuer"
-        ? localize(entity, "industry", locale) || `${detail.mappings.length} ${copy.companyPositions}`
-        : [getEntityTypeLabel(entity.entity_type, locale), localize(context?.chain, "name", locale)].filter(Boolean).join(" · "),
+      subtitle: [getEntityTypeLabel(entity.entity_type, locale), localize(context?.chain, "name", locale)].filter(Boolean).join(" · "),
       breadcrumbs,
     };
   }
