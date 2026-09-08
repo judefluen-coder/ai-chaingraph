@@ -33,8 +33,8 @@ jobs:
       - name: Validate public snapshot
         run: npm run validate:snapshot
 
-      - name: Enforce relationship depth and weekly freshness
-        run: npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8
+      - name: Enforce relationship depth, listing coverage, and weekly freshness
+        run: npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8
 
       - name: Build frontend
         run: npm run build

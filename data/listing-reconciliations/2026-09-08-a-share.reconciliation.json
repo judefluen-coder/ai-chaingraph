@@ -1,0 +1,314 @@
+{
+  "manifest_id": "a-share-2026-07-13-to-2026-09-08",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-09-08T03:00:00.000Z",
+  "period_start": "2026-07-13",
+  "reconciled_through": "2026-09-08",
+  "markets": ["SH", "SZ", "BJ"],
+  "listings": [
+    {
+      "exchange": "SH",
+      "symbol": "688806",
+      "name": "泰诺麦博",
+      "listing_date": "2026-07-21",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260720_10826145.shtml",
+      "decision": "excluded",
+      "decision_reason": "主营抗体药物研发，暂不属于当前AI产业链本体范围。"
+    },
+    {
+      "exchange": "SH",
+      "symbol": "688825",
+      "name": "长鑫科技",
+      "listing_date": "2026-07-27",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260724_10826610.shtml",
+      "decision": "included",
+      "decision_reason": "DRAM存储芯片是AI算力产业链的核心存储器件。",
+      "batch_id": "weekly-2026-09-07-new-listings",
+      "issuer_id": "issuer:cn-sh-688825",
+      "security_id": "security:SH:688825"
+    },
+    {
+      "exchange": "SH",
+      "symbol": "603468",
+      "name": "津富士达",
+      "listing_date": "2026-08-06",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260805_10827967.shtml",
+      "decision": "excluded",
+      "decision_reason": "主营自行车及零部件，缺少可验证的AI产业链直接关系。"
+    },
+    {
+      "exchange": "SH",
+      "symbol": "688828",
+      "name": "国仪公司",
+      "listing_date": "2026-08-11",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260810_10828440.shtml",
+      "decision": "included",
+      "decision_reason": "电子显微镜用于半导体材料结构表征与芯片缺陷检测。",
+      "batch_id": "weekly-2026-09-08-listing-reconciliation-3",
+      "issuer_id": "issuer:cn-sh-688828",
+      "security_id": "security:SH:688828"
+    },
+    {
+      "exchange": "SH",
+      "symbol": "688826",
+      "name": "频准激光",
+      "listing_date": "2026-08-18",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260817_10829108.shtml",
+      "decision": "included",
+      "decision_reason": "精密激光器应用于晶圆制造、半导体量测与科研仪器。",
+      "batch_id": "weekly-2026-09-08-listing-reconciliation-3",
+      "issuer_id": "issuer:cn-sh-688826",
+      "security_id": "security:SH:688826"
+    },
+    {
+      "exchange": "SH",
+      "symbol": "688836",
+      "name": "宇树科技",
+      "listing_date": "2026-08-19",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260818_10829204.shtml",
+      "decision": "included",
+      "decision_reason": "具身智能机器人整机与核心组件直接属于AI终端产业链。",
+      "batch_id": "weekly-2026-09-07-new-listings",
+      "issuer_id": "issuer:cn-sh-688836",
+      "security_id": "security:SH:688836"
+    },
+    {
+      "exchange": "SH",
+      "symbol": "688835",
+      "name": "高凯技术",
+      "listing_date": "2026-08-25",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260824_10829780.shtml",
+      "decision": "included",
+      "decision_reason": "精密流体控制产品是半导体设备关键零部件。",
+      "batch_id": "weekly-2026-09-07-listing-reconciliation-2",
+      "issuer_id": "issuer:cn-sh-688835",
+      "security_id": "security:SH:688835"
+    },
+    {
+      "exchange": "SH",
+      "symbol": "601123",
+      "name": "马矿股份",
+      "listing_date": "2026-09-01",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260831_10830388.shtml",
+      "decision": "excluded",
+      "decision_reason": "主营铁矿采选，缺少可验证的AI产业链直接关系。"
+    },
+    {
+      "exchange": "SH",
+      "symbol": "603448",
+      "name": "天博智能",
+      "listing_date": "2026-09-07",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260904_10831265.shtml",
+      "decision": "excluded",
+      "decision_reason": "官方材料支持汽车热管理、温度与压力传感器业务，但不足以建立当前AI产业链的具体关系。"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301677",
+      "name": "欣兴工具",
+      "listing_date": "2026-07-30",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/t20260729_621879.html",
+      "decision": "excluded",
+      "decision_reason": "主营通用切削与钻削工具，缺少可验证的AI产业链直接关系。"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "001232",
+      "name": "嘉立创",
+      "listing_date": "2026-08-04",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/t20260803_621939.html",
+      "decision": "included",
+      "decision_reason": "PCB制造和高多层线路板产线属于AI电子硬件基础设施。",
+      "batch_id": "weekly-2026-09-07-listing-reconciliation-2",
+      "issuer_id": "issuer:cn-sz-001232",
+      "security_id": "security:SZ:001232"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301707",
+      "name": "展芯股份",
+      "listing_date": "2026-08-07",
+      "source_url": "https://www.szse.cn/marketServices/listing/report/t20260810_622088.html",
+      "decision": "included",
+      "decision_reason": "研发高可靠模拟芯片与微模块，属于AI芯片基础器件。",
+      "batch_id": "weekly-2026-09-07-listing-reconciliation-2",
+      "issuer_id": "issuer:cn-sz-301707",
+      "security_id": "security:SZ:301707"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301717",
+      "name": "超纯应材",
+      "listing_date": "2026-08-11",
+      "source_url": "https://investor.szse.cn/English/about/news/listings/t20260811_622093.html",
+      "decision": "included",
+      "decision_reason": "生产半导体设备特种涂层零部件与精密光学器件。",
+      "batch_id": "weekly-2026-09-07-listing-reconciliation-2",
+      "issuer_id": "issuer:cn-sz-301717",
+      "security_id": "security:SZ:301717"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301655",
+      "name": "绿控传动",
+      "listing_date": "2026-08-20",
+      "source_url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-08-19/2f9ad749-9830-4d9d-9ea6-16541185da48.PDF",
+      "decision": "excluded",
+      "decision_reason": "主营商用车传动系统，当前缺少AI产业链特定关系证据。"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301697",
+      "name": "贝特利",
+      "listing_date": "2026-09-01",
+      "source_url": "https://www.szse.cn/English/about/news/listings/English/t20260901_622632.html",
+      "decision": "excluded",
+      "decision_reason": "主营电子与化工材料，当前披露不足以建立AI产业链特定关系。"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301688",
+      "name": "格林生物",
+      "listing_date": "2026-09-02",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/",
+      "decision": "excluded",
+      "decision_reason": "主营香料化学品，暂不属于当前AI产业链本体范围。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920117",
+      "name": "龙鑫智能",
+      "listing_date": "2026-07-16",
+      "source_url": "https://www.bse.cn/disclosure/2026/2026-07-14/1784019971_908727.pdf",
+      "decision": "included",
+      "decision_reason": "研磨、干燥和自动化生产线用于锂电池材料生产。",
+      "batch_id": "weekly-2026-09-08-listing-reconciliation-3",
+      "issuer_id": "issuer:cn-bj-920117",
+      "security_id": "security:BJ:920117"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920079",
+      "name": "乔路铭",
+      "listing_date": "2026-07-22",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营汽车内外饰件，当前缺少AI产业链特定关系证据。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920238",
+      "name": "长鹰硬科",
+      "listing_date": "2026-07-24",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营硬质合金和通用工具，缺少可验证的AI产业链直接关系。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920176",
+      "name": "维琪科技",
+      "listing_date": "2026-07-27",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营多肽与化妆品原料，暂不属于当前AI产业链本体范围。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920258",
+      "name": "聚仁新材",
+      "listing_date": "2026-08-03",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营通用高分子材料，当前缺少AI产业链特定关系证据。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920038",
+      "name": "森合高科",
+      "listing_date": "2026-08-05",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营矿业化学品，暂不属于当前AI产业链本体范围。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920165",
+      "name": "珈凯生物",
+      "listing_date": "2026-08-11",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营生物技术产品，暂不属于当前AI产业链本体范围。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920138",
+      "name": "杰理科技",
+      "listing_date": "2026-08-12",
+      "source_url": "https://www.bse.cn/disclosure/2026/2026-08-10/1786351089_733172.pdf",
+      "decision": "included",
+      "decision_reason": "芯片融合人工智能和边缘计算技术，面向智能终端。",
+      "batch_id": "weekly-2026-09-08-listing-reconciliation-3",
+      "issuer_id": "issuer:cn-bj-920138",
+      "security_id": "security:BJ:920138"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920107",
+      "name": "恒兴股份",
+      "listing_date": "2026-08-17",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营业务与当前AI产业链本体缺少可验证的直接关系。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920059",
+      "name": "双英集团",
+      "listing_date": "2026-08-19",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营汽车座椅与内饰，当前缺少AI产业链特定关系证据。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920288",
+      "name": "华大海天",
+      "listing_date": "2026-08-28",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营特种纸与油墨，暂不属于当前AI产业链本体范围。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920071",
+      "name": "金钛股份",
+      "listing_date": "2026-09-03",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营钛材料及颜料，当前缺少AI产业链特定关系证据。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920289",
+      "name": "华汇智能",
+      "listing_date": "2026-09-04",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "included",
+      "decision_reason": "向锂电池材料客户提供研磨系统和智能生产装备。",
+      "batch_id": "weekly-2026-09-08-listing-reconciliation-3",
+      "issuer_id": "issuer:cn-bj-920289",
+      "security_id": "security:BJ:920289"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920269",
+      "name": "杰锋动力",
+      "listing_date": "2026-09-07",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "主营传统动力总成及发动机系统，当前缺少AI产业链特定关系证据。"
+    }
+  ]
+}

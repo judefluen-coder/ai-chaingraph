@@ -8,6 +8,9 @@ dist/
 !/data/weekly-candidates/README.md
 !/data/weekly-candidates/weekly-update.example.json
 !/data/weekly-candidates/*.batch.json
+!/data/listing-reconciliations/
+!/data/listing-reconciliations/README.md
+!/data/listing-reconciliations/*.reconciliation.json
 /feedbacks/
 /logs/
 /secrets/

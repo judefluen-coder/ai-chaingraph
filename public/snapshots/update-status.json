@@ -1,55 +1,67 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-09-07T11:09:19.654Z",
-  "changed_at": "2026-09-07T11:09:19.654Z",
-  "next_scheduled_at": "2026-09-14T11:09:19.654Z",
-  "source_cutoff_date": "2026-07-12",
+  "checked_at": "2026-09-08T03:00:00.000Z",
+  "changed_at": "2026-09-08T03:00:00.000Z",
+  "next_scheduled_at": "2026-09-15T03:00:00.000Z",
+  "source_cutoff_date": "2026-09-04",
   "cadence": "weekly",
+  "a_share_listing_reconciled_through": "2026-09-08",
+  "a_share_listing_reconciliation": {
+    "reconciled_through": "2026-09-08",
+    "reviewed_listings": 30,
+    "included_listings": 11,
+    "excluded_listings": 19,
+    "manifest_ids": [
+      "a-share-2026-07-13-to-2026-09-08"
+    ]
+  },
   "changed": true,
   "imported": {
-    "batches": 0,
-    "sources": 0,
-    "claims": 0,
-    "relations": 0
+    "batches": 1,
+    "entities": 10,
+    "issuers": 5,
+    "securities": 5,
+    "sources": 10,
+    "claims": 10,
+    "relations": 10
   },
   "promotions": {
     "promotedRelations": 0,
-    "reclassifiedRelations": 1,
+    "reclassifiedRelations": 0,
     "revertedRelations": 0,
-    "promotionsByType": {
-      "issuer_distributes": 1
-    }
+    "promotionsByType": {}
   },
   "last_change_summary": {
     "imported": {
-      "batches": 0,
-      "sources": 0,
-      "claims": 0,
-      "relations": 0
+      "batches": 1,
+      "entities": 10,
+      "issuers": 5,
+      "securities": 5,
+      "sources": 10,
+      "claims": 10,
+      "relations": 10
     },
     "promotions": {
       "promotedRelations": 0,
-      "reclassifiedRelations": 1,
+      "reclassifiedRelations": 0,
       "revertedRelations": 0,
-      "promotionsByType": {
-        "issuer_distributes": 1
-      }
+      "promotionsByType": {}
     }
   },
   "quality": {
-    "issuers_total": 4537,
-    "issuers_mapped": 4537,
+    "issuers_total": 4548,
+    "issuers_mapped": 4548,
     "issuers_unmapped": 0,
-    "issuers_with_specific_relations": 4233,
+    "issuers_with_specific_relations": 4244,
     "issuers_generic_only": 304,
-    "specific_issuer_rate": 0.933,
-    "issuer_relations_total": 6609,
-    "specific_relations": 5984,
+    "specific_issuer_rate": 0.9332,
+    "issuer_relations_total": 6621,
+    "specific_relations": 5996,
     "generic_relations": 625,
-    "specific_relation_rate": 0.9054,
+    "specific_relation_rate": 0.9056,
     "evidence_levels": {
-      "L1": 6565,
+      "L1": 6577,
       "L2": 44
     },
     "segments_total": 111,
@@ -111,7 +123,7 @@
       {
         "segment_id": "segment:industrial_service_robots",
         "name": "工业与服务机器人",
-        "mapping_count": 278
+        "mapping_count": 279
       },
       {
         "segment_id": "segment:ai_sensors",

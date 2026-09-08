@@ -1,0 +1,191 @@
+{
+  "batch_id": "weekly-2026-09-07-new-listings",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-09-07T12:09:41.000Z",
+  "entities": [
+    {
+      "id": "issuer:cn-sh-688825",
+      "entity_type": "issuer",
+      "name": "长鑫科技",
+      "name_en": "ChangXin Technology Group Co., Ltd. (CXMT)",
+      "aliases": ["长鑫", "长鑫存储", "CXMT", "ChangXin Memory Technologies"],
+      "country": "CN",
+      "legal_name": "长鑫科技集团股份有限公司",
+      "industry": "DRAM存储芯片",
+      "industry_en": "DRAM Memory Semiconductors"
+    },
+    {
+      "id": "security:SH:688825",
+      "entity_type": "security",
+      "name": "长鑫科技",
+      "name_en": "ChangXin Technology Group Co., Ltd. (CXMT)",
+      "aliases": ["688825.SH", "688825", "长鑫存储", "CXMT"],
+      "stock_code": "688825.SH",
+      "symbol": "688825",
+      "exchange": "SH",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    },
+    {
+      "id": "issuer:cn-sh-688836",
+      "entity_type": "issuer",
+      "name": "宇树科技",
+      "name_en": "Unitree Robotics",
+      "aliases": ["宇树", "Unitree", "Unitree Robotics"],
+      "country": "CN",
+      "legal_name": "宇树科技股份有限公司",
+      "industry": "高性能通用机器人",
+      "industry_en": "High-performance General-purpose Robots"
+    },
+    {
+      "id": "security:SH:688836",
+      "entity_type": "security",
+      "name": "宇树科技",
+      "name_en": "Unitree Robotics",
+      "aliases": ["688836.SH", "688836", "宇树", "Unitree"],
+      "stock_code": "688836.SH",
+      "symbol": "688836",
+      "exchange": "SH",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    }
+  ],
+  "source_documents": [
+    {
+      "id": "source:sse-listing-688825-20260724",
+      "source_type": "exchange_filing",
+      "title": "关于长鑫科技集团股份有限公司人民币普通股股票科创板上市交易的公告",
+      "title_en": "SSE Notice on the STAR Market Listing of ChangXin Technology Group Co., Ltd.",
+      "url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260724_10826610.shtml",
+      "publish_date": "2026-07-24",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688825"
+    },
+    {
+      "id": "source:sse-cxmt-legal-opinion-20260527",
+      "source_type": "exchange_filing",
+      "title": "长鑫科技首次公开发行股票并在科创板上市补充法律意见书（三）",
+      "title_en": "ChangXin Technology IPO Supplemental Legal Opinion III",
+      "url": "https://static.sse.com.cn/stock/disclosure/announcement/c/202605/002170_20260527_0LW5.pdf",
+      "publish_date": "2026-05-27",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688825"
+    },
+    {
+      "id": "source:sse-listing-688836-20260818",
+      "source_type": "exchange_filing",
+      "title": "关于宇树科技股份有限公司人民币普通股股票科创板上市交易的公告",
+      "title_en": "SSE Notice on the STAR Market Listing of Unitree Robotics",
+      "url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260818_10829204.shtml",
+      "publish_date": "2026-08-18",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688836"
+    },
+    {
+      "id": "source:sse-unitree-prospectus-20260320",
+      "source_type": "exchange_filing",
+      "title": "宇树科技股份有限公司首次公开发行股票并在科创板上市招股说明书（申报稿）",
+      "title_en": "Unitree Robotics STAR Market IPO Prospectus",
+      "url": "https://static.sse.com.cn/stock/disclosure/announcement/c/202603/002178_20260320_QY8F.pdf",
+      "publish_date": "2026-03-20",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688836"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim:sse-listing-688825-20260724",
+      "source_document_id": "source:sse-listing-688825-20260724",
+      "excerpt": "上交所公告长鑫科技集团股份有限公司A股股票于2026年7月27日起在科创板上市交易，证券简称长鑫科技，证券代码688825。",
+      "excerpt_en": "The SSE announced that ChangXin Technology Group's A shares would begin STAR Market trading on July 27, 2026, under ticker 688825.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:09:41.000Z"
+    },
+    {
+      "id": "claim:cxmt-dram-business-20260527",
+      "source_document_id": "source:sse-cxmt-legal-opinion-20260527",
+      "excerpt": "发行人的主营业务为DRAM产品的研发、设计、生产及销售。",
+      "excerpt_en": "The issuer's principal business is the research and development, design, production, and sale of DRAM products.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:09:41.000Z"
+    },
+    {
+      "id": "claim:sse-listing-688836-20260818",
+      "source_document_id": "source:sse-listing-688836-20260818",
+      "excerpt": "上交所公告宇树科技股份有限公司A股股票于2026年8月19日起在科创板上市交易，证券简称宇树科技，证券代码688836。",
+      "excerpt_en": "The SSE announced that Unitree Robotics' A shares would begin STAR Market trading on August 19, 2026, under ticker 688836.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:09:41.000Z"
+    },
+    {
+      "id": "claim:unitree-robotics-business-20260320",
+      "source_document_id": "source:sse-unitree-prospectus-20260320",
+      "excerpt": "宇树科技专注于高性能通用人形机器人、四足机器人、机器人组件及具身智能模型的研发、生产和销售业务。",
+      "excerpt_en": "Unitree focuses on the research and development, production, and sale of high-performance general-purpose humanoid robots, quadruped robots, robotics components, and embodied-intelligence models.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:09:41.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:security_issued_by:sse-688825",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SH:688825",
+      "to_id": "issuer:cn-sh-688825",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:sse-listing-688825-20260724"]
+    },
+    {
+      "id": "relation:issuer_element:cxmt-dram",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-688825",
+      "to_id": "component:dram_nand",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:cxmt-dram-business-20260527"],
+      "attributes": {
+        "legacy_chain_id": "advanced_packaging_memory",
+        "legacy_segment_id": "dram_nand"
+      }
+    },
+    {
+      "id": "relation:security_issued_by:sse-688836",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SH:688836",
+      "to_id": "issuer:cn-sh-688836",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:sse-listing-688836-20260818"]
+    },
+    {
+      "id": "relation:issuer_element:unitree-robots",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-688836",
+      "to_id": "product:industrial_service_robots",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:unitree-robotics-business-20260320"],
+      "attributes": {
+        "legacy_chain_id": "ai_devices_robotics",
+        "legacy_segment_id": "industrial_service_robots"
+      }
+    },
+    {
+      "id": "relation:issuer_element:unitree-components",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-688836",
+      "to_id": "component:robotics_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:unitree-robotics-business-20260320"],
+      "attributes": {
+        "legacy_chain_id": "ai_devices_robotics",
+        "legacy_segment_id": "robotics_components"
+      }
+    }
+  ]
+}

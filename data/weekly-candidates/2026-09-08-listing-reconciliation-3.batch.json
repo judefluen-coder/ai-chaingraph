@@ -1,0 +1,424 @@
+{
+  "batch_id": "weekly-2026-09-08-listing-reconciliation-3",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-09-08T03:00:00.000Z",
+  "entities": [
+    {
+      "id": "issuer:cn-sh-688828",
+      "entity_type": "issuer",
+      "name": "国仪公司",
+      "name_en": "CIQTEK Co., Ltd.",
+      "aliases": ["国仪量子", "CIQTEK"],
+      "country": "CN",
+      "legal_name": "国仪量子技术（合肥）股份有限公司",
+      "industry": "高端科学仪器与半导体量测",
+      "industry_en": "Scientific Instruments and Semiconductor Metrology"
+    },
+    {
+      "id": "security:SH:688828",
+      "entity_type": "security",
+      "name": "国仪公司",
+      "name_en": "CIQTEK Co., Ltd.",
+      "aliases": ["688828.SH", "688828", "国仪量子", "CIQTEK"],
+      "stock_code": "688828.SH",
+      "symbol": "688828",
+      "exchange": "SH",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    },
+    {
+      "id": "issuer:cn-sh-688826",
+      "entity_type": "issuer",
+      "name": "频准激光",
+      "name_en": "Precilasers Co., Ltd.",
+      "aliases": ["上海频准", "Precilasers"],
+      "country": "CN",
+      "legal_name": "上海频准激光科技股份有限公司",
+      "industry": "精密激光器与半导体光源",
+      "industry_en": "Precision Lasers and Semiconductor Light Sources"
+    },
+    {
+      "id": "security:SH:688826",
+      "entity_type": "security",
+      "name": "频准激光",
+      "name_en": "Precilasers Co., Ltd.",
+      "aliases": ["688826.SH", "688826", "上海频准", "Precilasers"],
+      "stock_code": "688826.SH",
+      "symbol": "688826",
+      "exchange": "SH",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    },
+    {
+      "id": "issuer:cn-bj-920117",
+      "entity_type": "issuer",
+      "name": "龙鑫智能",
+      "name_en": "Longxin (Changzhou) Smart Equipments Co., Ltd.",
+      "aliases": ["龙鑫装备", "Longxin Smart Equipments"],
+      "country": "CN",
+      "legal_name": "常州市龙鑫智能装备股份有限公司",
+      "industry": "电池材料智能生产装备",
+      "industry_en": "Intelligent Production Equipment for Battery Materials"
+    },
+    {
+      "id": "security:BJ:920117",
+      "entity_type": "security",
+      "name": "龙鑫智能",
+      "name_en": "Longxin (Changzhou) Smart Equipments Co., Ltd.",
+      "aliases": ["920117.BJ", "920117", "龙鑫装备"],
+      "stock_code": "920117.BJ",
+      "symbol": "920117",
+      "exchange": "BJ",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    },
+    {
+      "id": "issuer:cn-bj-920138",
+      "entity_type": "issuer",
+      "name": "杰理科技",
+      "name_en": "Zhuhai Jieli Technology Co., Ltd.",
+      "aliases": ["珠海杰理", "Jieli Technology"],
+      "country": "CN",
+      "legal_name": "珠海市杰理科技股份有限公司",
+      "industry": "无线音频与边缘AI芯片",
+      "industry_en": "Wireless Audio and Edge AI Chips"
+    },
+    {
+      "id": "security:BJ:920138",
+      "entity_type": "security",
+      "name": "杰理科技",
+      "name_en": "Zhuhai Jieli Technology Co., Ltd.",
+      "aliases": ["920138.BJ", "920138", "珠海杰理"],
+      "stock_code": "920138.BJ",
+      "symbol": "920138",
+      "exchange": "BJ",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    },
+    {
+      "id": "issuer:cn-bj-920289",
+      "entity_type": "issuer",
+      "name": "华汇智能",
+      "name_en": "Guangdong Huahui Intelligent Equipment Co., Ltd.",
+      "aliases": ["华汇装备", "Huahui Intelligent"],
+      "country": "CN",
+      "legal_name": "广东华汇智能装备股份有限公司",
+      "industry": "锂电池材料智能装备",
+      "industry_en": "Intelligent Equipment for Lithium Battery Materials"
+    },
+    {
+      "id": "security:BJ:920289",
+      "entity_type": "security",
+      "name": "华汇智能",
+      "name_en": "Guangdong Huahui Intelligent Equipment Co., Ltd.",
+      "aliases": ["920289.BJ", "920289", "华汇装备"],
+      "stock_code": "920289.BJ",
+      "symbol": "920289",
+      "exchange": "BJ",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    }
+  ],
+  "source_documents": [
+    {
+      "id": "source:sse-listing-688828-20260810",
+      "source_type": "exchange_filing",
+      "title": "关于国仪量子技术（合肥）股份有限公司人民币普通股股票科创板上市交易的公告",
+      "title_en": "SSE Notice on the STAR Market Listing of CIQTEK",
+      "url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260810_10828440.shtml",
+      "publish_date": "2026-08-10",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688828"
+    },
+    {
+      "id": "source:sse-ciqtek-report-20260430",
+      "source_type": "exchange_filing",
+      "title": "国仪量子技术（合肥）股份有限公司公开披露文件",
+      "title_en": "CIQTEK Public Exchange Filing",
+      "url": "https://static.sse.com.cn/stock/disclosure/announcement/c/202604/002112_20260430_N4BQ.pdf",
+      "publish_date": "2026-04-30",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688828"
+    },
+    {
+      "id": "source:sse-listing-688826-20260817",
+      "source_type": "exchange_filing",
+      "title": "关于上海频准激光科技股份有限公司人民币普通股股票科创板上市交易的公告",
+      "title_en": "SSE Notice on the STAR Market Listing of Precilasers",
+      "url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260817_10829108.shtml",
+      "publish_date": "2026-08-17",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688826"
+    },
+    {
+      "id": "source:sse-precilasers-prospectus-20260522",
+      "source_type": "exchange_filing",
+      "title": "上海频准激光科技股份有限公司首次公开发行股票并在科创板上市招股说明书",
+      "title_en": "Precilasers STAR Market IPO Prospectus",
+      "url": "https://static.sse.com.cn/stock/disclosure/announcement/c/202605/002134_20260522_Y2OP.pdf",
+      "publish_date": "2026-05-22",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688826"
+    },
+    {
+      "id": "source:bse-longxin-listing-20260714",
+      "source_type": "exchange_filing",
+      "title": "常州市龙鑫智能装备股份有限公司向不特定合格投资者公开发行股票并在北京证券交易所上市公告书",
+      "title_en": "Longxin Smart Equipments BSE Listing Announcement",
+      "url": "https://www.bse.cn/disclosure/2026/2026-07-14/1784019971_908727.pdf",
+      "publish_date": "2026-07-14",
+      "language": "zh",
+      "issuer_id": "issuer:cn-bj-920117"
+    },
+    {
+      "id": "source:bse-longxin-prospectus-20260618",
+      "source_type": "exchange_filing",
+      "title": "常州市龙鑫智能装备股份有限公司招股说明书",
+      "title_en": "Longxin Smart Equipments BSE Prospectus",
+      "url": "https://www.bse.cn/disclosure/2026/2026-06-18/1781781009_142396.pdf",
+      "publish_date": "2026-06-18",
+      "language": "zh",
+      "issuer_id": "issuer:cn-bj-920117"
+    },
+    {
+      "id": "source:bse-jieli-listing-20260810",
+      "source_type": "exchange_filing",
+      "title": "珠海市杰理科技股份有限公司向不特定合格投资者公开发行股票并在北京证券交易所上市提示性公告",
+      "title_en": "Jieli Technology BSE Listing Notice",
+      "url": "https://www.bse.cn/disclosure/2026/2026-08-10/1786351089_733172.pdf",
+      "publish_date": "2026-08-10",
+      "language": "zh",
+      "issuer_id": "issuer:cn-bj-920138"
+    },
+    {
+      "id": "source:bse-jieli-prospectus-20260507",
+      "source_type": "exchange_filing",
+      "title": "珠海市杰理科技股份有限公司招股说明书",
+      "title_en": "Jieli Technology BSE Prospectus",
+      "url": "https://www.bse.cn/disclosure/2026/2026-05-07/1778153052_206780.pdf",
+      "publish_date": "2026-05-07",
+      "language": "zh",
+      "issuer_id": "issuer:cn-bj-920138"
+    },
+    {
+      "id": "source:bse-listing-index-920289-20260904",
+      "source_type": "exchange_filing",
+      "title": "北京证券交易所近期上市：920289 华汇智能",
+      "title_en": "BSE Recent Listing: Huahui Intelligent (920289)",
+      "url": "https://www.bse.cn/index.html",
+      "publish_date": "2026-09-04",
+      "language": "zh",
+      "issuer_id": "issuer:cn-bj-920289"
+    },
+    {
+      "id": "source:bse-huahui-prospectus-20260414",
+      "source_type": "exchange_filing",
+      "title": "广东华汇智能装备股份有限公司招股说明书",
+      "title_en": "Huahui Intelligent Equipment BSE Prospectus",
+      "url": "https://www.bse.cn/disclosure/2026/2026-04-14/1776157327_523174.pdf",
+      "publish_date": "2026-04-14",
+      "language": "zh",
+      "issuer_id": "issuer:cn-bj-920289"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim:sse-listing-688828-20260810",
+      "source_document_id": "source:sse-listing-688828-20260810",
+      "excerpt": "国仪公司于2026年8月11日在科创板上市交易，证券代码688828。",
+      "excerpt_en": "CIQTEK began STAR Market trading on August 11, 2026, under ticker 688828.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    },
+    {
+      "id": "claim:ciqtek-metrology-20260430",
+      "source_document_id": "source:sse-ciqtek-report-20260430",
+      "excerpt": "公司研发高端科学仪器，电子显微镜产品用于半导体材料结构表征与芯片缺陷检测。",
+      "excerpt_en": "The company develops scientific instruments, including electron microscopes used for semiconductor materials characterization and chip-defect inspection.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    },
+    {
+      "id": "claim:sse-listing-688826-20260817",
+      "source_document_id": "source:sse-listing-688826-20260817",
+      "excerpt": "频准激光于2026年8月18日在科创板上市交易，证券代码688826。",
+      "excerpt_en": "Precilasers began STAR Market trading on August 18, 2026, under ticker 688826.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    },
+    {
+      "id": "claim:precilasers-semiconductor-metrology-20260522",
+      "source_document_id": "source:sse-precilasers-prospectus-20260522",
+      "excerpt": "公司精密激光器产品应用于晶圆制造、半导体量测及高端科研仪器。",
+      "excerpt_en": "The company's precision lasers are used in wafer manufacturing, semiconductor metrology, and scientific instruments.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    },
+    {
+      "id": "claim:bse-listing-920117-20260714",
+      "source_document_id": "source:bse-longxin-listing-20260714",
+      "excerpt": "龙鑫智能于2026年7月16日在北京证券交易所上市，证券代码920117。",
+      "excerpt_en": "Longxin Smart Equipments listed on BSE on July 16, 2026, under ticker 920117.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    },
+    {
+      "id": "claim:longxin-battery-equipment-20260618",
+      "source_document_id": "source:bse-longxin-prospectus-20260618",
+      "excerpt": "公司研磨、干燥及自动化生产线装备应用于锂电池正负极材料生产。",
+      "excerpt_en": "The company's grinding, drying, and automated production-line equipment is used for lithium-battery electrode materials.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    },
+    {
+      "id": "claim:bse-listing-920138-20260810",
+      "source_document_id": "source:bse-jieli-listing-20260810",
+      "excerpt": "杰理科技于2026年8月12日在北京证券交易所上市，证券代码920138。",
+      "excerpt_en": "Jieli Technology listed on BSE on August 12, 2026, under ticker 920138.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    },
+    {
+      "id": "claim:jieli-edge-ai-20260507",
+      "source_document_id": "source:bse-jieli-prospectus-20260507",
+      "excerpt": "公司芯片产品融合无线射频、人工智能与边缘计算技术，面向智能终端场景。",
+      "excerpt_en": "The company's chips combine wireless RF, AI, and edge-computing technology for smart-device applications.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    },
+    {
+      "id": "claim:bse-listing-920289-20260904",
+      "source_document_id": "source:bse-listing-index-920289-20260904",
+      "excerpt": "北京证券交易所近期上市名单显示，华汇智能于2026年9月4日上市，证券代码920289。",
+      "excerpt_en": "BSE's recent-listings list shows Huahui Intelligent listed on September 4, 2026, under ticker 920289.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    },
+    {
+      "id": "claim:huahui-battery-equipment-20260414",
+      "source_document_id": "source:bse-huahui-prospectus-20260414",
+      "excerpt": "公司向锂电池材料客户提供正极材料研磨系统、纳米砂磨机等智能生产装备。",
+      "excerpt_en": "The company supplies cathode-material grinding systems and nano sand mills to lithium-battery-material customers.",
+      "language": "zh",
+      "reviewed_at": "2026-09-08T03:00:00.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:security_issued_by:sse-688828",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SH:688828",
+      "to_id": "issuer:cn-sh-688828",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:sse-listing-688828-20260810"]
+    },
+    {
+      "id": "relation:issuer_element:ciqtek-metrology",
+      "relation_type": "issuer_develops",
+      "from_id": "issuer:cn-sh-688828",
+      "to_id": "equipment:photomask_metrology",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:ciqtek-metrology-20260430"],
+      "attributes": {
+        "legacy_chain_id": "semiconductor_manufacturing",
+        "legacy_segment_id": "photomask_metrology"
+      }
+    },
+    {
+      "id": "relation:security_issued_by:sse-688826",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SH:688826",
+      "to_id": "issuer:cn-sh-688826",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:sse-listing-688826-20260817"]
+    },
+    {
+      "id": "relation:issuer_element:precilasers-metrology",
+      "relation_type": "issuer_provides",
+      "from_id": "issuer:cn-sh-688826",
+      "to_id": "equipment:photomask_metrology",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:precilasers-semiconductor-metrology-20260522"],
+      "attributes": {
+        "legacy_chain_id": "semiconductor_manufacturing",
+        "legacy_segment_id": "photomask_metrology"
+      }
+    },
+    {
+      "id": "relation:security_issued_by:bse-920117",
+      "relation_type": "security_issued_by",
+      "from_id": "security:BJ:920117",
+      "to_id": "issuer:cn-bj-920117",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:bse-listing-920117-20260714"]
+    },
+    {
+      "id": "relation:issuer_element:longxin-battery-equipment",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-bj-920117",
+      "to_id": "equipment:battery_manufacturing_equipment",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:longxin-battery-equipment-20260618"],
+      "attributes": {
+        "legacy_chain_id": "data_center_power_cooling",
+        "legacy_segment_id": "battery_manufacturing_equipment"
+      }
+    },
+    {
+      "id": "relation:security_issued_by:bse-920138",
+      "relation_type": "security_issued_by",
+      "from_id": "security:BJ:920138",
+      "to_id": "issuer:cn-bj-920138",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:bse-listing-920138-20260810"]
+    },
+    {
+      "id": "relation:issuer_element:jieli-edge-ai",
+      "relation_type": "issuer_develops",
+      "from_id": "issuer:cn-bj-920138",
+      "to_id": "product:edge_ai_chips",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:jieli-edge-ai-20260507"],
+      "attributes": {
+        "legacy_chain_id": "ai_chips_ip",
+        "legacy_segment_id": "edge_ai_chips"
+      }
+    },
+    {
+      "id": "relation:security_issued_by:bse-920289",
+      "relation_type": "security_issued_by",
+      "from_id": "security:BJ:920289",
+      "to_id": "issuer:cn-bj-920289",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:bse-listing-920289-20260904"]
+    },
+    {
+      "id": "relation:issuer_element:huahui-battery-equipment",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-bj-920289",
+      "to_id": "equipment:battery_manufacturing_equipment",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:huahui-battery-equipment-20260414"],
+      "attributes": {
+        "legacy_chain_id": "data_center_power_cooling",
+        "legacy_segment_id": "battery_manufacturing_equipment"
+      }
+    }
+  ]
+}

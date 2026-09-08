@@ -1,7 +1,16 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import {
+  readAshareReconciliations,
+  validateAshareReconciliations,
+} from "./lib/listing-reconciliation.mjs";
 import { buildRelationshipQuality, SPECIFIC_RELATION_TYPES } from "./lib/relationship-quality.mjs";
+import {
+  assertCandidateBatchApplied,
+  readApprovedCandidateBatches,
+} from "./lib/weekly-batches.mjs";
 
+const projectRoot = resolve(import.meta.dirname, "..");
 const snapshotPath = resolve(
   process.cwd(),
   process.argv[2] || "public/snapshots/transmission-v1.1.json",
@@ -85,10 +94,22 @@ for (const source of graph.source_documents) {
 invariant(graph.meta?.refresh?.cadence === "weekly", "The public snapshot must declare its weekly refresh cadence.");
 invariant(!Number.isNaN(Date.parse(graph.meta.refresh.last_checked_at)), "meta.refresh.last_checked_at must be an ISO timestamp.");
 invariant(!Number.isNaN(Date.parse(graph.meta.refresh.next_scheduled_at)), "meta.refresh.next_scheduled_at must be an ISO timestamp.");
+invariant(/^\d{4}-\d{2}-\d{2}$/.test(graph.meta.refresh.a_share_listing_reconciled_through || ""), "meta.refresh.a_share_listing_reconciled_through must use YYYY-MM-DD.");
+const listingReconciliation = validateAshareReconciliations(
+  await readAshareReconciliations(projectRoot),
+  graph,
+);
+invariant(graph.meta.refresh.a_share_listing_reconciled_through === listingReconciliation.reconciled_through, "The stored A-share reconciliation date does not match the approved manifests.");
+invariant(JSON.stringify(graph.meta.refresh.a_share_listing_reconciliation) === JSON.stringify(listingReconciliation), "The stored A-share reconciliation summary does not match the approved manifests.");
+for (const batch of await readApprovedCandidateBatches(projectRoot)) {
+  invariant(graph.meta.refresh.applied_batch_ids.includes(batch.batch_id), `${batch.filename} has not been applied to the public snapshot.`);
+  assertCandidateBatchApplied(graph, batch);
+}
 invariant(JSON.stringify(graph.meta.quality) === JSON.stringify(relationshipQuality), "meta.quality does not match the snapshot.");
 
 console.log(JSON.stringify({
   contract: graph.meta.contract_version,
+  aShareListingReconciledThrough: graph.meta.refresh.a_share_listing_reconciled_through,
   entities: entityIds.size,
   relations: relationIds.size,
   issuers: expectedCounts.issuers,

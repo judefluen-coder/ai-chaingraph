@@ -1,0 +1,322 @@
+{
+  "batch_id": "weekly-2026-09-07-listing-reconciliation-2",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-09-07T12:30:00.000Z",
+  "entities": [
+    {
+      "id": "issuer:cn-sh-688835",
+      "entity_type": "issuer",
+      "name": "高凯技术",
+      "name_en": "Jiangsu HighKai Precision Fluid Technology Co., Ltd.",
+      "aliases": ["HighKai", "江苏高凯", "高凯精密流体"],
+      "country": "CN",
+      "legal_name": "江苏高凯精密流体技术股份有限公司",
+      "industry": "半导体设备精密流体控制",
+      "industry_en": "Precision Fluid Control for Semiconductor Equipment"
+    },
+    {
+      "id": "security:SH:688835",
+      "entity_type": "security",
+      "name": "高凯技术",
+      "name_en": "Jiangsu HighKai Precision Fluid Technology Co., Ltd.",
+      "aliases": ["688835.SH", "688835", "HighKai"],
+      "stock_code": "688835.SH",
+      "symbol": "688835",
+      "exchange": "SH",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    },
+    {
+      "id": "issuer:cn-sz-001232",
+      "entity_type": "issuer",
+      "name": "嘉立创",
+      "name_en": "Shenzhen JLC Technology Group Co., Ltd.",
+      "aliases": ["JLC", "JLCPCB", "嘉立创科技"],
+      "country": "CN",
+      "legal_name": "深圳嘉立创科技集团股份有限公司",
+      "industry": "PCB与电子产业基础设施服务",
+      "industry_en": "PCB and Electronics Infrastructure Services"
+    },
+    {
+      "id": "security:SZ:001232",
+      "entity_type": "security",
+      "name": "嘉立创",
+      "name_en": "Shenzhen JLC Technology Group Co., Ltd.",
+      "aliases": ["001232.SZ", "001232", "JLC", "JLCPCB"],
+      "stock_code": "001232.SZ",
+      "symbol": "001232",
+      "exchange": "SZ",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    },
+    {
+      "id": "issuer:cn-sz-301707",
+      "entity_type": "issuer",
+      "name": "展芯股份",
+      "name_en": "Jiangsu ZhanXin Semiconductor Technology Co., Ltd.",
+      "aliases": ["展芯半导体", "ZhanXin Semiconductor"],
+      "country": "CN",
+      "legal_name": "江苏展芯半导体技术股份有限公司",
+      "industry": "高可靠模拟芯片及微模块",
+      "industry_en": "High-reliability Analog Chips and Micromodules"
+    },
+    {
+      "id": "security:SZ:301707",
+      "entity_type": "security",
+      "name": "展芯股份",
+      "name_en": "Jiangsu ZhanXin Semiconductor Technology Co., Ltd.",
+      "aliases": ["301707.SZ", "301707", "展芯半导体"],
+      "stock_code": "301707.SZ",
+      "symbol": "301707",
+      "exchange": "SZ",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    },
+    {
+      "id": "issuer:cn-sz-301717",
+      "entity_type": "issuer",
+      "name": "超纯应材",
+      "name_en": "Chengdu Ultra Pure Applied Materials Co., Ltd.",
+      "aliases": ["成都超纯", "Ultra Pure Applied Materials"],
+      "country": "CN",
+      "legal_name": "成都超纯应用材料股份有限公司",
+      "industry": "半导体设备特种涂层零部件",
+      "industry_en": "Special-coated Components for Semiconductor Equipment"
+    },
+    {
+      "id": "security:SZ:301717",
+      "entity_type": "security",
+      "name": "超纯应材",
+      "name_en": "Chengdu Ultra Pure Applied Materials Co., Ltd.",
+      "aliases": ["301717.SZ", "301717", "成都超纯"],
+      "stock_code": "301717.SZ",
+      "symbol": "301717",
+      "exchange": "SZ",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    }
+  ],
+  "source_documents": [
+    {
+      "id": "source:sse-listing-688835-20260824",
+      "source_type": "exchange_filing",
+      "title": "关于江苏高凯精密流体技术股份有限公司人民币普通股股票科创板上市交易的公告",
+      "title_en": "SSE Notice on the STAR Market Listing of Jiangsu HighKai Precision Fluid Technology",
+      "url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260824_10829780.shtml",
+      "publish_date": "2026-08-24",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688835"
+    },
+    {
+      "id": "source:sse-highkai-prospectus-20260624",
+      "source_type": "exchange_filing",
+      "title": "江苏高凯精密流体技术股份有限公司首次公开发行股票并在科创板上市招股说明书",
+      "title_en": "Jiangsu HighKai Precision Fluid Technology STAR Market IPO Prospectus",
+      "url": "https://static.sse.com.cn/stock/disclosure/announcement/c/202606/002156_20260624_XUTP.pdf",
+      "publish_date": "2026-06-24",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688835"
+    },
+    {
+      "id": "source:szse-listing-jlc-20260803",
+      "source_type": "exchange_filing",
+      "title": "关于深圳嘉立创科技集团股份有限公司股票上市交易的公告",
+      "title_en": "SZSE Notice on the Listing of Shenzhen JLC Technology Group",
+      "url": "https://www.szse.cn/disclosure/notice/company/t20260803_621939.html",
+      "publish_date": "2026-08-03",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sz-001232"
+    },
+    {
+      "id": "source:szse-jlc-prospectus-20260730",
+      "source_type": "exchange_filing",
+      "title": "深圳嘉立创科技集团股份有限公司首次公开发行股票并在主板上市招股说明书",
+      "title_en": "Shenzhen JLC Technology Group Main Board IPO Prospectus",
+      "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-07-30/67b3d36a-633d-4a95-9b15-d111365d4a75.PDF",
+      "publish_date": "2026-07-30",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sz-001232"
+    },
+    {
+      "id": "source:szse-zhanxin-listing-report-20260810",
+      "source_type": "exchange_filing",
+      "title": "展芯股份在深交所上市",
+      "title_en": "ZhanXin Semiconductor Lists on SZSE",
+      "url": "https://www.szse.cn/marketServices/listing/report/t20260810_622088.html",
+      "publish_date": "2026-08-10",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sz-301707"
+    },
+    {
+      "id": "source:szse-ultrapure-listing-report-20260811",
+      "source_type": "exchange_filing",
+      "title": "超纯应材在深交所上市",
+      "title_en": "Ultra Pure Applied Materials Lists on SZSE",
+      "url": "https://investor.szse.cn/English/about/news/listings/t20260811_622093.html",
+      "publish_date": "2026-08-11",
+      "language": "en",
+      "issuer_id": "issuer:cn-sz-301717"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim:sse-listing-688835-20260824",
+      "source_document_id": "source:sse-listing-688835-20260824",
+      "excerpt": "高凯技术于2026年8月25日在科创板上市交易，证券代码688835。",
+      "excerpt_en": "HighKai began STAR Market trading on August 25, 2026, under ticker 688835.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:30:00.000Z"
+    },
+    {
+      "id": "claim:highkai-semiconductor-components-20260624",
+      "source_document_id": "source:sse-highkai-prospectus-20260624",
+      "excerpt": "公司自主研发的质量流量控制器已在集成电路领域批量应用，是半导体设备关键零部件。",
+      "excerpt_en": "The company's proprietary mass-flow controllers are used at scale in integrated-circuit production as critical semiconductor-equipment components.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:30:00.000Z"
+    },
+    {
+      "id": "claim:szse-listing-001232-20260803",
+      "source_document_id": "source:szse-listing-jlc-20260803",
+      "excerpt": "嘉立创于2026年8月4日在深交所主板上市，证券代码001232。",
+      "excerpt_en": "JLC began Shenzhen Main Board trading on August 4, 2026, under ticker 001232.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:30:00.000Z"
+    },
+    {
+      "id": "claim:jlc-high-layer-pcb-20260730",
+      "source_document_id": "source:szse-jlc-prospectus-20260730",
+      "excerpt": "公司主营业务覆盖印制电路板制造，募投项目包括高多层印制线路板产线建设。",
+      "excerpt_en": "The company manufactures PCBs and is investing in a high-layer-count PCB production line.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:30:00.000Z"
+    },
+    {
+      "id": "claim:szse-listing-301707-20260810",
+      "source_document_id": "source:szse-zhanxin-listing-report-20260810",
+      "excerpt": "展芯股份于2026年8月7日在深交所创业板上市，证券代码301707。",
+      "excerpt_en": "ZhanXin Semiconductor began ChiNext trading on August 7, 2026, under ticker 301707.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:30:00.000Z"
+    },
+    {
+      "id": "claim:zhanxin-analog-chips-20260810",
+      "source_document_id": "source:szse-zhanxin-listing-report-20260810",
+      "excerpt": "公司主要从事高可靠模拟芯片及微模块产品的研发设计、测试及销售。",
+      "excerpt_en": "The company develops, tests, and sells high-reliability analog chips and micromodule products.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:30:00.000Z"
+    },
+    {
+      "id": "claim:szse-listing-301717-20260811",
+      "source_document_id": "source:szse-ultrapure-listing-report-20260811",
+      "excerpt": "超纯应材于2026年8月11日在深交所创业板上市，证券代码301717。",
+      "excerpt_en": "Ultra Pure Applied Materials began ChiNext trading on August 11, 2026, under ticker 301717.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:30:00.000Z"
+    },
+    {
+      "id": "claim:ultrapure-semiconductor-components-20260811",
+      "source_document_id": "source:szse-ultrapure-listing-report-20260811",
+      "excerpt": "公司研发、生产并销售半导体设备特种涂层零部件和精密光学器件。",
+      "excerpt_en": "The company develops, produces, and sells special-coated semiconductor-equipment components and precision optical devices.",
+      "language": "zh",
+      "reviewed_at": "2026-09-07T12:30:00.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:security_issued_by:sse-688835",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SH:688835",
+      "to_id": "issuer:cn-sh-688835",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:sse-listing-688835-20260824"]
+    },
+    {
+      "id": "relation:issuer_element:highkai-semiconductor-components",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-688835",
+      "to_id": "component:semiconductor_equipment_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:highkai-semiconductor-components-20260624"],
+      "attributes": {
+        "legacy_chain_id": "semiconductor_manufacturing",
+        "legacy_segment_id": "semiconductor_equipment_components"
+      }
+    },
+    {
+      "id": "relation:security_issued_by:szse-001232",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SZ:001232",
+      "to_id": "issuer:cn-sz-001232",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:szse-listing-001232-20260803"]
+    },
+    {
+      "id": "relation:issuer_element:jlc-high-layer-pcb",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-001232",
+      "to_id": "component:high_layer_pcb",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:jlc-high-layer-pcb-20260730"],
+      "attributes": {
+        "legacy_chain_id": "pcb_electronic_materials",
+        "legacy_segment_id": "high_layer_pcb"
+      }
+    },
+    {
+      "id": "relation:security_issued_by:szse-301707",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SZ:301707",
+      "to_id": "issuer:cn-sz-301707",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:szse-listing-301707-20260810"]
+    },
+    {
+      "id": "relation:issuer_element:zhanxin-analog-chips",
+      "relation_type": "issuer_develops",
+      "from_id": "issuer:cn-sz-301707",
+      "to_id": "component:analog_mixed_signal_chips",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:zhanxin-analog-chips-20260810"],
+      "attributes": {
+        "legacy_chain_id": "ai_chips_ip",
+        "legacy_segment_id": "analog_mixed_signal_chips"
+      }
+    },
+    {
+      "id": "relation:security_issued_by:szse-301717",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SZ:301717",
+      "to_id": "issuer:cn-sz-301717",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:szse-listing-301717-20260811"]
+    },
+    {
+      "id": "relation:issuer_element:ultrapure-semiconductor-components",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-301717",
+      "to_id": "component:semiconductor_equipment_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:ultrapure-semiconductor-components-20260811"],
+      "attributes": {
+        "legacy_chain_id": "semiconductor_manufacturing",
+        "legacy_segment_id": "semiconductor_equipment_components"
+      }
+    }
+  ]
+}

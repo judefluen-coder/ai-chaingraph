@@ -203,7 +203,7 @@ export function searchTransmissionGraph(graph, query, options = {}) {
   for (const issuer of index.issuers) {
     if (!issuerMatchesMarket(issuer.id, market, index)) continue;
     const securities = index.securitiesByIssuer.get(issuer.id) || [];
-    const fields = [issuer.name, issuer.name_en, issuer.industry, issuer.industry_en, ...securities.flatMap((security) => [security.stock_code, security.symbol, security.name, security.name_en])];
+    const fields = [issuer.name, issuer.name_en, issuer.industry, issuer.industry_en, ...(issuer.aliases || []), ...securities.flatMap((security) => [security.stock_code, security.symbol, security.name, security.name_en, ...(security.aliases || [])])];
     const score = searchScore(normalized, fields, securities.flatMap((security) => [security.stock_code, security.symbol]));
     if (score === 0) continue;
     results.push({

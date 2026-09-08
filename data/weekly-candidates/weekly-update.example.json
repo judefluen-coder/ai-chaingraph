@@ -3,6 +3,25 @@
   "review_status": "approved",
   "reviewer": "researcher-or-automation-id",
   "reviewed_at": "YYYY-MM-DDTHH:mm:ss.sssZ",
+  "entities": [
+    {
+      "id": "issuer:cn-sh-6XXXXX",
+      "entity_type": "issuer",
+      "name": "Newly listed issuer",
+      "country": "CN"
+    },
+    {
+      "id": "security:SH:6XXXXX",
+      "entity_type": "security",
+      "name": "Newly listed security",
+      "stock_code": "6XXXXX.SH",
+      "symbol": "6XXXXX",
+      "exchange": "SH",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    }
+  ],
   "source_documents": [
     {
       "id": "source:stable-hash",
@@ -12,7 +31,7 @@
       "url": "https://example.com/official-source",
       "publish_date": "YYYY-MM-DD",
       "language": "zh",
-      "issuer_id": "issuer:existing-id"
+      "issuer_id": "issuer:cn-sh-6XXXXX"
     }
   ],
   "claims": [
@@ -29,7 +48,7 @@
     {
       "id": "relation:issuer_element:stable-hash",
       "relation_type": "issuer_produces",
-      "from_id": "issuer:existing-id",
+      "from_id": "issuer:cn-sh-6XXXXX",
       "to_id": "component:existing-id",
       "relation_basis": "official_disclosure",
       "evidence_level": "L1",
@@ -40,6 +59,17 @@
         "legacy_chain_id": "existing-chain-id",
         "legacy_segment_id": "existing-segment-id"
       }
+    },
+    {
+      "id": "relation:security_issued_by:stable-hash",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SH:6XXXXX",
+      "to_id": "issuer:cn-sh-6XXXXX",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": [
+        "claim:stable-hash"
+      ]
     }
   ]
 }

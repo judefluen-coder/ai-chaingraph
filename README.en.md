@@ -67,19 +67,19 @@ Open a company to see its industry positions. Select a mapping to inspect its ev
 
 ## v1.2 Public Snapshot
 
-The relationship layer was refreshed on **2026-09-07**. Underlying public sources currently run through **2026-07-12**; new disclosures are checked weekly with separate check and change timestamps.
+The relationship layer was refreshed on **2026-09-08**. Underlying public sources currently run through **2026-09-04**, and every new A-share listing has been reconciled through **2026-09-08**. Check time, data-change time, and listing-reconciliation coverage are tracked separately.
 
 | Object | Count |
 | --- | ---: |
 | Capability domains | 6 |
 | Industry chains | 12 |
 | Industry segments | 111 |
-| Issuers / securities | 4,537 |
-| Company-to-element mappings | 6,609 (5,984 specific; 625 broad) |
-| Issuers with specific relations | 4,233 (93.3%) |
+| Issuers / securities | 4,548 |
+| Company-to-element mappings | 6,621 (5,996 specific; 625 broad) |
+| Issuers with specific relations | 4,244 (93.3%) |
 | Directed industry dependencies | 173 |
-| Evidence claims | 6,621 |
-| Public source documents | 4,616 |
+| Evidence claims | 6,643 |
+| Public source documents | 4,636 |
 
 Companies may appear in multiple chains and elements, so chain-level company counts are not unique-company totals.
 
@@ -87,11 +87,14 @@ Companies may appear in multiple chains and elements, so chain-level company cou
 
 The project uses a reviewed weekly cycle instead of writing crawler output directly into the public graph:
 
-1. Every Monday, inspect new regulatory filings, exchange announcements, and official company disclosures, prioritizing broad-only issuers and under-covered segments.
-2. Approved relationships enter through [`data/weekly-candidates/`](data/weekly-candidates/README.md) with a public HTTPS source, reviewable claim, explicit action, and L1/L2 evidence level.
-3. `npm run update:weekly` imports approved batches and promotes existing broad mappings only when their linked evidence contains an explicit issuer action.
-4. Snapshot validation, relationship-depth auditing, and the production build must pass before GitHub and the existing OpenAI Sites project are updated.
-5. A scheduled GitHub Actions gate verifies that the latest check is no more than eight days old and that at least 90% of issuers retain a specific relationship.
+1. Every Monday, compare official SSE, SZSE, and BSE listing notices with the latest [`listing reconciliation manifest`](data/listing-reconciliations/README.md). Every new listing receives an explicit `included` or `excluded` decision and reason.
+2. An included listing must add an issuer, security, L1 issuance relationship, and at least one evidence-backed specific industry relationship.
+3. Approved relationships enter through [`data/weekly-candidates/`](data/weekly-candidates/README.md) with a public HTTPS source, reviewable claim, explicit action, and L1/L2 evidence level.
+4. `npm run update:weekly` validates the complete listing manifest, imports approved batches, and promotes broad mappings only when linked evidence contains an explicit issuer action.
+5. Snapshot validation, relationship-depth auditing, and the production build must pass before GitHub and the existing OpenAI Sites project are updated.
+6. GitHub Actions rejects a check or A-share listing reconciliation older than eight days and requires at least 90% of issuers to retain a specific relationship.
+
+The current manifest reviews all 30 A-share listings from July 13 through September 8, 2026: 11 are included and 19 are explicitly excluded. US-listed issuer reconciliation remains a separate SEC and exchange-source review.
 
 Each run writes [`public/snapshots/update-status.json`](public/snapshots/update-status.json). See [`docs/WEEKLY_UPDATES.md`](docs/WEEKLY_UPDATES.md) for the complete process and evidence policy.
 
