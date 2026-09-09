@@ -1,6 +1,6 @@
 const PUBLIC_TRANSMISSION_PATH = `${import.meta.env.BASE_URL}snapshots/transmission-v1.1.json`;
 
-function normalizeGraphData(data, source) {
+function normalizeGraphData(data) {
   if (!Array.isArray(data?.entities) || !Array.isArray(data?.relations) || !String(data?.meta?.contract_version || "").startsWith("1.1")) {
     throw new Error("The graph source does not implement the v1.1 transmission contract.");
   }
@@ -10,8 +10,8 @@ function normalizeGraphData(data, source) {
     claims: data.claims || [],
     shock_events: data.shock_events || [],
     meta: {
-      source,
       ...data.meta,
+      source: "public_snapshot",
     },
   };
 }
@@ -23,13 +23,5 @@ async function fetchJson(url) {
 }
 
 export async function loadGraphData() {
-  const apiBase = import.meta.env.VITE_CHAINGRAPH_API_BASE?.replace(/\/$/, "");
-  if (apiBase) {
-    try {
-      return normalizeGraphData(await fetchJson(`${apiBase}/api/transmission-graph`), "api");
-    } catch (error) {
-      console.warn("AI-ChainGraph v1.1 API unavailable, falling back to the public transmission view.", error);
-    }
-  }
-  return normalizeGraphData(await fetchJson(PUBLIC_TRANSMISSION_PATH), "public_snapshot");
+  return normalizeGraphData(await fetchJson(PUBLIC_TRANSMISSION_PATH));
 }

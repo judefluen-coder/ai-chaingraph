@@ -34,7 +34,7 @@ body:
       options:
         - Frontend UI
         - Graph interaction
-        - Demo data
+        - Public snapshot data
         - Schema or import script
         - Documentation
         - Build or CI

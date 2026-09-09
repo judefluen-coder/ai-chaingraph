@@ -27,8 +27,8 @@ body:
         - SQLite schema
         - Import script
         - Evidence levels
-        - Review queue
-        - Demo data
+        - Evidence review
+        - Public snapshot data
         - Documentation
     validations:
       required: true
@@ -38,8 +38,8 @@ body:
       label: Safe example
       description: Provide a fictional or fully anonymized example.
       placeholder: |
-        company: DEMO
-        segment: AI server
+        issuer_id: issuer:example-company
+        segment_id: segment:example-segment
         evidence_level: L2
   - type: textarea
     id: acceptance
@@ -47,5 +47,6 @@ body:
       label: Acceptance criteria
       description: How would we know this is done?
       placeholder: |
-        - npm run smoke validates the new field.
+        - npm test validates the new field.
+        - npm run validate:snapshot accepts the updated snapshot.
         - README documents the new rule.

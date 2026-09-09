@@ -119,9 +119,7 @@ rmSync(packageRoot, { recursive: true, force: true });
 mkdirSync(join(packageDist, "server"), { recursive: true });
 mkdirSync(join(packageDist, ".openai"), { recursive: true });
 
-const includedFiles = listFiles(viteDist).filter(
-  (filePath) => webPath(filePath) !== "/snapshots/current.json",
-);
+const includedFiles = listFiles(viteDist);
 
 for (const filePath of includedFiles) {
   const targetPath = join(clientDist, relative(viteDist, filePath));

@@ -275,31 +275,6 @@ export const translations = {
   },
 };
 
-const legacyTypeLabels = {
-  zh: { overview: "总览", chain: "产业链", segment: "产业环节", subsegment: "产业要素", company: "上市公司" },
-  en: { overview: "Overview", chain: "Industry chain", segment: "Segment", subsegment: "Industry element", company: "Listed company" },
-};
-
-const basisLabels = {
-  zh: { official_disclosure: "官方披露", product_fact: "产品事实", industry_inference: "产业推导", industry_reference: "行业参考", ontology_curated: "本体结构" },
-  en: { official_disclosure: "Official disclosure", product_fact: "Product fact", industry_inference: "Industry inference", industry_reference: "Industry reference", ontology_curated: "Ontology structure" },
-};
-
 export function getCopy(locale) {
   return translations[locale] || translations.zh;
-}
-
-export function getLocalizedField(entity, field, locale) {
-  if (!entity) return "";
-  return locale === "en"
-    ? entity[`${field}_en`] || entity[field] || ""
-    : entity[field] || entity[`${field}_en`] || "";
-}
-
-export function getLocalizedTypeLabel(type, locale) {
-  return legacyTypeLabels[locale]?.[type] || legacyTypeLabels.zh[type] || type;
-}
-
-export function getLocalizedBasisLabel(basis, locale) {
-  return basisLabels[locale]?.[basis] || basisLabels.zh[basis] || basis;
 }
