@@ -289,7 +289,7 @@ function App() {
     const relation = index?.relationsById.get(relationId) || historicalRelation(graph?.release_history, relationId);
     if (!relation) return;
     setActiveRelationId(relationId);
-    if (activeId !== relation.from_id) {
+    if (!activeId) {
       setActiveId(relation.from_id);
       const chainId = getEntityChainId(graph, relation.from_id);
       if (chainId) setSelectedChainId(chainId);
@@ -301,6 +301,13 @@ function App() {
     setPathStartId(null);
     setPathTargetId(null);
     setShockType(null);
+  }
+
+  function openRecordedRelation(relationId) {
+    const relation = buildRelationDetailModel(graph, relationId)?.relation;
+    if (!relation) return;
+    selectEntity(relation.from_id);
+    setActiveRelationId(relationId);
   }
 
   function startPath(entityId) {
@@ -403,7 +410,7 @@ function App() {
   return (
     <div className="txAppShell">
       {!acknowledged && <DisclaimerModal copy={copy} onAccept={acknowledgeDisclaimer} />}
-      {releaseOpen && <ReleaseDialog graph={graph} locale={locale} onClose={() => setReleaseOpen(false)} onSelectRelation={selectRelation} onRetry={() => setReloadKey((value) => value + 1)} />}
+      {releaseOpen && <ReleaseDialog graph={graph} locale={locale} onClose={() => setReleaseOpen(false)} onSelectRelation={openRecordedRelation} onRetry={() => setReloadKey((value) => value + 1)} />}
       {notice && <p className="txStatusToast" role="status" aria-live="polite">{notice}</p>}
       <TopBar
         query={query}
