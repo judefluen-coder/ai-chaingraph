@@ -7,6 +7,8 @@ import { GraphDetailPanel } from "./components/GraphDetailPanel.jsx";
 import { GraphViewport } from "./components/GraphViewport.jsx";
 import { ScopeInspector } from "./components/ScopeInspector.jsx";
 import { TopBar } from "./components/TopBar.jsx";
+import { ReleaseDialog } from "./components/ReleaseDialog.jsx";
+import { historicalRelation, issuerEvents, relationEvents } from "./lib/releaseHistory.js";
 import {
   buildChainFlow,
   buildDetailModel,
@@ -66,6 +68,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [watchlistRecords, setWatchlistRecords] = useState(readWatchlist);
   const [notice, setNotice] = useState("");
+  const [releaseOpen, setReleaseOpen] = useState(false);
   const isNarrow = useMediaQuery("(max-width: 760px)");
   const graph = graphState.data;
   const copy = getCopy(locale);
@@ -148,6 +151,9 @@ function App() {
   const chainElements = selectedChainId ? index?.elementsByChain.get(selectedChainId) || [] : [];
   const detail = useMemo(() => graph && activeId ? buildDetailModel(graph, activeId, { locale, market: marketFilter }) : null, [graph, activeId, locale, marketFilter]);
   const relationDetail = useMemo(() => graph && activeRelationId ? buildRelationDetailModel(graph, activeRelationId) : null, [graph, activeRelationId]);
+  useEffect(() => {
+    if (relationDetail && !activeId) setActiveId(relationDetail.relation.from_id);
+  }, [relationDetail, activeId]);
   const watchRecord = detail?.kind === "issuer" ? watchlistRecords.find((record) => record.issuer_id === detail.entity.id) || null : null;
 
   const shockSpec = useMemo(() => {
@@ -280,10 +286,10 @@ function App() {
   }
 
   function selectRelation(relationId) {
-    const relation = index?.relationsById.get(relationId);
+    const relation = index?.relationsById.get(relationId) || historicalRelation(graph?.release_history, relationId);
     if (!relation) return;
     setActiveRelationId(relationId);
-    if (!activeId) {
+    if (activeId !== relation.from_id) {
       setActiveId(relation.from_id);
       const chainId = getEntityChainId(graph, relation.from_id);
       if (chainId) setSelectedChainId(chainId);
@@ -397,6 +403,7 @@ function App() {
   return (
     <div className="txAppShell">
       {!acknowledged && <DisclaimerModal copy={copy} onAccept={acknowledgeDisclaimer} />}
+      {releaseOpen && <ReleaseDialog graph={graph} locale={locale} onClose={() => setReleaseOpen(false)} onSelectRelation={selectRelation} onRetry={() => setReloadKey((value) => value + 1)} />}
       {notice && <p className="txStatusToast" role="status" aria-live="polite">{notice}</p>}
       <TopBar
         query={query}
@@ -422,6 +429,7 @@ function App() {
         dataStatus={graph.meta.status}
         dataRefresh={graph.meta.refresh}
         relationshipQuality={graph.meta.quality}
+        onOpenUpdates={() => { setSidebarOpen(false); setReleaseOpen(true); }}
         onReset={resetWorkspace}
         onCopyLink={copyResearchLink}
         watchlistRecords={watchlistRecords}
@@ -448,6 +456,10 @@ function App() {
           <GraphDetailPanel
             detail={detail}
             relationDetail={relationDetail}
+            relationHistory={relationEvents(graph.release_history, activeRelationId)}
+            companyHistory={issuerEvents(graph.release_history, detail.entity.id)}
+            historyUnavailable={graph.releaseHistoryError}
+            onRetryHistory={() => setReloadKey((value) => value + 1)}
             locale={locale}
             copy={copy}
             pathStartId={pathStartId}

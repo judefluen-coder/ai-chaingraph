@@ -26,6 +26,7 @@ export function ChainNavigator({
   dataStatus,
   dataRefresh,
   relationshipQuality,
+  onOpenUpdates,
   onReset,
   onCopyLink,
   watchlistRecords,
@@ -157,14 +158,15 @@ export function ChainNavigator({
             <button type="button" className="txUtilityButton" aria-label={copy.exportWatchlist} title={copy.exportWatchlist} disabled={watchlistRecords.length === 0} onClick={onExportWatchlist}><Download size={16} strokeWidth={1.8} /></button>
             <a className="txUtilityButton" href="https://github.com/judefluen-coder/ai-chaingraph" target="_blank" rel="noreferrer" aria-label={copy.github} title={copy.github}><Github size={16} strokeWidth={1.8} /></a>
           </div>
-          <div
+          <button type="button" onClick={onOpenUpdates}
             className="txSidebarDataState"
+            aria-label={locale === "en" ? "Data version and updates" : "数据版本与更新"}
             title={`${dataStateLabel} · ${copy.weeklyRefresh} · ${copy.checkedOn} ${checkedDate} · ${copy.specificRelationshipRate} ${specificRate}`}
           >
             <Database size={14} strokeWidth={1.8} />
             <span>{dataStateLabel} · {copy.weeklyRefresh}</span>
             <small>{dataVersion} · {specificRate}</small>
-          </div>
+          </button>
         </footer>
       </aside>
     </>
