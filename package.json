@@ -7,8 +7,9 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "predev": "node scripts/build-release-history.mjs",
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build",
+    "build": "node scripts/build-release-history.mjs && vite build",
     "build:sites": "npm run build && node scripts/build-sites.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test",

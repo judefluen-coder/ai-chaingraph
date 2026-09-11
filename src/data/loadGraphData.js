@@ -23,5 +23,11 @@ async function fetchJson(url) {
 }
 
 export async function loadGraphData() {
-  return normalizeGraphData(await fetchJson(PUBLIC_TRANSMISSION_PATH));
+  const [data, history] = await Promise.all([
+    fetchJson(PUBLIC_TRANSMISSION_PATH),
+    fetchJson(`${import.meta.env.BASE_URL}snapshots/release-history.json`).catch(() => null),
+  ]);
+  const validHistory = history?.schema_version === "1.0.0" && history.data_updated_at === data.meta?.updated_at
+    && Array.isArray(history.events) && Array.isArray(history.batches) && Array.isArray(history.archived_relations);
+  return { ...normalizeGraphData(data), release_history: validHistory ? history : null, releaseHistoryError: !validHistory };
 }

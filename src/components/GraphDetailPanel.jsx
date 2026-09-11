@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { HistoryDetails } from "./HistoryDetails.jsx";
+import { historyCopy } from "../lib/releaseHistory.js";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -35,6 +37,10 @@ const eventOptions = [
 export function GraphDetailPanel({
   detail,
   relationDetail,
+  relationHistory,
+  companyHistory,
+  historyUnavailable,
+  onRetryHistory,
   locale,
   copy,
   pathStartId,
@@ -94,7 +100,7 @@ export function GraphDetailPanel({
       </div>
 
       {detail.kind !== "issuer" && detail.context && <ContextSection context={detail.context} locale={locale} copy={copy} />}
-      {relationDetail && <RelationEvidence detail={relationDetail} locale={locale} copy={copy} />}
+      {relationDetail && <RelationEvidence key={relationDetail.relation.id} detail={relationDetail} locale={locale} copy={copy} events={relationHistory} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />}
 
       {detail.kind === "issuer" ? (
         <IssuerPositions
@@ -125,7 +131,7 @@ export function GraphDetailPanel({
       )}
 
       {detail.kind === "issuer" && watchRecord && (
-        <ResearchNote record={watchRecord} copy={copy} onUpdate={onUpdateWatchlist} />
+        <ResearchNote key={watchRecord.issuer_id} record={watchRecord} copy={copy} onUpdate={onUpdateWatchlist} events={companyHistory} locale={locale} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />
       )}
 
       <details className="txConditionalSection" open={Boolean(shockOverlay)}>
@@ -167,8 +173,9 @@ function ContextSection({ context, locale, copy }) {
   );
 }
 
-function RelationEvidence({ detail, locale, copy }) {
+function RelationEvidence({ detail, locale, copy, events, unavailable, onRetry, onSelectRelation }) {
   const { relation, from, to, evidence } = detail;
+  const text = historyCopy(locale);
   const summary = localize(relation, "relation_summary", locale);
   return (
     <section className="txDetailSection txEvidenceSection">
@@ -181,6 +188,9 @@ function RelationEvidence({ detail, locale, copy }) {
         <span>{getRelationLabel(relation.relation_type, locale)}<ChevronRight size={13} strokeWidth={1.8} /></span>
         <strong>{localize(to, "name", locale)}</strong>
       </div>
+      {relation.lifecycle_status && relation.lifecycle_status !== "active" && <p className="txHistoricalStatus" role="status">{text[relation.lifecycle_status] || relation.lifecycle_status} · {text.archived}
+        {relation.replacement_relation_id && <button type="button" onClick={() => onSelectRelation(relation.replacement_relation_id)}>{text.replacement}</button>}
+      </p>}
       {summary && <p className="txRelationSummary">{summary}</p>}
       <div className="txEvidenceList">
         {evidence.length === 0 ? <span className="txEmptyText">{copy.noEvidence}</span> : evidence.map(({ claim, source }) => (
@@ -198,6 +208,7 @@ function RelationEvidence({ detail, locale, copy }) {
           </article>
         ))}
       </div>
+      <HistoryDetails events={events || []} locale={locale} unavailable={unavailable} onRetry={onRetry} />
     </section>
   );
 }
@@ -303,7 +314,7 @@ function EvidenceBadge({ relation, copy }) {
   return <em className={`txEvidenceBadge ${className}`}>{label}</em>;
 }
 
-function ResearchNote({ record, copy, onUpdate }) {
+function ResearchNote({ record, copy, onUpdate, events, locale, unavailable, onRetry, onSelectRelation }) {
   return (
     <section className="txDetailSection txResearchNote">
       <div className="txSectionHeading">
@@ -332,6 +343,7 @@ function ResearchNote({ record, copy, onUpdate }) {
           <textarea value={record.thesis} placeholder={copy.thesisPlaceholder} rows={4} onChange={(event) => onUpdate({ thesis: event.target.value })} />
         </label>
       </div>
+      <HistoryDetails title={historyCopy(locale).recent} events={events || []} locale={locale} unavailable={unavailable} onRetry={onRetry} onSelectRelation={onSelectRelation} />
     </section>
   );
 }
