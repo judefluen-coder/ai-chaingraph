@@ -1,0 +1,107 @@
+{
+  "batch_id": "weekly-2026-09-14-official-listings",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-09-14T02:24:02.982Z",
+  "entities": [
+    {
+      "id": "issuer:cn-sh-688801",
+      "entity_type": "issuer",
+      "name": "燧原科技",
+      "name_en": "Shanghai Enflame Technology Co., Ltd.",
+      "aliases": [
+        "燧原",
+        "Enflame"
+      ],
+      "country": "CN",
+      "legal_name": "上海燧原科技股份有限公司",
+      "industry": "云端AI芯片设计",
+      "industry_en": "Cloud AI Chip Design"
+    },
+    {
+      "id": "security:SH:688801",
+      "entity_type": "security",
+      "name": "燧原科技",
+      "name_en": "Shanghai Enflame Technology Co., Ltd.",
+      "aliases": [
+        "688801.SH",
+        "688801",
+        "燧原"
+      ],
+      "stock_code": "688801.SH",
+      "symbol": "688801",
+      "exchange": "SH",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    }
+  ],
+  "source_documents": [
+    {
+      "id": "source:sse-enflame-listing-20260910",
+      "source_type": "exchange_filing",
+      "title": "关于上海燧原科技股份有限公司人民币普通股股票科创板上市交易的公告",
+      "title_en": "SSE STAR Market Listing Notice for Enflame",
+      "url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260910_10831789.shtml",
+      "publish_date": "2026-09-10",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688801"
+    },
+    {
+      "id": "source:sse-enflame-prospectus-20260416",
+      "source_type": "exchange_filing",
+      "title": "上海燧原科技股份有限公司招股说明书（申报稿）",
+      "title_en": "Enflame IPO Prospectus (Application Draft)",
+      "url": "https://static.sse.com.cn/stock/disclosure/announcement/c/202604/002175_20260416_BH8W.pdf",
+      "publish_date": "2026-04-16",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sh-688801"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim:sse-enflame-listing-20260910",
+      "source_document_id": "source:sse-enflame-listing-20260910",
+      "excerpt": "上交所公告确认燧原科技（688801）于2026年9月11日起上市交易。",
+      "excerpt_en": "SSE confirms that Enflame (688801) begins trading on September 11, 2026.",
+      "language": "zh",
+      "reviewed_at": "2026-09-14T02:24:02.982Z"
+    },
+    {
+      "id": "claim:sse-enflame-prospectus-20260416",
+      "source_document_id": "source:sse-enflame-prospectus-20260416",
+      "excerpt": "招股说明书第1-1-39页披露，公司研发、设计并销售云端AI芯片及相关产品。",
+      "excerpt_en": "The prospectus (page 1-1-39) states that the company develops, designs and sells cloud AI chips and related products.",
+      "language": "zh",
+      "reviewed_at": "2026-09-14T02:24:02.982Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:security_issued_by:sse-688801",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SH:688801",
+      "to_id": "issuer:cn-sh-688801",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": [
+        "claim:sse-enflame-listing-20260910"
+      ]
+    },
+    {
+      "id": "relation:issuer_element:enflame-ai-accelerators",
+      "relation_type": "issuer_develops",
+      "from_id": "issuer:cn-sh-688801",
+      "to_id": "product:ai_accelerators",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": [
+        "claim:sse-enflame-prospectus-20260416"
+      ],
+      "attributes": {
+        "legacy_chain_id": "ai_chips_ip",
+        "legacy_segment_id": "ai_accelerators"
+      }
+    }
+  ]
+}
