@@ -1,0 +1,77 @@
+{
+  "manifest_id": "a-share-2026-09-09-to-2026-09-14",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-09-14T02:24:02.982Z",
+  "period_start": "2026-09-09",
+  "reconciled_through": "2026-09-14",
+  "markets": [
+    "SH",
+    "SZ",
+    "BJ"
+  ],
+  "market_checks": [
+    {
+      "exchange": "SH",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/",
+      "checked_at": "2026-09-14T02:24:02.982Z",
+      "method": "浏览器读取官方公告静态分页s_list.shtml及第2至6页，覆盖9月14日至9月4日；排除债券和基金，逐项核查股票上市公告。",
+      "new_listings": 1
+    },
+    {
+      "exchange": "SZ",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/",
+      "checked_at": "2026-09-14T02:24:02.982Z",
+      "method": "浏览器读取最新公告目录并追溯至9月1日，核查9月8日及9日发布的公告对应实际上市日期；读取两家公司官方上市报道。",
+      "new_listings": 2
+    },
+    {
+      "exchange": "BJ",
+      "source_url": "https://www.bse.cn/index.html",
+      "checked_at": "2026-09-14T02:24:02.982Z",
+      "method": "浏览器读取官网近期上市完整滚动名单（最新百迈科，追溯至7月）；逐项阅读百迈科上市报道。HTTP直接访问403及搜索旧缓存均未作为完整核对依据。",
+      "new_listings": 1
+    }
+  ],
+  "listings": [
+    {
+      "exchange": "SH",
+      "symbol": "688801",
+      "name": "燧原科技",
+      "listing_date": "2026-09-11",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260910_10831789.shtml",
+      "decision": "included",
+      "decision_reason": "官方招股说明书明确披露云端AI芯片研发、设计和销售，对应GPU与AI加速器。",
+      "batch_id": "weekly-2026-09-14-official-listings",
+      "issuer_id": "issuer:cn-sh-688801",
+      "security_id": "security:SH:688801"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301699",
+      "name": "洛轴股份",
+      "listing_date": "2026-09-09",
+      "source_url": "https://www.szse.cn/aboutus/trends/news/t20260909_622785.html",
+      "decision": "excluded",
+      "decision_reason": "官方上市报道支持轴承及相关零部件研发、生产和销售，但未明确支持对应当前AI产业元素；不将通用轴承推断为机器人部件。"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301689",
+      "name": "电科思仪",
+      "listing_date": "2026-09-10",
+      "source_url": "https://www.szse.cn/aboutus/trends/news/t20260910_622797.html",
+      "decision": "excluded",
+      "decision_reason": "官方上市报道及上市公告书支持电子测量仪器研发制造，涵盖微波、光电、通信和基础测量；当前已核验材料不足以准确对应本体内算力硬件制造设备、封装测试设备或掩模量检测等具体元素，暂缓纳入并保留芯片测试方案待审线索。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920268",
+      "name": "百迈科",
+      "listing_date": "2026-09-09",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029413.html",
+      "decision": "excluded",
+      "decision_reason": "官方上市报道披露手术缝线、介入栓塞与止血材料、多肽制药设备，未支持具体AI产业链关系。"
+    }
+  ]
+}
