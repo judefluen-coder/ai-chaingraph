@@ -1,0 +1,65 @@
+{
+  "manifest_id": "a-share-2026-09-15-to-2026-09-21",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-09-21T02:07:57.266Z",
+  "period_start": "2026-09-15",
+  "reconciled_through": "2026-09-21",
+  "markets": [
+    "SH",
+    "SZ",
+    "BJ"
+  ],
+  "market_checks": [
+    {
+      "exchange": "SH",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/",
+      "checked_at": "2026-09-21T02:07:57.266Z",
+      "method": "实时HTTP读取UTF-8静态分页s_list.shtml及s_list_2.shtml至s_list_12.shtml，共240条，覆盖9月21日至9月7日；逐项剔除债券、基金并核查两条IPO公告的实际上市日期。",
+      "new_listings": 2
+    },
+    {
+      "exchange": "SZ",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/",
+      "checked_at": "2026-09-21T02:07:57.266Z",
+      "method": "浏览器实时读取官方最新目录，9月21日中塑股份公告之后为9月9日电科思仪公告；中塑实际上市日期为9月22日，不在本期内。",
+      "new_listings": 0
+    },
+    {
+      "exchange": "BJ",
+      "source_url": "https://www.bse.cn/index.html",
+      "checked_at": "2026-09-21T02:07:57.266Z",
+      "method": "浏览器读取官网近期上市完整名单（最新9月16日腾信精密，上一家9月9日百迈科），并阅读腾信精密上市报道。",
+      "new_listings": 1
+    }
+  ],
+  "listings": [
+    {
+      "exchange": "SH",
+      "symbol": "688837",
+      "name": "信诺维",
+      "listing_date": "2026-09-16",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260915_10832185.shtml",
+      "decision": "excluded",
+      "decision_reason": "招股说明书披露抗肿瘤、抗感染创新药研发；已核验业务章节未支持AI药物发现或其他具体AI产业关系，不将创新药研发直接视作医疗AI。"
+    },
+    {
+      "exchange": "SH",
+      "symbol": "601091",
+      "name": "沈鼓集团",
+      "listing_date": "2026-09-17",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/c/c_20260916_10832340.shtml",
+      "decision": "excluded",
+      "decision_reason": "招股说明书支持压缩机、核泵及沈鼓云预测性维护服务，但当前本体未设对应通用工业诊断服务元素；AI大模型与数字孪生相关内容处于募投建设计划，不能据此认定已提供企业AI平台、工业AI或数据中心设施部件。暂缓纳入，保留正式产品证据待审。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920298",
+      "name": "腾信精密",
+      "listing_date": "2026-09-16",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029465.html",
+      "decision": "excluded",
+      "decision_reason": "北交所上市报道支持精密零部件研发设计、制造与销售；未明确具体AI终端、机器人或数据中心部件，不由通用精密加工或柔性自动化工艺推断AI产业关系。"
+    }
+  ]
+}
