@@ -1,0 +1,46 @@
+{
+  "batch_id": "weekly-2026-09-21-official-disclosures",
+  "review_status": "approved",
+  "reviewer": "codex:official-disclosure-review",
+  "reviewed_at": "2026-09-21T02:07:57.266Z",
+  "entities": [],
+  "source_documents": [
+    {
+      "id": "source:ingram-capital-markets-20260915",
+      "source_type": "company_filing",
+      "title": "英迈2026年资本市场日正式披露：Xvantage企业AI平台",
+      "title_en": "Ingram Micro Capital Markets Day: Xvantage AI Platform",
+      "url": "https://ir.ingrammicro.com/sec-filings/all-sec-filings/content/0001193125-26-391230/d196598dex991.htm",
+      "publish_date": "2026-09-15",
+      "language": "en",
+      "issuer_id": "issuer:sec-cik-0001897762"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim:ingram-xvantage-20260915",
+      "source_document_id": "source:ingram-capital-markets-20260915",
+      "excerpt": "9月15日8-K附件99.1的Capital Markets Day Highlights与About Ingram Micro披露，公司通过Xvantage提供AI驱动的B2B数字平台，集成400多个AI与机器学习模型，并提供个性化推荐、即时定价、订单跟踪与计费自动化。",
+      "excerpt_en": "Exhibit 99.1 states that Ingram Micro offers the AI-powered Xvantage B2B digital platform, combining over 400 AI and machine-learning models with personalized recommendations, instant pricing, order tracking and billing automation.",
+      "language": "en",
+      "reviewed_at": "2026-09-21T02:07:57.266Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:ingram-xvantage-enterprise-ai",
+      "relation_type": "issuer_provides",
+      "from_id": "issuer:sec-cik-0001897762",
+      "to_id": "service:enterprise_ai_platforms",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": [
+        "claim:ingram-xvantage-20260915"
+      ],
+      "attributes": {
+        "legacy_chain_id": "foundation_models_ai_software",
+        "legacy_segment_id": "enterprise_ai_platforms"
+      }
+    }
+  ]
+}
