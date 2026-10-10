@@ -12,6 +12,7 @@ AI-ChainGraph uses a reviewed weekly publication cycle rather than overwriting f
 - Add approved source documents, concise claims, and typed issuer relationships as a `*.batch.json` file under `data/weekly-candidates/`.
 - Run `npm run update:weekly`, `npm run validate:snapshot`, `npm run audit:relationships`, and `npm run build`.
 - Run the search-performance regression check before publishing; CI, Pages, and Sites also enforce it.
+- Review usage-only `issuer_integrates` relations to physical products or materials; the semantic audit blocks new unreviewed candidates and keeps the existing backlog visible rather than treating it as approved evidence.
 - Commit and push only when validation succeeds, then publish the same commit to the existing OpenAI Sites project.
 - Monday 10:30 Asia/Shanghai: GitHub Actions checks that the weekly refresh is no more than eight days old and that at least 90% of issuers have a specific relationship.
 
@@ -29,8 +30,11 @@ If a prior typed mapping overstates an official disclosure, withdraw it in an ap
 npm run update:weekly
 npm run validate:snapshot
 npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8
+npm run audit:semantic-precision
 npm run check:performance
 npm run build
 ```
 
 `npm run update:weekly` derives the A-share reconciliation date from approved, continuous manifests; it cannot be advanced with a command-line flag. `public/snapshots/update-status.json` records the latest check, next scheduled check, reconciliation counts, source cutoff, imported batches, promotions, and current relationship-quality metrics. The A-share field is deliberately scoped: US-listed issuer reconciliation uses separate SEC and exchange-source review and is not implied by this date.
+
+`scripts/semantic-review-backlog.json` records unresolved candidate relation IDs captured on 2026-10-10. They are not endorsed facts or an exception to evidence review. `npm run audit:semantic-precision` fails when a new usage-only physical integration mapping appears and reports how many captured candidates have been resolved.
