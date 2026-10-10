@@ -189,6 +189,24 @@ test("a corrected relationship can move from equipment to battery-cell evidence"
   await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
 });
 
+test("a photomask equipment overstatement resolves to quartz-material evidence", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?entity=issuer%3Acn-sz-300395&relation=relation%3Aissuer_segment_fallback%3Aa75c77e01783a42aedcf58ae");
+
+  const panel = page.locator(".txDetailPanel");
+  await expect(panel.getByRole("status")).toContainText("已被替代");
+  await expect(panel.getByRole("status")).toContainText("误映射为掩模与量检测设备");
+  await panel.getByRole("button", { name: "查看替代关系" }).click();
+  await expect(panel.locator(".txSelectedRelation")).toContainText("半导体材料");
+  await expect(panel.locator(".txSelectedRelation")).toContainText("生产");
+  await expect(panel.locator(".txEvidenceList")).toContainText("石英玻璃材料");
+  await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", "https://static.cninfo.com.cn/finalpage/2026-04-24/1225161586.PDF");
+});
+
 test("desktop and mobile flag an unresolved action without hiding its official source", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("ai-chaingraph-disclaimer", "ack");
