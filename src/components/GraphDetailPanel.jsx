@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HistoryDetails } from "./HistoryDetails.jsx";
 import { historyCopy } from "../lib/releaseHistory.js";
 import {
@@ -58,10 +58,26 @@ export function GraphDetailPanel({
 }) {
   const [showAllCompanies, setShowAllCompanies] = useState(false);
   const [eventType, setEventType] = useState("demand_up");
+  const panelRef = useRef(null);
+  const evidenceRef = useRef(null);
 
   useEffect(() => {
     setShowAllCompanies(false);
   }, [detail?.entity?.id]);
+
+  useEffect(() => {
+    if (!relationDetail) return;
+    const panel = panelRef.current;
+    const heading = evidenceRef.current;
+    if (!panel || !heading) return;
+    heading.focus({ preventScroll: true });
+    const panelBounds = panel.getBoundingClientRect();
+    const headingBounds = heading.getBoundingClientRect();
+    const headerHeight = panel.querySelector(".txDetailHeader")?.getBoundingClientRect().height || 0;
+    const top = panel.scrollTop + headingBounds.top - panelBounds.top - headerHeight - 12;
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    panel.scrollTo({ top, behavior });
+  }, [relationDetail?.relation.id]);
 
   if (!detail) return null;
   const { entity } = detail;
@@ -69,7 +85,7 @@ export function GraphDetailPanel({
   const codes = securities.map(formatSecurityCode).filter(Boolean).join(" · ");
 
   return (
-    <aside className="txDetailPanel" aria-label={copy.industryPosition}>
+    <aside ref={panelRef} className="txDetailPanel" aria-label={copy.industryPosition}>
       <header className="txDetailHeader">
         <div>
           <span>{getEntityTypeLabel(entity.entity_type, locale)}</span>
@@ -100,7 +116,7 @@ export function GraphDetailPanel({
       </div>
 
       {detail.kind !== "issuer" && detail.context && <ContextSection context={detail.context} locale={locale} copy={copy} />}
-      {relationDetail && <RelationEvidence key={relationDetail.relation.id} detail={relationDetail} locale={locale} copy={copy} events={relationHistory} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />}
+      {relationDetail && <RelationEvidence key={relationDetail.relation.id} headingRef={evidenceRef} detail={relationDetail} locale={locale} copy={copy} events={relationHistory} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />}
 
       {detail.kind === "issuer" ? (
         <IssuerPositions
@@ -173,14 +189,14 @@ function ContextSection({ context, locale, copy }) {
   );
 }
 
-function RelationEvidence({ detail, locale, copy, events, unavailable, onRetry, onSelectRelation }) {
+function RelationEvidence({ headingRef, detail, locale, copy, events, unavailable, onRetry, onSelectRelation }) {
   const { relation, from, to, evidence } = detail;
   const text = historyCopy(locale);
   const summary = localize(relation, "relation_summary", locale);
   return (
     <section className="txDetailSection txEvidenceSection">
       <div className="txSectionHeading">
-        <h3>{copy.evidence}</h3>
+        <h3 ref={headingRef} tabIndex={-1}>{copy.evidence}</h3>
         <EvidenceBadge relation={relation} copy={copy} />
       </div>
       <div className="txSelectedRelation">
