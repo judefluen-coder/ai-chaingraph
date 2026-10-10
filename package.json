@@ -14,6 +14,7 @@
     "build:sites": "npm run build && node scripts/build-sites.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test",
+    "benchmark:graph": "node scripts/benchmark-graph.mjs",
     "validate:snapshot": "node scripts/validate-public-snapshot.mjs",
     "audit:relationships": "node scripts/audit-relationship-depth.mjs",
     "update:weekly": "node scripts/update-weekly-snapshot.mjs"
