@@ -119,3 +119,24 @@ test("rejects withdrawals without matching original evidence", () => {
   withdrawal.withdrawn_relations[0].reason = "";
   assert.throws(() => applyCandidateBatch(graph, withdrawal), /needs a reason and review source/);
 });
+
+test("permits only evidence-backed, review-locked broad corrections", () => {
+  const graph = fixture();
+  graph.entities.push({ id: "segment:test", entity_type: "segment", name: "Test segment" });
+  applyCandidateBatch(graph, newListingBatch());
+  const relation = {
+    id: "relation:test-broad",
+    relation_type: "issuer_participates_in_segment",
+    from_id: "issuer:test",
+    to_id: "segment:test",
+    evidence_level: "L1",
+    claim_ids: ["claim:test-business"],
+    attributes: { promotion_locked: true, review_reason: "The filing supports segment use, not product manufacturing." },
+  };
+
+  assert.doesNotThrow(() => applyCandidateBatch(graph, { batch_id: "weekly-test-broad", relations: [relation] }));
+  assert.equal(graph.relations.find((item) => item.id === relation.id).attributes.promotion_locked, true);
+
+  const unlocked = { ...relation, id: "relation:test-unlocked", attributes: { review_reason: "Not enough detail." } };
+  assert.throws(() => applyCandidateBatch(graph, { batch_id: "weekly-test-unlocked", relations: [unlocked] }), /needs a reviewed reason and promotion lock/);
+});

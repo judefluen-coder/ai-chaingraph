@@ -1299,6 +1299,18 @@ button:disabled {
   line-height: 1.55;
 }
 
+.txReviewReason {
+  margin: 10px 0 0;
+  padding: 9px 10px;
+  border-left: 2px solid #d5a64b;
+  color: var(--tx-body);
+  background: var(--tx-inference-soft);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.txReviewReason strong { color: var(--tx-ink); }
+
 .txEvidenceBadge {
   display: inline-flex;
   min-height: 20px;

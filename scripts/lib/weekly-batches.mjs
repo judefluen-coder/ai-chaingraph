@@ -135,6 +135,13 @@ export function applyCandidateBatch(graph, batch) {
     }
 
     const targetType = entityTypes.get(relation.to_id);
+    if (relation.relation_type === "issuer_participates_in_segment") {
+      invariant(entityTypes.get(relation.from_id) === "issuer" && targetType === "segment", `${filename}: broad relation ${relation.id} must link an issuer to a segment.`);
+      invariant(relation.attributes?.promotion_locked === true && relation.attributes?.review_reason, `${filename}: broad relation ${relation.id} needs a reviewed reason and promotion lock.`);
+      invariant(["L1", "L2"].includes(relation.evidence_level), `${filename}: broad relation ${relation.id} must use L1 or L2 evidence.`);
+      invariant(relation.claim_ids.every((claimId) => sourcesById.get(claimsById.get(claimId)?.source_document_id)?.issuer_id === relation.from_id), `${filename}: broad relation ${relation.id} must cite evidence for its issuer.`);
+      continue;
+    }
     invariant(SPECIFIC_RELATION_TYPES.has(relation.relation_type), `${filename}: relation ${relation.id} must use a specific issuer action.`);
     invariant(entityTypes.get(relation.from_id) === "issuer", `${filename}: relation ${relation.id} must start at an issuer.`);
     invariant(!["domain", "chain", "segment", "issuer", "security"].includes(targetType), `${filename}: relation ${relation.id} must target a typed industry element.`);

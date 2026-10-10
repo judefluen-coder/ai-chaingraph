@@ -56,3 +56,17 @@ test("withdrawn mapping remains inspectable but clearly marked as invalid", asyn
   await expect(panel.getByRole("status")).toContainText("已撤回");
   await expect(panel.getByRole("status")).toContainText("不能据此认定公司生产AI PC或智能手机");
 });
+
+test("reviewed broad mapping explains why the narrower claim was rejected", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?entity=issuer%3Acn-sh-603330&relation=relation%3Aissuer_segment_reviewed%3Atianyang-adhesives-20261010");
+
+  const panel = page.locator(".txDetailPanel");
+  await expect(panel.getByRole("heading", { name: "天洋新材" })).toBeVisible();
+  await expect(panel.locator(".txReviewReason")).toContainText("未证明公司生产传感器");
+  await expect(panel.locator(".txEvidenceSection .txEvidenceBadge")).toContainText("宽口径映射");
+});

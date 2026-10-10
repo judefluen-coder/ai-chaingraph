@@ -80,3 +80,29 @@ test("retains broad mappings when the claim has no explicit action", () => {
   assert.equal(promoteEvidenceBackedFallbacks(graph).promotedRelations, 0);
   assert.equal(graph.relations[1].relation_type, "issuer_participates_in_segment");
 });
+
+test("does not re-promote a manually reviewed broad correction", () => {
+  const graph = {
+    entities: [
+      { id: "issuer:test", entity_type: "issuer" },
+      { id: "segment:sensors", entity_type: "segment" },
+      { id: "component:sensors", entity_type: "component" },
+    ],
+    relations: [
+      { id: "anchor", relation_type: "segment_has_element", from_id: "segment:sensors", to_id: "component:sensors" },
+      {
+        id: "reviewed",
+        relation_type: "issuer_participates_in_segment",
+        from_id: "issuer:test",
+        to_id: "segment:sensors",
+        claim_ids: ["claim:adhesives"],
+        attributes: { promotion_locked: true, review_reason: "Adhesives used in sensors are not sensors." },
+      },
+    ],
+    claims: [{ id: "claim:adhesives", source_document_id: "source:filing", excerpt: "公司生产用于传感器的胶黏剂。" }],
+    source_documents: [{ id: "source:filing", url: "https://example.com/filing" }],
+  };
+
+  assert.equal(promoteEvidenceBackedFallbacks(graph).promotedRelations, 0);
+  assert.equal(graph.relations[1].relation_type, "issuer_participates_in_segment");
+});

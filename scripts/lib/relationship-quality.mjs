@@ -98,6 +98,7 @@ export function promoteEvidenceBackedFallbacks(graph) {
     const isRulePromoted = relation.attributes?.promoted_from_relation_type === "issuer_participates_in_segment"
       && relation.attributes?.promoted_from_target_id;
     if (!isBroadMapping && !isRulePromoted) return relation;
+    if (relation.attributes?.promotion_locked) return relation;
 
     const claims = (relation.claim_ids || []).map((claimId) => claimsById.get(claimId)).filter(Boolean);
     const hasReviewableEvidence = claims.length > 0 && claims.every((claim) => {
