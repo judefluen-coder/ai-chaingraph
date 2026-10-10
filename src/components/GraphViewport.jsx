@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import ReactFlow, { Background, Controls, Handle, MarkerType, Position } from "reactflow";
+import ReactFlow, { Background, Controls, Handle, MarkerType, MiniMap, Position } from "reactflow";
 import "reactflow/dist/style.css";
 import { ArrowRight, GitCompareArrows, ListTree, Route, X } from "lucide-react";
 
@@ -26,6 +26,7 @@ export function GraphViewport({
   const fitFrameRef = useRef(null);
   const isVertical = flow.nodes.some((node) => node.data?.layoutDirection === "TB");
   const fitViewOptions = useMemo(() => ({ padding: isVertical ? 0.1 : 0.16, minZoom: isVertical ? 0.58 : 0.2, maxZoom: 1.04 }), [isVertical]);
+  const allViewOptions = useMemo(() => ({ padding: 0.1, minZoom: 0.16, maxZoom: 1.04 }), []);
   const renderedEdges = useMemo(() => flow.edges.map((edge) => ({
     ...edge,
     className: `${edge.className || ""}${edge.id === activeRelationId ? " isSelected" : ""}`.trim(),
@@ -121,7 +122,8 @@ export function GraphViewport({
           defaultEdgeOptions={{ markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15 } }}
         >
           <Background color="#d8dee8" gap={24} size={1} />
-          <Controls position="bottom-left" showInteractive={false} fitViewOptions={fitViewOptions} />
+          <Controls position="bottom-left" showInteractive={false} fitViewOptions={allViewOptions} />
+          {isVertical && <MiniMap position="top-right" style={{ width: 112, height: 84 }} pannable zoomable ariaLabel={copy.graphMiniMap} maskColor="rgba(61, 89, 148, 0.18)" />}
         </ReactFlow>
         <div className="txGraphLegend" aria-label={copy.factDirection}>
           <span><i className="isFact" />{copy.factDirection}</span>

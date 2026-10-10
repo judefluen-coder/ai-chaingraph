@@ -858,6 +858,13 @@ button:disabled {
   background: var(--tx-primary-soft);
 }
 
+.txGraphCanvas .react-flow__minimap {
+  border: 1px solid var(--tx-line);
+  border-radius: var(--tx-radius-sm);
+  box-shadow: 0 5px 16px rgba(42, 56, 76, 0.1);
+  background: rgba(255, 255, 255, 0.96);
+}
+
 .react-flow__node.txFlowNode {
   width: 220px;
   height: 90px;

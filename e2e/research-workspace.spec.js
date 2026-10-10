@@ -86,6 +86,29 @@ test("mobile workspace navigation keeps keyboard focus on visible controls", asy
   await expect(menu).toBeVisible();
 });
 
+test("mobile graph shows an overview map and can fit off-screen nodes", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?chain=chain%3Aadvanced_packaging_memory");
+  await page.getByRole("button", { name: "查看图谱" }).click();
+
+  const miniMap = page.locator(".react-flow__minimap");
+  await expect(miniMap.getByRole("img", { name: "图谱全览导航，可拖动查看屏外节点" })).toBeVisible();
+  const dimensions = await miniMap.evaluate((element) => ({
+    panelWidth: element.getBoundingClientRect().width,
+    svgWidth: element.querySelector("svg").getBoundingClientRect().width,
+  }));
+  expect(dimensions.panelWidth).toBe(dimensions.svgWidth);
+
+  const viewport = page.locator(".react-flow__viewport");
+  const initialScale = await viewport.evaluate((element) => Number(element.style.transform.match(/scale\(([^)]+)\)/)?.[1]));
+  await page.getByRole("button", { name: "fit view" }).click();
+  await expect.poll(() => viewport.evaluate((element) => Number(element.style.transform.match(/scale\(([^)]+)\)/)?.[1]))).toBeLessThan(initialScale);
+});
+
 test("withdrawn mapping remains inspectable but clearly marked as invalid", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.addInitScript(() => {
