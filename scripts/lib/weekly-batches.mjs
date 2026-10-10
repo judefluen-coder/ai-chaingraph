@@ -82,6 +82,13 @@ export function assertCandidateBatchApplied(graph, batch, archivedRelationIds = 
   for (const withdrawal of batch.withdrawn_relations || []) {
     invariant(!relationsById.has(withdrawal.relation.id), `${filename}: withdrawn relation ${withdrawal.relation.id} is still published.`);
   }
+  for (const replacement of batch.replaced_relations || []) {
+    invariant(!relationsById.has(replacement.relation.id), `${filename}: replaced relation ${replacement.relation.id} is still published.`);
+    invariant((batch.relations || []).some((relation) => relation.replaces_relation_id === replacement.relation.id && relation.from_id === replacement.relation.from_id), `${filename}: replaced relation ${replacement.relation.id} has no same-issuer successor.`);
+    const source = graph.source_documents.find((item) => item.id === replacement.source_document_id);
+    invariant(replacement.reason && source?.issuer_id === replacement.relation.from_id, `${filename}: replaced relation ${replacement.relation.id} needs its issuer's review source and reason.`);
+    invariant(replacement.relation.claim_ids?.some((id) => graph.claims.find((claim) => claim.id === id)?.source_document_id === source.id), `${filename}: replaced relation ${replacement.relation.id} must retain its original evidence.`);
+  }
 }
 
 export function applyCandidateBatch(graph, batch) {
@@ -90,6 +97,7 @@ export function applyCandidateBatch(graph, batch) {
   const pendingSources = batch.source_documents || [];
   const pendingClaims = batch.claims || [];
   const pendingRelations = batch.relations || [];
+  const replacements = batch.replaced_relations || [];
   const withdrawals = batch.withdrawn_relations || [];
   const entityTypes = new Map(graph.entities.map((entity) => [entity.id, entity.entity_type]));
   const existingEntities = new Map(graph.entities.map((entity) => [entity.id, entity]));
@@ -147,6 +155,21 @@ export function applyCandidateBatch(graph, batch) {
     invariant(!["domain", "chain", "segment", "issuer", "security"].includes(targetType), `${filename}: relation ${relation.id} must target a typed industry element.`);
     invariant(["L1", "L2"].includes(relation.evidence_level), `${filename}: relation ${relation.id} must use L1 or L2 evidence.`);
     invariant(relation.claim_ids.every((claimId) => sourcesById.get(claimsById.get(claimId)?.source_document_id)?.issuer_id === relation.from_id), `${filename}: relation ${relation.id} must cite evidence for its issuer.`);
+  }
+  const replacedIds = new Set();
+  for (const replacement of replacements) {
+    const original = replacement.relation;
+    const current = graph.relations.find((relation) => relation.id === original?.id);
+    invariant(original?.id && !replacedIds.has(original.id), `${filename}: replaced relations need unique ids.`);
+    invariant(current && sameRecord(current, original), `${filename}: replaced relation ${original.id} must match the published record.`);
+    invariant(pendingRelations.some((relation) => relation.replaces_relation_id === original.id && relation.from_id === original.from_id), `${filename}: replaced relation ${original.id} needs a same-issuer successor.`);
+    invariant(replacement.reason && replacement.source_document_id, `${filename}: replaced relation ${original.id} needs a reason and review source.`);
+    invariant(sourcesById.get(replacement.source_document_id)?.issuer_id === original.from_id, `${filename}: replaced relation ${original.id} needs a source for its issuer.`);
+    invariant(original.claim_ids?.some((id) => claimsById.get(id)?.source_document_id === replacement.source_document_id), `${filename}: replaced relation ${original.id} must review its original evidence.`);
+    replacedIds.add(original.id);
+  }
+  for (const relation of pendingRelations) {
+    if (relation.replaces_relation_id) invariant(replacedIds.has(relation.replaces_relation_id), `${filename}: replacement ${relation.id} needs the exact original relation.`);
   }
   const withdrawnIds = new Set();
   for (const withdrawal of withdrawals) {

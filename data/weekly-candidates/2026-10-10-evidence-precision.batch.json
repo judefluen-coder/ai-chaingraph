@@ -90,5 +90,55 @@
       "reason": "年报披露公司生产的是电子胶黏剂，仅用于视觉传感器及激光雷达等下游产品；不能据此认定生产传感器。",
       "reason_en": "The annual report identifies electronic adhesives used in sensors and LiDAR, not sensor manufacturing."
     }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:9121a74b155ae3bdf681facb",
+        "relation_type": "issuer_participates_in_segment",
+        "from_id": "issuer:cn-sz-300507",
+        "to_id": "segment:ai_sensors",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": [
+          "claim:af390ecbb1b0a4e22733b587"
+        ],
+        "attributes": {
+          "mapping_precision": "segment_fallback",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "ai_sensors",
+          "candidate_element_id": "component:ai_sensors",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "segment_fallback"
+        }
+      },
+      "source_document_id": "source:8c74a66731c8f640505731ee",
+      "reason": "年报披露奥联电子已实现传感器产品商业化及供货，原宽口径关系由生产传感器的具体关系替代。",
+      "reason_en": "The annual report supports commercialized and supplied sensor products, so the broad mapping is replaced by a specific production relationship."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:1757e2ae225709b58f286d4a",
+        "relation_type": "issuer_participates_in_segment",
+        "from_id": "issuer:cn-sh-688757",
+        "to_id": "segment:semiconductor_test",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": [
+          "claim:c9529242113a7000695263f9"
+        ],
+        "attributes": {
+          "mapping_precision": "segment_fallback",
+          "legacy_chain_id": "semiconductor_manufacturing",
+          "legacy_segment_id": "semiconductor_test",
+          "candidate_element_id": "service:semiconductor_test",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "segment_fallback"
+        }
+      },
+      "source_document_id": "source:8dfc5fe314ba80f3d2db75cd",
+      "reason": "年报明确公司向客户提供半导体检测分析服务，原宽口径关系由提供服务的具体关系替代。",
+      "reason_en": "The annual report explicitly supports semiconductor testing services, so the broad mapping is replaced by a specific service relationship."
+    }
   ]
 }

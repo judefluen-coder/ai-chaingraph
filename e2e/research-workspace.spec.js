@@ -93,3 +93,20 @@ test("mobile evidence source remains readable and touch-sized", async ({ page })
   await expect(sourceLink).toHaveAttribute("href", /^https:\/\//);
   expect((await sourceLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
 });
+
+test("a corrected relationship links its archived claim to the replacement evidence", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?entity=issuer%3Acn-sz-000997&relation=relation%3Aissuer_element%3A5e704f96cb7afaf2414fc8a9");
+
+  const panel = page.locator(".txDetailPanel");
+  await expect(panel.getByRole("status")).toContainText("已被替代");
+  await expect(panel.getByRole("status")).toContainText("动作由“集成”更正为“研发”");
+  await panel.getByRole("button", { name: "查看替代关系" }).click();
+  await expect(panel.locator(".txSelectedRelation")).toContainText("研发");
+  await expect(panel.locator(".txEvidenceList")).toContainText("LAND大模型一体机");
+  await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
+});

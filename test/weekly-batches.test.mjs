@@ -140,3 +140,29 @@ test("permits only evidence-backed, review-locked broad corrections", () => {
   const unlocked = { ...relation, id: "relation:test-unlocked", attributes: { review_reason: "Not enough detail." } };
   assert.throws(() => applyCandidateBatch(graph, { batch_id: "weekly-test-unlocked", relations: [unlocked] }), /needs a reviewed reason and promotion lock/);
 });
+
+test("requires the exact original and its issuer evidence for a replacement", () => {
+  const graph = fixture();
+  applyCandidateBatch(graph, newListingBatch());
+  const original = structuredClone(graph.relations.find((item) => item.id === "relation:test-business"));
+  const successor = {
+    id: "relation:test-business-corrected",
+    relation_type: "issuer_produces",
+    from_id: "issuer:test",
+    to_id: "component:dram",
+    evidence_level: "L1",
+    claim_ids: ["claim:test-business"],
+    replaces_relation_id: original.id,
+  };
+  const batch = {
+    batch_id: "weekly-test-replacement",
+    relations: [successor],
+    replaced_relations: [{ relation: original, source_document_id: "source:test-business", reason: "Reviewed and corrected." }],
+  };
+
+  assert.throws(() => applyCandidateBatch(structuredClone(graph), { ...batch, replaced_relations: [] }), /needs the exact original relation/);
+  assert.throws(() => applyCandidateBatch(structuredClone(graph), { ...batch, replaced_relations: [{ ...batch.replaced_relations[0], source_document_id: "source:test-listing" }] }), /must review its original evidence/);
+  assert.doesNotThrow(() => applyCandidateBatch(graph, batch));
+  assert.equal(graph.relations.some((relation) => relation.id === original.id), false);
+  assert.doesNotThrow(() => assertCandidateBatchApplied(graph, batch));
+});

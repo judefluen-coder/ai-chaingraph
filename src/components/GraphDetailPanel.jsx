@@ -207,6 +207,7 @@ function RelationEvidence({ headingRef, detail, locale, copy, events, unavailabl
       {relation.attributes?.review_reason && <p className="txReviewReason"><strong>{copy.reviewReason}</strong> {locale === "en" ? relation.attributes.review_reason_en || relation.attributes.review_reason : relation.attributes.review_reason}</p>}
       {relation.lifecycle_status && relation.lifecycle_status !== "active" && <p className="txHistoricalStatus" role="status">{text[relation.lifecycle_status] || relation.lifecycle_status} · {text.archived}
         {relation.withdrawal_reason && <span> {locale === "en" ? relation.withdrawal_reason_en || relation.withdrawal_reason : relation.withdrawal_reason}</span>}
+        {relation.replacement_reason && <span> {locale === "en" ? relation.replacement_reason_en || relation.replacement_reason : relation.replacement_reason}</span>}
         {relation.replacement_relation_id && <button type="button" onClick={() => onSelectRelation(relation.replacement_relation_id)}>{text.replacement}</button>}
       </p>}
       {summary && <p className="txRelationSummary">{summary}</p>}
