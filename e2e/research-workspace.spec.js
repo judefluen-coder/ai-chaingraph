@@ -19,6 +19,32 @@ test("desktop search opens a source-backed relation", async ({ page }) => {
   await expect(page.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
 });
 
+test("graph relationship edges describe evidence and open it from the keyboard", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?chain=chain%3Aai_chips_ip");
+
+  const edge = page.locator(".react-flow__edge[role='button']").first();
+  await expect(edge).toHaveAttribute("aria-label", / · .* · 逐边证据$/);
+  await expect(edge).not.toHaveAttribute("aria-label", /relation:|component:|product:/);
+  await edge.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "逐边证据" })).toBeVisible();
+
+  await page.goto("./?chain=chain%3Aai_chips_ip");
+  const spaceEdge = page.locator(".react-flow__edge[role='button']").first();
+  await spaceEdge.focus();
+  await page.keyboard.press("Space");
+  await expect(page.getByRole("heading", { name: "逐边证据" })).toBeVisible();
+
+  await page.getByRole("button", { name: "产业全景" }).click();
+  await expect(page.locator(".react-flow__edge[role='button']")).toHaveCount(0);
+  await expect(page.locator(".react-flow__edge[role='img']").first()).toHaveAttribute("aria-label", / · \d+ 条依赖 · /);
+});
+
 test("closed search results cannot be activated by Enter", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.addInitScript(() => {

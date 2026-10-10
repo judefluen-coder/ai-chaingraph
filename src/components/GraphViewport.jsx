@@ -26,12 +26,32 @@ export function GraphViewport({
   const isVertical = flow.nodes.some((node) => node.data?.layoutDirection === "TB");
   const fitViewOptions = useMemo(() => ({ padding: isVertical ? 0.1 : 0.16, minZoom: isVertical ? 0.58 : 0.2, maxZoom: 1.04 }), [isVertical]);
   const allViewOptions = useMemo(() => ({ padding: 0.1, minZoom: 0.16, maxZoom: 1.04 }), []);
-  const renderedEdges = useMemo(() => flow.edges.map((edge) => ({
-    ...edge,
-    className: `${edge.className || ""}${edge.id === activeRelationId ? " isSelected" : ""}`.trim(),
-    markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15 },
-  })), [flow.edges, activeRelationId]);
+  const renderedEdges = useMemo(() => {
+    const names = new Map(flow.nodes.map((node) => [node.id, node.data?.title || node.id]));
+    return flow.edges.map((edge) => {
+      const canOpenEvidence = Boolean(edge.data?.relationId);
+      const description = [names.get(edge.source) || edge.source, edge.label, names.get(edge.target) || edge.target].filter(Boolean).join(" · ");
+      return {
+        ...edge,
+        ariaLabel: canOpenEvidence ? `${description} · ${copy.evidence}` : description,
+        focusable: canOpenEvidence,
+        className: `${edge.className || ""}${edge.id === activeRelationId ? " isSelected" : ""}`.trim(),
+        markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15 },
+      };
+    });
+  }, [flow.edges, flow.nodes, activeRelationId, copy.evidence]);
   const hasPendingEdges = flow.edges.some((edge) => edge.data?.semanticReviewPending);
+
+  function openFocusedEdge(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    // React Flow selects focused edges on these keys but does not invoke onEdgeClick.
+    const edgeTestId = event.target.closest?.(".react-flow__edge")?.getAttribute("data-testid");
+    const relationId = renderedEdges.find((edge) => edgeTestId === `rf__edge-${edge.id}`)?.data?.relationId;
+    if (!relationId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    onSelectRelation(relationId);
+  }
 
   const fitGraph = useCallback(() => {
     if (!flowInstanceRef.current || flow.nodes.length === 0) return;
@@ -84,7 +104,7 @@ export function GraphViewport({
 
       <GraphStats meta={flow.meta} copy={copy} />
 
-      <div className="txGraphCanvas">
+      <div className="txGraphCanvas" onKeyDownCapture={openFocusedEdge}>
         {flow.nodes.length === 0 && (
           <div className="txGraphEmpty">
             <Route size={24} strokeWidth={1.6} />
