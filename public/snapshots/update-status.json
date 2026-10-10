@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-10-10T12:08:15.570Z",
-  "changed_at": "2026-10-10T12:08:15.570Z",
-  "next_scheduled_at": "2026-10-17T12:08:15.570Z",
+  "checked_at": "2026-10-10T12:13:54.724Z",
+  "changed_at": "2026-10-10T12:13:54.724Z",
+  "next_scheduled_at": "2026-10-17T12:13:54.724Z",
   "source_cutoff_date": "2026-10-09",
   "cadence": "weekly",
   "a_share_listing_reconciled_through": "2026-10-10",
@@ -26,8 +26,8 @@
     "issuers": 0,
     "securities": 0,
     "sources": 0,
-    "claims": 2,
-    "relations": 2,
+    "claims": 3,
+    "relations": 3,
     "withdrawn_relations": 0
   },
   "promotions": {
@@ -43,8 +43,8 @@
       "issuers": 0,
       "securities": 0,
       "sources": 0,
-      "claims": 2,
-      "relations": 2,
+      "claims": 3,
+      "relations": 3,
       "withdrawn_relations": 0
     },
     "promotions": {
@@ -61,12 +61,12 @@
     "issuers_with_specific_relations": 4248,
     "issuers_generic_only": 303,
     "specific_issuer_rate": 0.9334,
-    "issuer_relations_total": 6620,
-    "specific_relations": 5996,
+    "issuer_relations_total": 6623,
+    "specific_relations": 5999,
     "generic_relations": 624,
-    "specific_relation_rate": 0.9057,
+    "specific_relation_rate": 0.9058,
     "evidence_levels": {
-      "L1": 6576,
+      "L1": 6579,
       "L2": 44
     },
     "segments_total": 111,
@@ -76,11 +76,6 @@
       {
         "segment_id": "segment:hbm",
         "name": "高带宽存储HBM",
-        "mapping_count": 1
-      },
-      {
-        "segment_id": "segment:pcb_base_laminates",
-        "name": "PCB基础覆铜板",
         "mapping_count": 1
       },
       {
@@ -101,6 +96,11 @@
       {
         "segment_id": "segment:data_center_facility_components",
         "name": "数据中心机电与设施部件",
+        "mapping_count": 4
+      },
+      {
+        "segment_id": "segment:pcb_base_laminates",
+        "name": "PCB基础覆铜板",
         "mapping_count": 4
       },
       {

@@ -1,0 +1,75 @@
+{
+  "batch_id": "weekly-2026-10-10-pcb-base-laminates",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T12:13:27.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:nanya-pcb-base-laminates-20261010",
+      "source_document_id": "source:7cb098a4eb68d2616ebd92a5",
+      "excerpt": "2025年年报披露，南亚新材主营覆铜板及粘结片等复合材料的设计、研发、生产和销售；覆铜板产品包括普通FR-4、无铅兼容型FR-4和无卤无铅兼容型FR-4等系列。",
+      "excerpt_en": "The 2025 annual report identifies Nanya's design, development, manufacture, and sale of copper-clad laminates, including standard, lead-free-compatible, and halogen-free FR-4 series.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:13:27.000Z"
+    },
+    {
+      "id": "claim:wazam-pcb-base-laminates-20261010",
+      "source_document_id": "source:63e8bb7cc853c34b6e31a23a",
+      "excerpt": "2025年年报披露，华正新材主营覆铜板等产品的设计、研发、生产和销售，并以覆铜板基础材料为基石，逐步实现相关产品的稳定生产和交付。",
+      "excerpt_en": "The 2025 annual report identifies Wazam's design, development, manufacture, and sale of copper-clad laminates and describes base laminate materials as an established production and delivery foundation.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:13:27.000Z"
+    },
+    {
+      "id": "claim:shengyi-pcb-base-laminates-20261010",
+      "source_document_id": "source:7d9129b6b1ec9edc85246717",
+      "excerpt": "2025年年报披露，生益科技提供成熟常规产品，并于报告期内生产各类覆铜板15,813.19万平方米、销售16,062.79万平方米。",
+      "excerpt_en": "The 2025 annual report describes mature conventional products and reports 158.1319 million square meters of copper-clad laminates produced and 160.6279 million sold.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:13:27.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:nanya-pcb-base-laminates-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-688519",
+      "to_id": "material:pcb_base_laminates",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:nanya-pcb-base-laminates-20261010"],
+      "attributes": {
+        "legacy_chain_id": "pcb_electronic_materials",
+        "legacy_segment_id": "pcb_base_laminates"
+      }
+    },
+    {
+      "id": "relation:issuer_element:wazam-pcb-base-laminates-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-603186",
+      "to_id": "material:pcb_base_laminates",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:wazam-pcb-base-laminates-20261010"],
+      "attributes": {
+        "legacy_chain_id": "pcb_electronic_materials",
+        "legacy_segment_id": "pcb_base_laminates"
+      }
+    },
+    {
+      "id": "relation:issuer_element:shengyi-pcb-base-laminates-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-600183",
+      "to_id": "material:pcb_base_laminates",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:shengyi-pcb-base-laminates-20261010"],
+      "attributes": {
+        "legacy_chain_id": "pcb_electronic_materials",
+        "legacy_segment_id": "pcb_base_laminates"
+      }
+    }
+  ]
+}
