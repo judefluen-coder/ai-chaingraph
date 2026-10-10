@@ -50,6 +50,42 @@ test("mobile directory, search, and detail remain reachable", async ({ page }) =
   await expect(dataState.locator("small span").last()).toContainText(/已收录来源截止\s+\d{4}-\d{2}-\d{2}/);
 });
 
+test("mobile workspace navigation keeps keyboard focus on visible controls", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./");
+
+  const menu = page.getByRole("button", { name: "打开研究工作区" });
+  const sidebar = page.locator(".txSidebar");
+  await expect(sidebar).toHaveAttribute("inert", "");
+  await menu.click();
+  await expect(sidebar).not.toHaveAttribute("inert");
+  await expect(page.getByRole("dialog", { name: "研究工作区" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "关闭研究工作区" })).toBeFocused();
+
+  await sidebar.locator(".txSidebarBrand").focus();
+  await page.keyboard.press("Shift+Tab");
+  await expect(sidebar.locator(".txSidebarDataState")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(sidebar.locator(".txSidebarBrand")).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(sidebar).toHaveAttribute("inert", "");
+  await expect(menu).toBeFocused();
+
+  await menu.click();
+  await sidebar.locator(".txSidebarDataState").click();
+  await expect(page.getByRole("dialog", { name: "数据版本与更新" })).toBeVisible();
+  await expect(sidebar).toHaveAttribute("inert", "");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "数据版本与更新" })).toHaveCount(0);
+  await expect(sidebar).toHaveAttribute("inert", "");
+  await expect(menu).toBeVisible();
+});
+
 test("withdrawn mapping remains inspectable but clearly marked as invalid", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.addInitScript(() => {

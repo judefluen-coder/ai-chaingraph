@@ -435,6 +435,7 @@ function App() {
       />
       <ChainNavigator
         navigation={navigation}
+        isNarrow={isNarrow}
         activeChainId={selectedChainId}
         activeEntityId={activeId}
         onOverview={() => selectChain(null)}
