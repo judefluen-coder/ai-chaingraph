@@ -6,6 +6,7 @@ AI-ChainGraph uses a reviewed weekly publication cycle rather than overwriting f
 
 - Monday 09:00 Asia/Shanghai: compare SSE, SZSE, and BSE listing notices with the latest approved manifest under `data/listing-reconciliations/` before reviewing other disclosures.
 - Record every new listing as `included` or `excluded` with an official exchange URL and a decision reason. A listing must never disappear merely because it is outside the current ontology.
+- Approve a current-period reconciliation only after recording all three exchange check times; future-dated checks or approval before those checks fail validation.
 - Add every included A-share as an issuer, security, L1 issuance relation, and at least one evidence-backed typed industry relationship.
 - Inspect official disclosures published since the previous source cutoff.
 - Prioritize companies that still have only broad segment mappings and segments with fewer than five issuer mappings.

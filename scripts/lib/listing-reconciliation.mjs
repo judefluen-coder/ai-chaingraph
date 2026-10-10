@@ -1,6 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { SPECIFIC_RELATION_TYPES } from "./relationship-quality.mjs";
+import { assertNotFutureTimestamp } from "./release-dates.mjs";
 
 const REQUIRED_MARKETS = ["SH", "SZ", "BJ"];
 const DECISIONS = new Set(["included", "excluded"]);
@@ -43,7 +44,7 @@ export async function readAshareReconciliations(projectRoot) {
   return manifests;
 }
 
-export function validateAshareReconciliations(manifests, graph) {
+export function validateAshareReconciliations(manifests, graph, now = new Date()) {
   const entityById = new Map(graph.entities.map((entity) => [entity.id, entity]));
   const appliedBatchIds = new Set(graph.meta.refresh?.applied_batch_ids || []);
   const seenManifestIds = new Set();
@@ -62,7 +63,7 @@ export function validateAshareReconciliations(manifests, graph) {
     invariant(/^\d{4}-\d{2}-\d{2}$/.test(manifest.period_start || ""), `${label} has an invalid period_start.`);
     invariant(/^\d{4}-\d{2}-\d{2}$/.test(manifest.reconciled_through || ""), `${label} has an invalid reconciled_through.`);
     invariant(manifest.period_start <= manifest.reconciled_through, `${label} has an inverted reconciliation period.`);
-    invariant(!Number.isNaN(Date.parse(manifest.reviewed_at)), `${label} has an invalid reviewed_at timestamp.`);
+    const reviewedTime = assertNotFutureTimestamp(manifest.reviewed_at, `${label} review time`, now);
     invariant(manifest.reconciled_through <= manifest.reviewed_at.slice(0, 10), `${label} cannot reconcile beyond its review date.`);
     invariant(JSON.stringify(manifest.markets) === JSON.stringify(REQUIRED_MARKETS), `${label} must reconcile SH, SZ, and BJ in that order.`);
     invariant(Array.isArray(manifest.listings), `${label} must include a listings array.`);
@@ -73,7 +74,9 @@ export function validateAshareReconciliations(manifests, graph) {
       for (const check of manifest.market_checks) {
         const count = manifest.listings.filter((listing) => listing.exchange === check.exchange).length;
         invariant(isOfficialExchangeUrl(check.source_url, check.exchange), `${label}: ${check.exchange} check needs its own official HTTPS source.`);
-        invariant(check.checked_at && !Number.isNaN(Date.parse(check.checked_at)) && check.checked_at.slice(0, 10) >= manifest.reconciled_through, `${label}: ${check.exchange} check cannot predate the reconciliation period.`);
+        const checkedTime = assertNotFutureTimestamp(check.checked_at, `${label}: ${check.exchange} check time`, now);
+        invariant(check.checked_at.slice(0, 10) >= manifest.reconciled_through, `${label}: ${check.exchange} check cannot predate the reconciliation period.`);
+        invariant(checkedTime <= reviewedTime, `${label}: ${check.exchange} check cannot follow manifest approval.`);
         invariant(check.method && check.new_listings === count, `${label}: ${check.exchange} check needs a method and matching listing count.`);
       }
     }

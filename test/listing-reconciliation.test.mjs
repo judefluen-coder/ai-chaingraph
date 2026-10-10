@@ -128,7 +128,7 @@ test("rejects missing, mismatched, or prematurely dated exchange checks", () => 
     markets: ["SH", "SZ", "BJ"],
     listings: [],
   };
-  const validate = () => validateAshareReconciliations([manifestFixture(), followUp], graphFixture());
+  const validate = () => validateAshareReconciliations([manifestFixture(), followUp], graphFixture(), new Date("2026-10-10T12:00:00.000Z"));
   assert.throws(validate, /all three exchange checks/);
   followUp.market_checks = [
     { exchange: "SH", source_url: "https://www.sse.com.cn/test", checked_at: "2026-09-15T00:00:00.000Z", method: "Checked", new_listings: 0 },
@@ -140,4 +140,12 @@ test("rejects missing, mismatched, or prematurely dated exchange checks", () => 
   followUp.market_checks[0].new_listings = 0;
   followUp.market_checks[0].checked_at = "2026-09-14T00:00:00.000Z";
   assert.throws(validate, /cannot predate/);
+  followUp.market_checks[0].checked_at = "2026-09-15T00:00:00.000Z";
+  followUp.reviewed_at = "2026-10-11T00:00:00.000Z";
+  assert.throws(validate, /review time.*future/);
+  followUp.reviewed_at = "2026-09-15T00:00:00.000Z";
+  followUp.market_checks[0].checked_at = "2026-10-11T00:00:00.000Z";
+  assert.throws(validate, /check time.*future/);
+  followUp.market_checks[0].checked_at = "2026-09-15T00:01:00.000Z";
+  assert.throws(validate, /cannot follow manifest approval/);
 });
