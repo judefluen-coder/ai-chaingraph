@@ -11,6 +11,7 @@ AI-ChainGraph uses a reviewed weekly publication cycle rather than overwriting f
 - Prioritize companies that still have only broad segment mappings and segments with fewer than five issuer mappings.
 - Add approved source documents, concise claims, and typed issuer relationships as a `*.batch.json` file under `data/weekly-candidates/`.
 - Run `npm run update:weekly`, `npm run validate:snapshot`, `npm run audit:relationships`, and `npm run build`.
+- Run the search-performance regression check before publishing; CI, Pages, and Sites also enforce it.
 - Commit and push only when validation succeeds, then publish the same commit to the existing OpenAI Sites project.
 - Monday 10:30 Asia/Shanghai: GitHub Actions checks that the weekly refresh is no more than eight days old and that at least 90% of issuers have a specific relationship.
 
@@ -28,6 +29,7 @@ If a prior typed mapping overstates an official disclosure, withdraw it in an ap
 npm run update:weekly
 npm run validate:snapshot
 npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8
+npm run check:performance
 npm run build
 ```
 

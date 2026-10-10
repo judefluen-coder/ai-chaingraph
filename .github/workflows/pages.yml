@@ -47,6 +47,9 @@ jobs:
       - name: Enforce relationship depth, listing coverage, and weekly freshness
         run: npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8
 
+      - name: Check graph search performance
+        run: npm run check:performance
+
       - name: Install Chromium for UI smoke test
         run: npx playwright install --with-deps --only-shell chromium
 
