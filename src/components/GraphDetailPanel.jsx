@@ -40,6 +40,7 @@ export function GraphDetailPanel({
   relationDetail,
   relationHistory,
   companyHistory,
+  historyLoading,
   historyUnavailable,
   onRetryHistory,
   locale,
@@ -117,7 +118,7 @@ export function GraphDetailPanel({
       </div>
 
       {detail.kind !== "issuer" && detail.context && <ContextSection context={detail.context} locale={locale} copy={copy} />}
-      {relationDetail && <RelationEvidence key={relationDetail.relation.id} headingRef={evidenceRef} detail={relationDetail} locale={locale} copy={copy} events={relationHistory} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />}
+      {relationDetail && <RelationEvidence key={relationDetail.relation.id} headingRef={evidenceRef} detail={relationDetail} locale={locale} copy={copy} events={relationHistory} loading={historyLoading} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />}
 
       {detail.kind === "issuer" ? (
         <IssuerPositions
@@ -148,7 +149,7 @@ export function GraphDetailPanel({
       )}
 
       {detail.kind === "issuer" && watchRecord && (
-        <ResearchNote key={watchRecord.issuer_id} record={watchRecord} copy={copy} onUpdate={onUpdateWatchlist} events={companyHistory} locale={locale} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />
+        <ResearchNote key={watchRecord.issuer_id} record={watchRecord} copy={copy} onUpdate={onUpdateWatchlist} events={companyHistory} locale={locale} loading={historyLoading} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />
       )}
 
       <details className="txConditionalSection" open={Boolean(shockOverlay)}>
@@ -190,7 +191,7 @@ function ContextSection({ context, locale, copy }) {
   );
 }
 
-function RelationEvidence({ headingRef, detail, locale, copy, events, unavailable, onRetry, onSelectRelation }) {
+function RelationEvidence({ headingRef, detail, locale, copy, events, loading, unavailable, onRetry, onSelectRelation }) {
   const { relation, from, to, evidence } = detail;
   const text = historyCopy(locale);
   const summary = localize(relation, "relation_summary", locale);
@@ -231,7 +232,7 @@ function RelationEvidence({ headingRef, detail, locale, copy, events, unavailabl
           </article>
         ))}
       </div>
-      <HistoryDetails events={events || []} locale={locale} unavailable={unavailable} onRetry={onRetry} />
+      <HistoryDetails events={events || []} locale={locale} loading={loading} unavailable={unavailable} onRetry={onRetry} />
     </section>
   );
 }
@@ -340,7 +341,7 @@ function EvidenceBadge({ relation, copy }) {
   return <em className={`txEvidenceBadge ${className}`}>{label}</em>;
 }
 
-function ResearchNote({ record, copy, onUpdate, events, locale, unavailable, onRetry, onSelectRelation }) {
+function ResearchNote({ record, copy, onUpdate, events, locale, loading, unavailable, onRetry, onSelectRelation }) {
   return (
     <section className="txDetailSection txResearchNote">
       <div className="txSectionHeading">
@@ -369,7 +370,7 @@ function ResearchNote({ record, copy, onUpdate, events, locale, unavailable, onR
           <textarea value={record.thesis} placeholder={copy.thesisPlaceholder} rows={4} onChange={(event) => onUpdate({ thesis: event.target.value })} />
         </label>
       </div>
-      <HistoryDetails title={historyCopy(locale).recent} events={events || []} locale={locale} unavailable={unavailable} onRetry={onRetry} onSelectRelation={onSelectRelation} />
+      <HistoryDetails title={historyCopy(locale).recent} events={events || []} locale={locale} loading={loading} unavailable={unavailable} onRetry={onRetry} onSelectRelation={onSelectRelation} />
     </section>
   );
 }

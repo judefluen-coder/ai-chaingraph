@@ -190,3 +190,61 @@ test("desktop and mobile flag an unresolved action without hiding its official s
     await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
   }
 });
+
+test("graph remains usable while optional update history is delayed", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  let releaseHistory;
+  const historyGate = new Promise((resolve) => { releaseHistory = resolve; });
+  await page.route("**/snapshots/release-history.json", async (route) => {
+    await historyGate;
+    await route.continue();
+  });
+  await page.goto("./");
+
+  await expect(page.locator(".txScopeInspector")).toBeVisible();
+  await page.getByRole("combobox", { name: "搜索图谱" }).fill("鸿富诚");
+  await expect(page.getByRole("option", { name: /鸿富诚/ })).toBeVisible();
+  await page.locator(".txSidebarDataState").click();
+  const dialog = page.getByRole("dialog", { name: "数据版本与更新" });
+  await dialog.getByText("查看更新记录").click();
+  await expect(dialog.getByRole("status", { name: "" })).toContainText("正在读取更新记录");
+
+  releaseHistory();
+  await expect(dialog.getByText("正在读取更新记录")).toHaveCount(0);
+  await expect(dialog.locator(".txHistoryDetails .txHistoryDetails").first()).toBeVisible();
+});
+
+test("retrying update history does not reload the graph snapshot", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  let graphRequests = 0;
+  let historyRequests = 0;
+  await page.route("**/snapshots/transmission-v1.1.json", async (route) => {
+    graphRequests += 1;
+    await route.continue();
+  });
+  await page.route("**/snapshots/release-history.json", async (route) => {
+    historyRequests += 1;
+    if (historyRequests === 1) await route.abort();
+    else await route.continue();
+  });
+  await page.goto("./");
+
+  await expect(page.locator(".txScopeInspector")).toBeVisible();
+  await page.locator(".txSidebarDataState").click();
+  const dialog = page.getByRole("dialog", { name: "数据版本与更新" });
+  await dialog.getByText("查看更新记录").click();
+  await expect(dialog.getByText("更新记录加载失败。")).toBeVisible();
+  await dialog.getByRole("button", { name: "重试" }).click();
+  await expect(dialog.getByText("更新记录加载失败。")).toHaveCount(0);
+  await expect(dialog.locator(".txHistoryDetails .txHistoryDetails").first()).toBeVisible();
+  expect(graphRequests).toBe(1);
+  expect(historyRequests).toBe(2);
+});

@@ -533,22 +533,22 @@ export function buildDetailModel(graph, entityId, options = {}) {
   };
 }
 
-export function buildRelationDetailModel(graph, relationId) {
+export function buildRelationDetailModel(graph, relationId, history = graph.release_history) {
   if (!relationId) return null;
   const index = createGraphViewIndex(graph);
-  const relation = index.relationsById.get(relationId) || graph.release_history?.archived_relations?.find((record) => record.id === relationId);
+  const relation = index.relationsById.get(relationId) || history?.archived_relations?.find((record) => record.id === relationId);
   if (!relation) return null;
   return {
     relation,
     from: index.entitiesById.get(relation.from_id),
     to: index.entitiesById.get(relation.to_id),
-    evidence: getRelationEvidence(graph, relation.id),
+    evidence: getRelationEvidence(graph, relation.id, history),
   };
 }
 
-export function getRelationEvidence(graph, relationId) {
+export function getRelationEvidence(graph, relationId, history = graph.release_history) {
   const index = createGraphViewIndex(graph);
-  const relation = index.relationsById.get(relationId) || graph.release_history?.archived_relations?.find((record) => record.id === relationId);
+  const relation = index.relationsById.get(relationId) || history?.archived_relations?.find((record) => record.id === relationId);
   return (relation?.claim_ids || []).map((claimId) => {
     const claim = index.claimsById.get(claimId);
     return claim ? { claim, source: index.sourcesById.get(claim.source_document_id) } : null;

@@ -5,7 +5,7 @@ import { getCopy } from "../lib/i18n.js";
 import { getRefreshStatus } from "../lib/refreshStatus.js";
 import { HistoryDetails } from "./HistoryDetails.jsx";
 
-export function ReleaseDialog({ graph, locale, onClose, onSelectRelation, onRetry }) {
+export function ReleaseDialog({ graph, history, historyLoading, historyUnavailable, locale, onClose, onSelectRelation, onRetry }) {
   const ref = useRef(null);
   const text = historyCopy(locale);
   const copy = getCopy(locale);
@@ -33,9 +33,9 @@ export function ReleaseDialog({ graph, locale, onClose, onSelectRelation, onRetr
       ].map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value?.slice(0, 10) || "—"}</dd></div>)}</dl>
       <details className="txHistoryDetails"><summary>{text.releases}</summary>
         <p>{text.provenance}</p>
-        {graph.releaseHistoryError ? <p>{text.failed} <button type="button" onClick={onRetry}>{text.retry}</button></p> : !graph.release_history?.batches?.length ? <p>{text.empty}</p> :
-          [...graph.release_history.batches].sort((a, b) => b.reviewed_at.localeCompare(a.reviewed_at)).map((batch) =>
-            <HistoryDetails key={batch.id} title={`${text.auditDate} · ${batch.reviewed_at.slice(0, 16).replace("T", " ")} UTC`} events={graph.release_history.events.filter((event) => event.batch_id === batch.id)} locale={locale} entitiesById={new Map(graph.entities.map((entity) => [entity.id, entity]))} onSelectRelation={(id) => { onSelectRelation(id); onClose(); }} />)}
+        {historyLoading ? <p role="status">{text.loading}</p> : historyUnavailable ? <p>{text.failed} <button type="button" onClick={onRetry}>{text.retry}</button></p> : !history?.batches?.length ? <p>{text.empty}</p> :
+          [...history.batches].sort((a, b) => b.reviewed_at.localeCompare(a.reviewed_at)).map((batch) =>
+            <HistoryDetails key={batch.id} title={`${text.auditDate} · ${batch.reviewed_at.slice(0, 16).replace("T", " ")} UTC`} events={history.events.filter((event) => event.batch_id === batch.id)} locale={locale} entitiesById={new Map(graph.entities.map((entity) => [entity.id, entity]))} onSelectRelation={(id) => { onSelectRelation(id); onClose(); }} />)}
       </details>
     </div>
   </dialog>;
