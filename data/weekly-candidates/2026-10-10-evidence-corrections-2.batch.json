@@ -1,0 +1,52 @@
+{
+  "batch_id": "weekly-2026-10-10-evidence-corrections-2",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T10:50:36.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [],
+  "relations": [],
+  "withdrawn_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_element:038d6cf837643131806cf26d",
+        "relation_type": "issuer_produces",
+        "from_id": "issuer:cn-sh-603228",
+        "to_id": "component:ai_sensors",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:cb137b4357192710cc063912"],
+        "attributes": {
+          "mapping_precision": "typed_segment_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "ai_sensors",
+          "migration_resolution": "typed_element_resolved"
+        }
+      },
+      "source_document_id": "source:042dd8b4317322e5a592c941",
+      "reason": "年报披露的是印制电路板业务；原声明所述激光雷达PCB属于下游传感器的基板，不能证明公司生产传感器。",
+      "reason_en": "The report describes PCB products; a lidar PCB used in a sensor does not establish that Kinwong manufactures sensors."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_element:06e20e4cbdee30ce8cbfc27a",
+        "relation_type": "issuer_produces",
+        "from_id": "issuer:cn-sh-688035",
+        "to_id": "product:ai_pc_smartphones",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:bffd2c1e5cc0809fd46a8943"],
+        "attributes": {
+          "mapping_precision": "typed_segment_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "ai_pc_smartphones",
+          "migration_resolution": "typed_element_resolved"
+        }
+      },
+      "source_document_id": "source:5b7a9e5956d0d7c59aba0508",
+      "reason": "年报明确说明AI手机和AIPC是公司封装材料的应用领域，并非公司生产的整机产品。",
+      "reason_en": "The report lists AI phones and AI PCs as applications of Debon packaging materials, not devices manufactured by Debon."
+    }
+  ]
+}
