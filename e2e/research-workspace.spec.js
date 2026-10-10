@@ -214,6 +214,23 @@ test("a corrected relationship links its archived claim to the replacement evide
   await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
 });
 
+test("a semiconductor component action correction retains its original evidence trail", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?entity=issuer%3Acn-sz-002931&relation=relation%3Aissuer_segment_fallback%3A0207ea9e3f8da493ea0ac5aa");
+
+  const panel = page.locator(".txDetailPanel");
+  await expect(panel.getByRole("status")).toContainText("已被替代");
+  await expect(panel.getByRole("status")).toContainText("动作更正为生产");
+  await panel.getByRole("button", { name: "查看替代关系" }).click();
+  await expect(panel.locator(".txSelectedRelation")).toContainText("生产");
+  await expect(panel.locator(".txEvidenceList")).toContainText("半导体阀零部件");
+  await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", "https://static.cninfo.com.cn/finalpage/2026-04-28/1225214620.PDF");
+});
+
 test("a corrected relationship can move from equipment to battery-cell evidence", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.addInitScript(() => {
@@ -255,7 +272,7 @@ test("desktop and mobile flag an unresolved action without hiding its official s
     localStorage.setItem("ai-chaingraph-disclaimer", "ack");
     localStorage.setItem("ai-chaingraph-locale", "zh");
   });
-  const url = "./?entity=issuer%3Acn-sz-002931&relation=relation%3Aissuer_segment_fallback%3A0207ea9e3f8da493ea0ac5aa";
+  const url = "./?entity=issuer%3Acn-sz-300543&relation=relation%3Aissuer_segment_fallback%3A024cf790930eed4b3d812388";
 
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
