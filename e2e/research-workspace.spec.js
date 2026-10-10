@@ -77,3 +77,19 @@ test("reviewed broad mapping explains why the narrower claim was rejected", asyn
   await expect(panel.locator(".txReviewReason")).toContainText("未证明公司生产传感器");
   await expect(panel.locator(".txEvidenceSection .txEvidenceBadge")).toContainText("宽口径映射");
 });
+
+test("mobile evidence source remains readable and touch-sized", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?entity=issuer%3Acn-sh-603330&relation=relation%3Aissuer_segment_reviewed%3Atianyang-adhesives-20261010");
+
+  const panel = page.locator(".txDetailPanel");
+  await expect(panel.locator(".txReviewReason")).toContainText("未证明公司生产传感器");
+  const sourceLink = panel.getByRole("link", { name: /打开原始来源/ });
+  await sourceLink.scrollIntoViewIfNeeded();
+  await expect(sourceLink).toHaveAttribute("href", /^https:\/\//);
+  expect((await sourceLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+});
