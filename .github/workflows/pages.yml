@@ -20,7 +20,7 @@ jobs:
     name: Build static app
     if: github.repository_visibility == 'public'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Check out repository
@@ -46,6 +46,12 @@ jobs:
 
       - name: Enforce relationship depth, listing coverage, and weekly freshness
         run: npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8
+
+      - name: Install Chromium for UI smoke test
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: Test desktop and mobile research paths
+        run: npm run test:e2e
 
       - name: Build GitHub Pages artifact
         run: npm run build
