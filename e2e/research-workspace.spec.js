@@ -1,5 +1,34 @@
 import { expect, test } from "@playwright/test";
 
+const MAX_BROWSER_READY_AFTER_SNAPSHOT_MS = 2_500;
+
+test("desktop and mobile directories become usable promptly after the snapshot arrives", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+    const observer = new MutationObserver(() => {
+      if (document.querySelector(".txScopeInspector")) {
+        window.graphReadyAt = performance.now();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document, { childList: true, subtree: true });
+  });
+
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto("./");
+    await expect(page.locator(".txScopeInspector")).toBeVisible();
+    const readyAfterSnapshotMs = await page.evaluate(() => {
+      const snapshot = performance.getEntriesByType("resource").find((entry) => entry.name.endsWith("/snapshots/transmission-v1.1.json"));
+      return window.graphReadyAt - snapshot?.responseEnd;
+    });
+    console.log(`${viewport.width}px graph ready ${readyAfterSnapshotMs.toFixed(1)} ms after snapshot response`);
+    expect(readyAfterSnapshotMs, `${viewport.width}px graph readiness`).toBeGreaterThanOrEqual(0);
+    expect(readyAfterSnapshotMs, `${viewport.width}px graph readiness`).toBeLessThan(MAX_BROWSER_READY_AFTER_SNAPSHOT_MS);
+  }
+});
+
 test("desktop search opens a source-backed relation", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.addInitScript(() => {

@@ -38,4 +38,6 @@ npm run build:sites
 
 The same command refreshes the marked snapshot summaries in `README.md` and `README.en.md`; `npm run validate:snapshot` rejects either summary if its counts or dates drift from the public snapshot. Text outside those markers remains hand-edited.
 
+`npm run check:performance` caps the compressed graph snapshot and the main parse, index, layout, and traversal phases; browser regression tests also require the desktop and mobile research directories to become usable promptly after the snapshot response. These are release budgets, not claims about network latency on every connection.
+
 `scripts/semantic-review-backlog.json` records unresolved candidate relation IDs captured on 2026-10-10. They are not endorsed facts or an exception to evidence review. `npm run audit:semantic-precision` fails when a new usage-only physical integration mapping appears and reports how many captured candidates have been resolved.

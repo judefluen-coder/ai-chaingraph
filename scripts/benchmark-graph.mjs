@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
 import { resolve } from "node:path";
+import { gzipSync } from "node:zlib";
 import {
   buildChainFlow,
   buildOverviewFlow,
@@ -8,7 +9,7 @@ import {
   searchTransmissionGraph,
 } from "../src/lib/transmissionViewModel.js";
 import { traverseTransmissionGraph } from "../src/lib/transmissionGraph.js";
-import { assertSearchPerformance } from "./lib/performance-budget.mjs";
+import { assertGraphPerformanceBudget, assertSearchPerformance } from "./lib/performance-budget.mjs";
 
 const snapshotPath = resolve(import.meta.dirname, "../public/snapshots/transmission-v1.1.json");
 const queries = ["AI", "光模块", "NVDA", "301716", "宇特光电"];
@@ -39,9 +40,18 @@ const warmToFirstRatio = warmSearchMs / coldSearch.milliseconds;
 const overview = measure(() => buildOverviewFlow(graph, { locale: "zh", direction: "LR" }));
 const chain = measure(() => buildChainFlow(graph, "chain:network_optical_interconnect", { locale: "zh", direction: "LR" }));
 const traversal = measure(() => traverseTransmissionGraph(graph, "issuer:sec-cik-0001045810", { direction: "downstream", maxDepth: 1 }));
+const metrics = {
+  snapshot_gzip_bytes: gzipSync(source, { level: 9 }).length,
+  parse_ms: parse.milliseconds,
+  index_ms: index.milliseconds,
+  overview_ms: overview.milliseconds,
+  chain_ms: chain.milliseconds,
+  traversal_ms: traversal.milliseconds,
+};
 
 console.log(JSON.stringify({
   snapshot_bytes: Buffer.byteLength(source),
+  snapshot_gzip_bytes: metrics.snapshot_gzip_bytes,
   entities: graph.entities.length,
   relations: graph.relations.length,
   parse_ms: Number(parse.milliseconds.toFixed(1)),
@@ -57,4 +67,5 @@ console.log(JSON.stringify({
 
 if (process.argv.includes("--check")) {
   assertSearchPerformance(coldSearch.milliseconds, warmSearchMs);
+  assertGraphPerformanceBudget(metrics);
 }
