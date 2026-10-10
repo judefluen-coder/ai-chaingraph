@@ -2274,6 +2274,10 @@ button:disabled {
 }
 
 @media (max-width: 760px) {
+  .txTopbar {
+    z-index: calc(var(--tx-z-panel) + 10);
+  }
+
   .txMobileDirectoryButton {
     display: inline-flex;
     align-items: center;
