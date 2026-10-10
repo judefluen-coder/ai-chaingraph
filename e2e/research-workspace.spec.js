@@ -19,6 +19,28 @@ test("desktop search opens a source-backed relation", async ({ page }) => {
   await expect(page.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
 });
 
+test("closed search results cannot be activated by Enter", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./");
+
+  const search = page.getByRole("combobox", { name: "搜索图谱" });
+  await search.fill("鸿富诚");
+  await expect(page.getByRole("option", { name: /鸿富诚/ })).toBeVisible();
+  await search.press("Escape");
+  await expect(page.getByRole("option", { name: /鸿富诚/ })).toBeHidden();
+  await search.press("Enter");
+  await expect(page.locator(".txDetailPanel").getByRole("heading", { name: "鸿富诚" })).toHaveCount(0);
+
+  await search.press("ArrowDown");
+  await expect(page.getByRole("option", { name: /鸿富诚/ })).toBeVisible();
+  await search.press("Enter");
+  await expect(page.locator(".txDetailPanel").getByRole("heading", { name: "鸿富诚" })).toBeVisible();
+});
+
 test("mobile directory, search, and detail remain reachable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => localStorage.setItem("ai-chaingraph-locale", "zh"));
