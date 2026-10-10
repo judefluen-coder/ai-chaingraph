@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-10-10T11:24:52.895Z",
-  "changed_at": "2026-10-10T11:24:52.895Z",
-  "next_scheduled_at": "2026-10-17T11:24:52.895Z",
+  "checked_at": "2026-10-10T11:27:44.528Z",
+  "changed_at": "2026-10-10T11:27:44.528Z",
+  "next_scheduled_at": "2026-10-17T11:27:44.528Z",
   "source_cutoff_date": "2026-10-09",
   "cadence": "weekly",
   "a_share_listing_reconciled_through": "2026-10-10",
