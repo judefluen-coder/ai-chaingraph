@@ -2804,26 +2804,30 @@ textarea:focus-visible {
 .txSidebarDataState {
   min-width: 0;
   display: flex;
-  gap: 5px;
-  align-items: center;
+  gap: 8px;
+  align-items: flex-start;
   color: var(--tx-muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 
-.txSidebarDataState span,
-.txSidebarDataState small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.txSidebarDataState svg { flex: 0 0 auto; margin-top: 2px; }
 
-.txSidebarDataState span {
+.txSidebarDataCopy {
   min-width: 0;
+  display: grid;
+  gap: 2px;
 }
 
-.txSidebarDataState small {
-  margin-left: auto;
+.txSidebarDataCopy strong {
+  font-weight: 680;
+}
+
+.txSidebarDataCopy small {
+  display: grid;
+  gap: 1px;
   color: var(--tx-muted-soft);
+  font-size: 10px;
+  line-height: 1.45;
 }
 
 .txSidebarDataState.isStale {
@@ -2833,7 +2837,7 @@ textarea:focus-visible {
   padding: 5px;
 }
 
-.txSidebarDataState.isStale small {
+.txSidebarDataState.isStale .txSidebarDataCopy small {
   color: #805011;
 }
 

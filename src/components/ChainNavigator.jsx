@@ -43,6 +43,7 @@ export function ChainNavigator({
     : refreshStatus.state === "stale" ? copy.reviewOverdue
       : refreshStatus.state === "unknown" ? copy.reviewUnknown : copy.dataReady;
   const checkedDate = refreshStatus.checkedDate || "-";
+  const sourceCutoffDate = dataRefresh?.source_cutoff_date || "-";
   const specificRate = relationshipQuality
     ? `${Math.round(relationshipQuality.specific_issuer_rate * 100)}%`
     : "-";
@@ -163,12 +164,17 @@ export function ChainNavigator({
           </div>
           <button type="button" onClick={onOpenUpdates}
             className={`txSidebarDataState ${refreshStatus.state !== "current" ? "isStale" : ""}`}
-            aria-label={`${dataStateLabel} · ${copy.checkedOn} ${checkedDate} · ${copy.specificRelationshipRate} ${specificRate}`}
-            title={`${dataVersion} · ${dataStateLabel} · ${copy.checkedOn} ${checkedDate} · ${copy.sourceCutoff} ${dataRefresh?.source_cutoff_date || "-"} · ${copy.specificRelationshipRate} ${specificRate}`}
+            aria-label={`${dataStateLabel} · ${copy.checkedOn} ${checkedDate} · ${copy.sourceCutoff} ${sourceCutoffDate} · ${copy.specificRelationshipRate} ${specificRate}`}
+            title={`${dataVersion} · ${dataStateLabel} · ${copy.checkedOn} ${checkedDate} · ${copy.sourceCutoff} ${sourceCutoffDate} · ${copy.specificRelationshipRate} ${specificRate}`}
           >
             <Database size={14} strokeWidth={1.8} />
-            <span>{dataStateLabel}</span>
-            <small>{checkedDate}</small>
+            <span className="txSidebarDataCopy">
+              <strong>{dataStateLabel}</strong>
+              <small>
+                <span>{copy.checkedOn} {checkedDate}</span>
+                <span>{copy.sourceCutoff} {sourceCutoffDate}</span>
+              </small>
+            </span>
           </button>
         </footer>
       </aside>

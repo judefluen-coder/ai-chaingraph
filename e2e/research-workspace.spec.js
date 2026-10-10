@@ -9,6 +9,8 @@ test("desktop search opens a source-backed relation", async ({ page }) => {
   await page.goto("./");
 
   await expect(page.locator(".txScopeInspector")).toBeVisible();
+  await expect(page.locator(".txSidebarDataState small span").first()).toContainText(/最近核验\s+\d{4}-\d{2}-\d{2}/);
+  await expect(page.locator(".txSidebarDataState small span").last()).toContainText(/已收录来源截止\s+\d{4}-\d{2}-\d{2}/);
   await page.getByRole("combobox", { name: "搜索图谱" }).fill("鸿富诚");
   await page.getByRole("option", { name: /鸿富诚/ }).click();
   await expect(page.locator(".txDetailPanel").getByRole("heading", { name: "鸿富诚" })).toBeVisible();
@@ -41,6 +43,11 @@ test("mobile directory, search, and detail remain reachable", async ({ page }) =
   await expect(directory).toBeVisible();
   await directory.getByRole("button", { name: "查看图谱" }).click();
   await expect(directory).toBeHidden();
+  await page.getByRole("button", { name: "打开研究工作区" }).click();
+  const dataState = page.locator(".txSidebarDataState");
+  await dataState.scrollIntoViewIfNeeded();
+  await expect(dataState.locator("small span").first()).toContainText(/最近核验\s+\d{4}-\d{2}-\d{2}/);
+  await expect(dataState.locator("small span").last()).toContainText(/已收录来源截止\s+\d{4}-\d{2}-\d{2}/);
 });
 
 test("withdrawn mapping remains inspectable but clearly marked as invalid", async ({ page }) => {
