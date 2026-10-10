@@ -2443,7 +2443,7 @@ button:disabled {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 980px) {
   .txTopbar {
     z-index: calc(var(--tx-z-panel) + 10);
   }
@@ -2467,9 +2467,9 @@ button:disabled {
     display: block;
     position: fixed;
     z-index: calc(var(--tx-z-panel) + 5);
-    inset: 58px 0 0;
-    width: 100%;
-    max-height: calc(100dvh - 58px);
+    inset: 68px 0 0 224px;
+    width: calc(100% - 224px);
+    max-height: calc(100dvh - 68px);
     border: 0;
     border-radius: 0;
     box-shadow: none;
@@ -2531,6 +2531,14 @@ button:disabled {
     min-height: 48px;
     padding: 10px 12px;
     font-size: 13px;
+  }
+}
+
+@media (max-width: 760px) {
+  .txWorkspace.hasInspector .txScopeInspector.isMobileOpen {
+    inset: 58px 0 0;
+    width: 100%;
+    max-height: calc(100dvh - 58px);
   }
 
   .txWorkspace.hasInspector .txDetailPanel:not(.txScopeInspector) {

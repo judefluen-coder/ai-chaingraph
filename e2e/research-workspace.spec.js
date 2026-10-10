@@ -157,6 +157,24 @@ test("mobile directory, search, and detail remain reachable", async ({ page }) =
   await expect(dataState.locator("small span").last()).toContainText(/已收录来源截止\s+\d{4}-\d{2}-\d{2}/);
 });
 
+test("tablet graph can open the otherwise hidden industry directory", async ({ page }) => {
+  await page.setViewportSize({ width: 820, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./");
+
+  const directory = page.locator(".txScopeInspector");
+  await expect(directory).toBeHidden();
+  await page.getByRole("button", { name: "浏览产业目录" }).click();
+  await expect(directory).toBeVisible();
+  await directory.getByRole("button", { name: "AI芯片与IP" }).click();
+  await expect(directory.getByRole("heading", { name: "产业环节" })).toBeVisible();
+  await directory.getByRole("button", { name: "查看图谱" }).click();
+  await expect(directory).toBeHidden();
+});
+
 test("mobile workspace navigation keeps keyboard focus on visible controls", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => {
