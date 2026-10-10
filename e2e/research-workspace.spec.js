@@ -70,6 +70,15 @@ test("mobile directory, search, and detail remain reachable", async ({ page }) =
   await page.getByRole("button", { name: "进入图谱" }).click();
   const directory = page.locator(".txScopeInspector");
   await expect(directory).toBeVisible();
+  const freshness = directory.locator(".txScopeFreshness");
+  await expect(freshness.locator("small").first()).toHaveText("最近核验");
+  await expect(freshness.locator("strong").first()).toHaveText(/\d{4}-\d{2}-\d{2}/);
+  await expect(freshness.locator("small").last()).toHaveText("已收录来源截止");
+  await expect(freshness.locator("strong").last()).toHaveText(/\d{4}-\d{2}-\d{2}/);
+  await freshness.click();
+  await expect(page.getByRole("dialog", { name: "数据版本与更新" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "数据版本与更新" })).toHaveCount(0);
   await directory.getByRole("button", { name: "AI芯片与IP" }).click();
   await expect(directory.getByRole("heading", { name: "产业环节" })).toBeVisible();
   await directory.getByRole("button", { name: "返回能力域" }).click();

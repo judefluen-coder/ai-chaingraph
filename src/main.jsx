@@ -525,8 +525,11 @@ function App() {
             chainElements={chainElements}
             navigation={navigation}
             meta={flow.meta}
+            dataRefresh={graph.meta.refresh}
+            refreshStatus={refreshStatus}
             locale={locale}
             copy={copy}
+            onOpenUpdates={() => setReleaseOpen(true)}
             onSelectChain={selectChain}
             onSelectEntity={selectEntity}
             mobileOpen={mobileDirectoryOpen}

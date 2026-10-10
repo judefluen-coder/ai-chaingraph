@@ -2227,6 +2227,49 @@ button:disabled {
   white-space: nowrap;
 }
 
+.txScopeFreshness {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+  border: 1px solid var(--tx-line-soft);
+  border-radius: var(--tx-radius-sm);
+  background: var(--tx-primary-soft);
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.txScopeFreshness > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.txScopeFreshness small {
+  color: var(--tx-muted);
+  font-size: 9px;
+}
+
+.txScopeFreshness strong {
+  color: var(--tx-ink);
+  font-size: 11px;
+  font-weight: 680;
+}
+
+.txScopeFreshness em {
+  grid-column: 1 / -1;
+  color: #805011;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.txScopeFreshness.isStale {
+  border-color: #ead39c;
+  background: #fff8e8;
+}
+
 .txScopeDirectory {
   border-bottom: 0;
 }

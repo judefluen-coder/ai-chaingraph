@@ -6,8 +6,11 @@ export function ScopeInspector({
   chainElements,
   navigation,
   meta,
+  dataRefresh,
+  refreshStatus,
   locale,
   copy,
+  onOpenUpdates,
   onSelectChain,
   onSelectEntity,
   mobileOpen,
@@ -59,6 +62,11 @@ export function ScopeInspector({
             </span>
           ))}
         </div>
+        <button type="button" className={`txScopeFreshness ${refreshStatus?.state === "stale" ? "isStale" : ""}`} onClick={onOpenUpdates}>
+          <span><small>{copy.checkedOn}</small><strong>{refreshStatus?.checkedDate || "-"}</strong></span>
+          <span><small>{copy.sourceCutoff}</small><strong>{dataRefresh?.source_cutoff_date || "-"}</strong></span>
+          {refreshStatus?.state !== "current" && <em>{refreshStatus?.state === "stale" ? copy.reviewOverdue : copy.reviewUnknown}</em>}
+        </button>
       </section>
 
       {isChain ? (
