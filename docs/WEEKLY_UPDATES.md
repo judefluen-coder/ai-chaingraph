@@ -37,6 +37,8 @@ npm run build:sites
 
 `npm run update:weekly` derives the A-share reconciliation date from approved, continuous manifests; it cannot be advanced with a command-line flag. `public/snapshots/update-status.json` records the latest check, next scheduled check, reconciliation counts, source cutoff, imported batches, promotions, and current relationship-quality metrics. The A-share field is deliberately scoped: US-listed issuer reconciliation uses separate SEC and exchange-source review and is not implied by this date.
 
+`next_scheduled_at` is the next Monday at 09:00 Asia/Shanghai, not seven days after an ad hoc review. Replaying the same `checked_at` without new batches preserves that check's original change and import summary.
+
 The same command refreshes the marked snapshot summaries in `README.md` and `README.en.md`; `npm run validate:snapshot` rejects either summary if its counts or dates drift from the public snapshot. Text outside those markers remains hand-edited.
 
 `npm run check:performance` caps the compressed graph snapshot and the main parse, index, layout, and traversal phases; browser regression tests also require the desktop and mobile research directories to become usable promptly after the snapshot response. These are release budgets, not claims about network latency on every connection.

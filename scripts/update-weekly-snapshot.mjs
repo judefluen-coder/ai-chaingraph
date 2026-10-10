@@ -15,6 +15,7 @@ import {
   readApprovedCandidateBatches,
 } from "./lib/weekly-batches.mjs";
 import { syncReadmeSnapshotSummary } from "./lib/readme-snapshot-summary.mjs";
+import { nextWeeklyCheckAt } from "./lib/weekly-schedule.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const snapshotPath = resolve(projectRoot, "public/snapshots/transmission-v1.1.json");
@@ -44,6 +45,7 @@ function recomputeCounts(graph, quality) {
 }
 
 const graph = JSON.parse(await readFile(snapshotPath, "utf8"));
+const previousStatus = JSON.parse(await readFile(statusPath, "utf8"));
 const previousRefresh = graph.meta.refresh || {};
 const appliedBatchIds = new Set(graph.meta.refresh?.applied_batch_ids || []);
 const approvedBatches = await readApprovedCandidateBatches(projectRoot);
@@ -88,9 +90,12 @@ const changed = imported.entities
   + promotions.promotedRelations
   + promotions.reclassifiedRelations
   + promotions.revertedRelations > 0;
+const replayedCheck = !changed && previousRefresh.last_checked_at === checkedAt && previousStatus.checked_at === checkedAt;
+const reported = replayedCheck
+  ? { changed: previousStatus.changed, imported: previousStatus.imported, promotions: previousStatus.promotions }
+  : { changed, imported, promotions };
 const currentChangeSummary = { imported, promotions };
-const nextScheduledAt = new Date(now);
-nextScheduledAt.setUTCDate(nextScheduledAt.getUTCDate() + 7);
+const nextScheduledAt = nextWeeklyCheckAt(now);
 
 if (changed) {
   graph.meta.updated_at = checkedAt;
@@ -101,7 +106,7 @@ graph.meta.refresh = {
   cadence: "weekly",
   last_checked_at: checkedAt,
   last_changed_at: changed ? checkedAt : previousRefresh.last_changed_at || graph.meta.updated_at,
-  next_scheduled_at: nextScheduledAt.toISOString(),
+  next_scheduled_at: nextScheduledAt,
   source_cutoff_date: maxSourceDate(graph),
   mechanism: "reviewed_incremental_batches",
   a_share_listing_reconciled_through: listingReconciliation.reconciled_through,
@@ -122,9 +127,7 @@ const status = {
   cadence: graph.meta.refresh.cadence,
   a_share_listing_reconciled_through: graph.meta.refresh.a_share_listing_reconciled_through,
   a_share_listing_reconciliation: graph.meta.refresh.a_share_listing_reconciliation,
-  changed,
-  imported,
-  promotions,
+  ...reported,
   last_change_summary: graph.meta.refresh.last_change_summary,
   quality,
 };
@@ -146,9 +149,8 @@ console.log(JSON.stringify({
   snapshot: basename(snapshotPath),
   status: basename(statusPath),
   dataVersion: graph.meta.data_version,
-  changed,
-  imported,
-  promotions,
+  ...reported,
+  replayedCheck,
   quality: {
     issuers: quality.issuers_total,
     specificIssuers: quality.issuers_with_specific_relations,

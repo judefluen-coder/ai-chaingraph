@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import {
   readAshareReconciliations,
   validateAshareReconciliations,
@@ -10,6 +10,7 @@ import {
   readApprovedCandidateBatches,
 } from "./lib/weekly-batches.mjs";
 import { assertReadmeSnapshotSummary } from "./lib/readme-snapshot-summary.mjs";
+import { nextWeeklyCheckAt } from "./lib/weekly-schedule.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const snapshotPath = resolve(
@@ -32,6 +33,7 @@ function uniqueIds(items, label) {
 }
 
 const graph = JSON.parse(await readFile(snapshotPath, "utf8"));
+const status = JSON.parse(await readFile(resolve(dirname(snapshotPath), "update-status.json"), "utf8"));
 for (const key of ["entities", "relations", "source_documents", "claims", "shock_events"]) {
   invariant(Array.isArray(graph[key]), `${key} must be an array.`);
 }
@@ -95,6 +97,16 @@ for (const source of graph.source_documents) {
 invariant(graph.meta?.refresh?.cadence === "weekly", "The public snapshot must declare its weekly refresh cadence.");
 invariant(!Number.isNaN(Date.parse(graph.meta.refresh.last_checked_at)), "meta.refresh.last_checked_at must be an ISO timestamp.");
 invariant(!Number.isNaN(Date.parse(graph.meta.refresh.next_scheduled_at)), "meta.refresh.next_scheduled_at must be an ISO timestamp.");
+invariant(graph.meta.refresh.next_scheduled_at === nextWeeklyCheckAt(new Date(graph.meta.refresh.last_checked_at)), "The next weekly check must be Monday 09:00 Asia/Shanghai.");
+for (const [statusKey, refreshKey] of [
+  ["checked_at", "last_checked_at"],
+  ["changed_at", "last_changed_at"],
+  ["next_scheduled_at", "next_scheduled_at"],
+  ["source_cutoff_date", "source_cutoff_date"],
+  ["a_share_listing_reconciled_through", "a_share_listing_reconciled_through"],
+]) {
+  invariant(status[statusKey] === graph.meta.refresh[refreshKey], `update-status.${statusKey} does not match the graph snapshot.`);
+}
 invariant(/^\d{4}-\d{2}-\d{2}$/.test(graph.meta.refresh.a_share_listing_reconciled_through || ""), "meta.refresh.a_share_listing_reconciled_through must use YYYY-MM-DD.");
 const listingReconciliation = validateAshareReconciliations(
   await readAshareReconciliations(projectRoot),
