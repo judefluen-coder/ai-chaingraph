@@ -15,6 +15,7 @@ import {
   readApprovedCandidateBatches,
 } from "./lib/weekly-batches.mjs";
 import { syncReadmeSnapshotSummary } from "./lib/readme-snapshot-summary.mjs";
+import { assertNoFutureReleaseDates } from "./lib/release-dates.mjs";
 import { nextWeeklyCheckAt } from "./lib/weekly-schedule.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
@@ -116,6 +117,11 @@ graph.meta.refresh = {
 };
 graph.meta.quality = quality;
 recomputeCounts(graph, quality);
+assertNoFutureReleaseDates({
+  checkedAt,
+  listingThrough: graph.meta.refresh.a_share_listing_reconciled_through,
+  sourceCutoffDate: graph.meta.refresh.source_cutoff_date,
+});
 
 const status = {
   schema_version: "1.0.0",

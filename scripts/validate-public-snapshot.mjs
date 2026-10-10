@@ -4,12 +4,13 @@ import {
   readAshareReconciliations,
   validateAshareReconciliations,
 } from "./lib/listing-reconciliation.mjs";
-import { buildRelationshipQuality, SPECIFIC_RELATION_TYPES } from "./lib/relationship-quality.mjs";
+import { buildRelationshipQuality, maxSourceDate, SPECIFIC_RELATION_TYPES } from "./lib/relationship-quality.mjs";
 import {
   assertCandidateBatchApplied,
   readApprovedCandidateBatches,
 } from "./lib/weekly-batches.mjs";
 import { assertReadmeSnapshotSummary } from "./lib/readme-snapshot-summary.mjs";
+import { assertNoFutureReleaseDates } from "./lib/release-dates.mjs";
 import { nextWeeklyCheckAt } from "./lib/weekly-schedule.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
@@ -98,6 +99,12 @@ invariant(graph.meta?.refresh?.cadence === "weekly", "The public snapshot must d
 invariant(!Number.isNaN(Date.parse(graph.meta.refresh.last_checked_at)), "meta.refresh.last_checked_at must be an ISO timestamp.");
 invariant(!Number.isNaN(Date.parse(graph.meta.refresh.next_scheduled_at)), "meta.refresh.next_scheduled_at must be an ISO timestamp.");
 invariant(graph.meta.refresh.next_scheduled_at === nextWeeklyCheckAt(new Date(graph.meta.refresh.last_checked_at)), "The next weekly check must be Monday 09:00 Asia/Shanghai.");
+invariant(graph.meta.refresh.source_cutoff_date === maxSourceDate(graph), "The source cutoff must match the latest source document date.");
+assertNoFutureReleaseDates({
+  checkedAt: graph.meta.refresh.last_checked_at,
+  listingThrough: graph.meta.refresh.a_share_listing_reconciled_through,
+  sourceCutoffDate: graph.meta.refresh.source_cutoff_date,
+});
 for (const [statusKey, refreshKey] of [
   ["checked_at", "last_checked_at"],
   ["changed_at", "last_changed_at"],
