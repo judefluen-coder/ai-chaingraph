@@ -21,7 +21,9 @@ export function ScopeInspector({
 }) {
   const panelRef = useRef(null);
   const closeRef = useRef(null);
+  const headingRef = useRef(null);
   const openerRef = useRef(null);
+  const previousChainIdRef = useRef(selectedChain?.id || null);
   const onCloseRef = useRef(onCloseMobile);
   onCloseRef.current = onCloseMobile;
   const overlayOpen = compact && mobileOpen && interactive;
@@ -42,6 +44,12 @@ export function ScopeInspector({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [overlayOpen]);
+
+  useEffect(() => {
+    const chainId = selectedChain?.id || null;
+    if (overlayOpen && previousChainIdRef.current !== chainId) headingRef.current?.focus({ preventScroll: true });
+    previousChainIdRef.current = chainId;
+  }, [overlayOpen, selectedChain?.id]);
 
   function closeOverlay() {
     onCloseRef.current();
@@ -72,7 +80,7 @@ export function ScopeInspector({
       <header className="txDetailHeader">
         <div>
           <span>{copy.scopeInspector}</span>
-          <h2>{isChain ? localize(selectedChain, "name", locale) : copy.overviewTitle}</h2>
+          <h2 ref={headingRef} tabIndex={-1}>{isChain ? localize(selectedChain, "name", locale) : copy.overviewTitle}</h2>
           <small>{isChain ? copy.chainScope : copy.overviewScope}</small>
         </div>
         <button ref={closeRef} type="button" className="txIconButton txScopeMobileClose" aria-label={copy.showGraph} title={copy.showGraph} onClick={closeOverlay}>

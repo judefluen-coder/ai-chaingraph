@@ -60,15 +60,23 @@ export function GraphDetailPanel({
   onRunShock,
   onClearShock,
   onClose,
+  interactive,
 }) {
   const [showAllCompanies, setShowAllCompanies] = useState(false);
   const [eventType, setEventType] = useState("demand_up");
   const panelRef = useRef(null);
+  const headingRef = useRef(null);
   const evidenceRef = useRef(null);
 
   useEffect(() => {
     setShowAllCompanies(false);
   }, [detail?.entity?.id]);
+
+  useEffect(() => {
+    if (!interactive || relationDetail) return;
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+    headingRef.current?.focus({ preventScroll: true });
+  }, [detail?.entity?.id, interactive, relationDetail?.relation.id]);
 
   useEffect(() => {
     if (!relationDetail) return;
@@ -94,7 +102,7 @@ export function GraphDetailPanel({
       <header className="txDetailHeader txEvidenceHeader">
         <div>
           <span>{getEntityTypeLabel(entity.entity_type, locale)}</span>
-          <h2>{localize(entity, "name", locale)}</h2>
+          <h2 ref={headingRef} tabIndex={-1}>{localize(entity, "name", locale)}</h2>
           {codes && <small>{codes}</small>}
           <button type="button" className={`txDetailFreshness ${refreshStatus?.state === "stale" ? "isStale" : ""}`} onClick={onOpenUpdates}>
             <span>{copy.checkedOn} <strong>{refreshStatus?.checkedDate || "-"}</strong></span>

@@ -523,6 +523,7 @@ function App() {
             onRunShock={runShock}
             onClearShock={() => setShockType(null)}
             onClose={closeDetail}
+            interactive={acknowledged}
           />
         ) : (
           <ScopeInspector
