@@ -1,4 +1,5 @@
 import dagre from "@dagrejs/dagre";
+import { isSemanticReviewPending } from "./semanticReview.js";
 import {
   createTransmissionIndex,
   dependencyRelationTypes,
@@ -675,6 +676,7 @@ function buildElementNode(entity, options) {
 
 function buildRelationEdge(relation, locale, options = {}) {
   const target = options.targetOverride || relation.to_id;
+  const semanticReviewPending = isSemanticReviewPending(relation);
   return {
     id: relation.id,
     source: relation.from_id,
@@ -688,6 +690,7 @@ function buildRelationEdge(relation, locale, options = {}) {
       mapping: Boolean(options.mapping),
       path: Boolean(options.path),
       conditional: Boolean(options.conditional),
+      semanticReviewPending,
     },
     className: [
       "txFlowEdge",
@@ -696,6 +699,7 @@ function buildRelationEdge(relation, locale, options = {}) {
       options.path ? "isPath" : "",
       options.conditional ? "isConditional" : "",
       relation.relation_type === "issuer_participates_in_segment" ? "isFallback" : "",
+      semanticReviewPending ? "isPending" : "",
     ].filter(Boolean).join(" "),
   };
 }

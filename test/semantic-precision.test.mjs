@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { isSemanticReviewPending } from "../src/lib/semanticReview.js";
 import {
   findAmbiguousPhysicalIntegrations,
   findNewSemanticCandidates,
@@ -31,4 +33,12 @@ test("usage-only wording on a physical target enters the semantic review queue",
   assert.deepEqual(candidates.map(({ relation }) => relation.id), ["relation:english-usage", "relation:usage"]);
   assert.equal(findNewSemanticCandidates(candidates, ["relation:usage", "relation:english-usage"]).length, 0);
   assert.deepEqual(findNewSemanticCandidates(candidates, []).map(({ relation }) => relation.id), ["relation:english-usage", "relation:usage"]);
+});
+
+test("the public review marker matches current audited candidates only", async () => {
+  const graph = JSON.parse(await readFile(new URL("../public/snapshots/transmission-v1.1.json", import.meta.url), "utf8"));
+  const candidates = findAmbiguousPhysicalIntegrations(graph).map(({ relation }) => relation.id);
+  const marked = graph.relations.filter(isSemanticReviewPending).map((relation) => relation.id).sort();
+  assert.deepEqual(marked, candidates);
+  assert.equal(isSemanticReviewPending({ id: candidates[0], relation_type: "issuer_integrates", lifecycle_status: "superseded" }), false);
 });

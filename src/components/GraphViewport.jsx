@@ -31,6 +31,7 @@ export function GraphViewport({
     className: `${edge.className || ""}${edge.id === activeRelationId ? " isSelected" : ""}`.trim(),
     markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15 },
   })), [flow.edges, activeRelationId]);
+  const hasPendingEdges = flow.edges.some((edge) => edge.data?.semanticReviewPending);
 
   const fitGraph = useCallback(() => {
     if (!flowInstanceRef.current || flow.nodes.length === 0) return;
@@ -125,6 +126,7 @@ export function GraphViewport({
         <div className="txGraphLegend" aria-label={copy.factDirection}>
           <span><i className="isFact" />{copy.factDirection}</span>
           <span><i className="isCross" />{copy.crossChain}</span>
+          {hasPendingEdges && <span><i className="isPending" />{copy.semanticReviewPending}</span>}
           {flow.meta?.mode === "shock" && <span><i className="isConditional" />{copy.conditionalLayer}</span>}
         </div>
       </div>

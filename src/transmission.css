@@ -1039,6 +1039,11 @@ button:disabled {
   stroke-dasharray: 4 4;
 }
 
+.react-flow__edge.txFlowEdge.isPending .react-flow__edge-path {
+  stroke: #a8791a;
+  stroke-dasharray: 6 3;
+}
+
 .react-flow__edge.txFlowEdge.isPath .react-flow__edge-path {
   stroke: var(--tx-primary);
   stroke-width: 2.6;
@@ -1093,6 +1098,11 @@ button:disabled {
 .txGraphLegend i.isCross {
   border-top-style: dashed;
   border-top-color: #536c94;
+}
+
+.txGraphLegend i.isPending {
+  border-top-style: dashed;
+  border-top-color: #a8791a;
 }
 
 .txGraphLegend i.isConditional {
@@ -1335,6 +1345,12 @@ button:disabled {
 
 .txEvidenceBadge.isFallback {
   border-color: #ead39c;
+  color: var(--tx-inference);
+  background: var(--tx-inference-soft);
+}
+
+.txEvidenceBadge.isPending {
+  border-color: #d5a64b;
   color: var(--tx-inference);
   background: var(--tx-inference-soft);
 }

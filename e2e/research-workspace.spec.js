@@ -108,6 +108,7 @@ test("a corrected relationship links its archived claim to the replacement evide
   await panel.getByRole("button", { name: "查看替代关系" }).click();
   await expect(panel.locator(".txSelectedRelation")).toContainText("研发");
   await expect(panel.locator(".txEvidenceList")).toContainText("LAND大模型一体机");
+  await expect(panel.getByRole("status")).toHaveCount(0);
   await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
 });
 
@@ -127,4 +128,29 @@ test("a corrected relationship can move from equipment to battery-cell evidence"
   await expect(panel.locator(".txSelectedRelation")).toContainText("研发");
   await expect(panel.locator(".txEvidenceList")).toContainText("在研");
   await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
+});
+
+test("desktop and mobile flag an unresolved action without hiding its official source", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  const url = "./?entity=issuer%3Acn-sz-002931&relation=relation%3Aissuer_segment_fallback%3A0207ea9e3f8da493ea0ac5aa";
+
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+    await page.goto(url);
+    if (width === 1440) {
+      await expect(page.locator(".react-flow__edge.isPending").first()).toBeVisible();
+      await expect(page.locator(".txGraphLegend")).toContainText("动作待复核");
+    }
+    const panel = page.locator(".txDetailPanel");
+    await expect(panel.locator(".txEvidenceSection .txEvidenceBadge")).toHaveText("动作待复核");
+    const notice = panel.getByRole("status");
+    await notice.scrollIntoViewIfNeeded();
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText("这不是错误判定");
+    await expect(notice).toContainText("L1 官方披露");
+    await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
+  }
 });

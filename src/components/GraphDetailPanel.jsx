@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { HistoryDetails } from "./HistoryDetails.jsx";
 import { historyCopy } from "../lib/releaseHistory.js";
+import { isSemanticReviewPending } from "../lib/semanticReview.js";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -193,6 +194,8 @@ function RelationEvidence({ headingRef, detail, locale, copy, events, unavailabl
   const { relation, from, to, evidence } = detail;
   const text = historyCopy(locale);
   const summary = localize(relation, "relation_summary", locale);
+  const pendingSemanticReview = isSemanticReviewPending(relation);
+  const sourceLevel = relation.evidence_level === "L1" ? copy.evidenceL1 : relation.evidence_level === "L2" ? copy.evidenceL2 : copy.industryReference;
   return (
     <section className="txDetailSection txEvidenceSection">
       <div className="txSectionHeading">
@@ -204,6 +207,7 @@ function RelationEvidence({ headingRef, detail, locale, copy, events, unavailabl
         <span>{getRelationLabel(relation.relation_type, locale)}<ChevronRight size={13} strokeWidth={1.8} /></span>
         <strong>{localize(to, "name", locale)}</strong>
       </div>
+      {pendingSemanticReview && <p className="txReviewReason" role="status"><strong>{copy.semanticReviewPending}：</strong> {copy.semanticReviewNotice} {sourceLevel}</p>}
       {relation.attributes?.review_reason && <p className="txReviewReason"><strong>{copy.reviewReason}</strong> {locale === "en" ? relation.attributes.review_reason_en || relation.attributes.review_reason : relation.attributes.review_reason}</p>}
       {relation.lifecycle_status && relation.lifecycle_status !== "active" && <p className="txHistoricalStatus" role="status">{text[relation.lifecycle_status] || relation.lifecycle_status} · {text.archived}
         {relation.withdrawal_reason && <span> {locale === "en" ? relation.withdrawal_reason_en || relation.withdrawal_reason : relation.withdrawal_reason}</span>}
@@ -305,7 +309,7 @@ function RelatedCompanies({ items, showAll, onToggle, onSelect, locale, copy }) 
             <button type="button" key={issuer.id} onClick={() => onSelect(issuer.id)}>
               <Building2 size={15} strokeWidth={1.8} />
               <span><strong>{localize(issuer, "name", locale)}</strong><small>{securities.map(formatSecurityCode).filter(Boolean).join(" · ")}</small></span>
-              <em>{mapping?.relation_type === "issuer_participates_in_segment" ? copy.evidenceFallback : copy.typedMapping}</em>
+              <em>{isSemanticReviewPending(mapping) ? copy.semanticReviewPending : mapping?.relation_type === "issuer_participates_in_segment" ? copy.evidenceFallback : copy.typedMapping}</em>
             </button>
           ))}
         </div>
@@ -318,7 +322,10 @@ function RelatedCompanies({ items, showAll, onToggle, onSelect, locale, copy }) 
 function EvidenceBadge({ relation, copy }) {
   let label = copy.industryReference;
   let className = "isReference";
-  if (relation.relation_type === "issuer_participates_in_segment") {
+  if (isSemanticReviewPending(relation)) {
+    label = copy.semanticReviewPending;
+    className = "isPending";
+  } else if (relation.relation_type === "issuer_participates_in_segment") {
     label = copy.evidenceFallback;
     className = "isFallback";
   } else if (relation.evidence_level === "L1") {
