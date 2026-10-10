@@ -35,26 +35,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
-
-      - name: Test weekly relationship pipeline
-        run: npm test
-
-      - name: Validate public transmission snapshot
-        run: npm run validate:snapshot
-
-      - name: Enforce relationship depth, listing coverage, and weekly freshness
-        run: npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8
-
-      - name: Block new usage-only physical integration mappings
-        run: npm run audit:semantic-precision
-
-      - name: Check graph search performance
-        run: npm run check:performance
-
       - name: Install Chromium for UI smoke test
         run: npx playwright install --with-deps --only-shell chromium
+
+      - name: Validate graph, UI, performance, and Sites package
+        run: npm run build:sites
 
       - name: Build GitHub Pages artifact
         run: npm run build

@@ -10,8 +10,7 @@ AI-ChainGraph uses a reviewed weekly publication cycle rather than overwriting f
 - Inspect official disclosures published since the previous source cutoff.
 - Prioritize companies that still have only broad segment mappings and segments with fewer than five issuer mappings.
 - Add approved source documents, concise claims, and typed issuer relationships as a `*.batch.json` file under `data/weekly-candidates/`.
-- Run `npm run update:weekly`, `npm run validate:snapshot`, `npm run audit:relationships`, and `npm run build`.
-- Run the search-performance regression check before publishing; CI, Pages, and Sites also enforce it.
+- Run `npm run update:weekly` and `npm run build:sites`; the release build includes tests, snapshot and relationship audits, semantic and search-performance checks, browser regression tests, and Sites package validation.
 - Review usage-only `issuer_integrates` relations to physical products or materials; the semantic audit blocks new unreviewed candidates and keeps the existing backlog visible rather than treating it as approved evidence.
 - Commit and push only when validation succeeds, then publish the same commit to the existing OpenAI Sites project.
 - Monday 10:30 Asia/Shanghai: GitHub Actions checks that the weekly refresh is no more than eight days old and that at least 90% of issuers have a specific relationship.
@@ -32,7 +31,7 @@ npm run validate:snapshot
 npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8
 npm run audit:semantic-precision
 npm run check:performance
-npm run build
+npm run build:sites
 ```
 
 `npm run update:weekly` derives the A-share reconciliation date from approved, continuous manifests; it cannot be advanced with a command-line flag. `public/snapshots/update-status.json` records the latest check, next scheduled check, reconciliation counts, source cutoff, imported batches, promotions, and current relationship-quality metrics. The A-share field is deliberately scoped: US-listed issuer reconciliation uses separate SEC and exchange-source review and is not implied by this date.
