@@ -110,3 +110,21 @@ test("a corrected relationship links its archived claim to the replacement evide
   await expect(panel.locator(".txEvidenceList")).toContainText("LAND大模型一体机");
   await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
 });
+
+test("a corrected relationship can move from equipment to battery-cell evidence", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?entity=issuer%3Acn-sz-002245&relation=relation%3Aissuer_segment_fallback%3A037ea00a618bb820035503c6");
+
+  const panel = page.locator(".txDetailPanel");
+  await expect(panel.getByRole("status")).toContainText("已被替代");
+  await expect(panel.getByRole("status")).toContainText("不能证明公司集成UPS或备用电源设备");
+  await panel.getByRole("button", { name: "查看替代关系" }).click();
+  await expect(panel.locator(".txSelectedRelation")).toContainText("储能电芯与电池包");
+  await expect(panel.locator(".txSelectedRelation")).toContainText("研发");
+  await expect(panel.locator(".txEvidenceList")).toContainText("在研");
+  await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", /^https:\/\//);
+});

@@ -1,0 +1,62 @@
+{
+  "batch_id": "weekly-2026-10-10-azure-bbu-cell-correction",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T11:32:12.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:azure-bbu-cell-development-20261010",
+      "source_document_id": "source:91055a0609983386423dbd10",
+      "excerpt": "2025年年报将21700-4.0Ah及21700-2.6Ah全极耳超高功率BBU用锂离子电池产业化项目列为“在研”，用于满足数据中心服务器备用电源市场需求；这证明公司研发BBU电芯，不代表已生产或集成整套BBU设备。",
+      "excerpt_en": "The 2025 annual report lists two high-power 21700 lithium-ion battery-cell projects for BBU backup power as in research, supporting development of BBU cells but not production or integration of complete BBU equipment.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T11:32:12.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:azure-bbu-cell-development-20261010",
+      "relation_type": "issuer_develops",
+      "from_id": "issuer:cn-sz-002245",
+      "to_id": "component:energy_storage_batteries",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:azure-bbu-cell-development-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:037ea00a618bb820035503c6",
+      "attributes": {
+        "legacy_chain_id": "data_center_power_cooling",
+        "legacy_segment_id": "energy_storage_batteries"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:037ea00a618bb820035503c6",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-002245",
+        "to_id": "equipment:backup_power",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:49d4d14dfa8fa406a11853cb"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "data_center_power_cooling",
+          "legacy_segment_id": "backup_power",
+          "candidate_element_id": "equipment:backup_power",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:backup_power",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:91055a0609983386423dbd10",
+      "reason": "年报披露公司BBU专用电芯项目仍在研，原声明仅描述锂电池下游应用，不能证明公司集成UPS或备用电源设备；改为研发储能电芯与电池包节点，不暗示已量产BBU设备。",
+      "reason_en": "The report places BBU battery-cell projects in research. Downstream use of lithium cells does not show integration of UPS or backup-power equipment; the mapping is corrected to battery-cell development."
+    }
+  ]
+}
