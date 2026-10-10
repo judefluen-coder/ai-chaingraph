@@ -180,6 +180,23 @@ test("reviewed broad mapping explains why the narrower claim was rejected", asyn
   await expect(panel.locator(".txEvidenceSection .txEvidenceBadge")).toContainText("宽口径映射");
 });
 
+test("robot-skin foam research stays broad and exposes the corrected claim", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?entity=issuer%3Acn-sz-300980&relation=relation%3Aissuer_segment_fallback%3A070a7470a5abf071a5270943");
+
+  const panel = page.locator(".txDetailPanel");
+  await expect(panel.getByRole("status")).toContainText("已被替代");
+  await expect(panel.getByRole("status")).toContainText("研发项目的拟应用方向");
+  await panel.getByRole("button", { name: "查看替代关系" }).click();
+  await expect(panel.locator(".txEvidenceSection .txEvidenceBadge")).toContainText("宽口径映射");
+  await expect(panel.locator(".txReviewReason")).toContainText("未证明灵巧手或电子皮肤部件已量产、交付");
+  await expect(panel.locator(".txEvidenceList")).toContainText("已完成A轮阶段");
+});
+
 test("mobile evidence source remains readable and touch-sized", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => {

@@ -1,0 +1,113 @@
+{
+  "batch_id": "weekly-2026-10-10-separator-robot-foam-review",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T12:34:19.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:changhai-composite-battery-separator-20261010",
+      "source_document_id": "source:2c3215aeae9362b12d270599",
+      "excerpt": "2025年年报披露，长海股份研发、生产和销售玻璃纤维及复合材料制品；其主要产品包括复合隔板，该产品应用于蓄电池隔板。",
+      "excerpt_en": "The 2025 annual report says Changhai develops, manufactures, and sells fiberglass and composite products, including composite separators used in storage-battery separators.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:34:19.000Z"
+    },
+    {
+      "id": "claim:xiangyuan-robot-skin-foam-development-20261010",
+      "source_document_id": "source:2624e979f276a0bab6450b5d",
+      "excerpt": "2025年年报研发项目表披露，祥源新材正在开发可用于人形机器人皮肤的回弹泡棉，项目已完成A轮阶段及内部物料选型、配方和过程开发；未披露机器人皮肤产品量产或交付。",
+      "excerpt_en": "The 2025 annual report lists a resilient foam under development for possible humanoid-robot skin use, with an initial development stage and internal formulation completed; it does not report mass production or delivery for robot skin.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:34:19.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:changhai-composite-battery-separator-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-300196",
+      "to_id": "material:battery_storage_materials",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:changhai-composite-battery-separator-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:04669d9e1f03845ee559c0c9",
+      "attributes": {
+        "legacy_chain_id": "data_center_power_cooling",
+        "legacy_segment_id": "battery_storage_materials"
+      }
+    },
+    {
+      "id": "relation:issuer_segment_reviewed:xiangyuan-robot-skin-foam-20261010",
+      "relation_type": "issuer_participates_in_segment",
+      "from_id": "issuer:cn-sz-300980",
+      "to_id": "segment:robotics_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:xiangyuan-robot-skin-foam-development-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:070a7470a5abf071a5270943",
+      "attributes": {
+        "mapping_precision": "reviewed_segment_only",
+        "legacy_chain_id": "ai_devices_robotics",
+        "legacy_segment_id": "robotics_components",
+        "promotion_locked": true,
+        "review_reason": "年报仅证明公司研发可用于机器人皮肤的泡棉材料，未证明灵巧手或电子皮肤部件已量产、交付，也没有匹配的机器人泡棉材料类型化节点。"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:04669d9e1f03845ee559c0c9",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-300196",
+        "to_id": "material:battery_storage_materials",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:fd9b942f29853cc9bac82a16"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "data_center_power_cooling",
+          "legacy_segment_id": "battery_storage_materials",
+          "candidate_element_id": "material:battery_storage_materials",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:battery_storage_materials",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:2c3215aeae9362b12d270599",
+      "reason": "年报说明公司生产玻纤复合隔板，蓄电池隔板是该产品用途；不能据此判定公司集成电池材料，动作更正为生产。",
+      "reason_en": "The report supports manufacturing fiberglass composite separators used in storage batteries, not integrating battery materials."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:070a7470a5abf071a5270943",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-300980",
+        "to_id": "component:robotics_components",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:270ddf544a427006a77c3cc0"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "robotics_components",
+          "candidate_element_id": "component:robotics_components",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:robotics_components",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:2624e979f276a0bab6450b5d",
+      "reason": "原声明把研发项目的拟应用方向写成泡棉已用于灵巧手、手臂和电子皮肤，并将材料研发误映射为机器人核心部件集成；年报仅支持尚在开发的机器人皮肤泡棉，故降为宽口径并锁定自动提升。",
+      "reason_en": "The old claim turned a proposed robot-skin foam application into established use and integration of core robotics components. The report supports development only, so the mapping is narrowed to a locked broad segment relation."
+    }
+  ]
+}

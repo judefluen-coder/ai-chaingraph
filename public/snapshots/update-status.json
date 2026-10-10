@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-10-10T12:30:15.232Z",
-  "changed_at": "2026-10-10T12:30:15.232Z",
-  "next_scheduled_at": "2026-10-17T12:30:15.232Z",
+  "checked_at": "2026-10-10T12:34:44.135Z",
+  "changed_at": "2026-10-10T12:34:44.135Z",
+  "next_scheduled_at": "2026-10-17T12:34:44.135Z",
   "source_cutoff_date": "2026-10-09",
   "cadence": "weekly",
   "a_share_listing_reconciled_through": "2026-10-10",
@@ -26,8 +26,8 @@
     "issuers": 0,
     "securities": 0,
     "sources": 0,
-    "claims": 1,
-    "relations": 1,
+    "claims": 2,
+    "relations": 2,
     "withdrawn_relations": 0
   },
   "promotions": {
@@ -43,8 +43,8 @@
       "issuers": 0,
       "securities": 0,
       "sources": 0,
-      "claims": 1,
-      "relations": 1,
+      "claims": 2,
+      "relations": 2,
       "withdrawn_relations": 0
     },
     "promotions": {
@@ -58,13 +58,13 @@
     "issuers_total": 4551,
     "issuers_mapped": 4551,
     "issuers_unmapped": 0,
-    "issuers_with_specific_relations": 4248,
-    "issuers_generic_only": 303,
-    "specific_issuer_rate": 0.9334,
+    "issuers_with_specific_relations": 4247,
+    "issuers_generic_only": 304,
+    "specific_issuer_rate": 0.9332,
     "issuer_relations_total": 6623,
-    "specific_relations": 5999,
-    "generic_relations": 624,
-    "specific_relation_rate": 0.9058,
+    "specific_relations": 5998,
+    "generic_relations": 625,
+    "specific_relation_rate": 0.9056,
     "evidence_levels": {
       "L1": 6579,
       "L2": 44
