@@ -47,7 +47,7 @@ const previousRefresh = graph.meta.refresh || {};
 const appliedBatchIds = new Set(graph.meta.refresh?.applied_batch_ids || []);
 const approvedBatches = await readApprovedCandidateBatches(projectRoot);
 const batches = approvedBatches.filter((batch) => !appliedBatchIds.has(batch.batch_id));
-const imported = { batches: 0, entities: 0, issuers: 0, securities: 0, sources: 0, claims: 0, relations: 0 };
+const imported = { batches: 0, entities: 0, issuers: 0, securities: 0, sources: 0, claims: 0, relations: 0, withdrawn_relations: 0 };
 
 for (const batch of batches) {
   const result = applyCandidateBatch(graph, batch);
@@ -58,9 +58,14 @@ for (const batch of batches) {
   imported.sources += result.sourcesAdded;
   imported.claims += result.claimsAdded;
   imported.relations += result.relationsAdded;
+  imported.withdrawn_relations += result.relationsWithdrawn;
   appliedBatchIds.add(batch.batch_id);
 }
-for (const batch of approvedBatches) assertCandidateBatchApplied(graph, batch);
+const archivedRelationIds = new Set(approvedBatches.flatMap((batch) => [
+  ...(batch.withdrawn_relations || []).map((item) => item.relation.id),
+  ...(batch.relations || []).map((item) => item.replaces_relation_id).filter(Boolean),
+]));
+for (const batch of approvedBatches) assertCandidateBatchApplied(graph, batch, archivedRelationIds);
 
 graph.meta.refresh = {
   ...previousRefresh,
@@ -78,6 +83,7 @@ const changed = imported.entities
   + imported.sources
   + imported.claims
   + imported.relations
+  + imported.withdrawn_relations
   + promotions.promotedRelations
   + promotions.reclassifiedRelations
   + promotions.revertedRelations > 0;

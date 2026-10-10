@@ -20,6 +20,8 @@ L1 official filings and company disclosures are preferred. L2 industry sources a
 
 Every typed relationship must state what the issuer does: produces, develops, operates, integrates, provides, or distributes. A relationship remains `issuer_participates_in_segment` when the evidence does not support a specific action.
 
+If a prior typed mapping overstates an official disclosure, withdraw it in an approved batch with the original relation, review source, and reason. The current graph drops that edge while release history preserves the correction; a lower specific-relation count is preferable to a false claim.
+
 ## Commands
 
 ```bash

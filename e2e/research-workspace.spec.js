@@ -42,3 +42,17 @@ test("mobile directory, search, and detail remain reachable", async ({ page }) =
   await directory.getByRole("button", { name: "查看图谱" }).click();
   await expect(directory).toBeHidden();
 });
+
+test("withdrawn mapping remains inspectable but clearly marked as invalid", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?entity=issuer%3Acn-sh-688519&relation=relation%3Aissuer_element%3A5ed7eaa20385b11e10b938c5");
+
+  const panel = page.locator(".txDetailPanel");
+  await expect(panel.getByRole("heading", { name: "南亚新材" })).toBeVisible();
+  await expect(panel.getByRole("status")).toContainText("已撤回");
+  await expect(panel.getByRole("status")).toContainText("不能据此认定公司生产AI PC或智能手机");
+});

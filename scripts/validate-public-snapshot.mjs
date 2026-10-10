@@ -101,9 +101,14 @@ const listingReconciliation = validateAshareReconciliations(
 );
 invariant(graph.meta.refresh.a_share_listing_reconciled_through === listingReconciliation.reconciled_through, "The stored A-share reconciliation date does not match the approved manifests.");
 invariant(JSON.stringify(graph.meta.refresh.a_share_listing_reconciliation) === JSON.stringify(listingReconciliation), "The stored A-share reconciliation summary does not match the approved manifests.");
-for (const batch of await readApprovedCandidateBatches(projectRoot)) {
+const approvedBatches = await readApprovedCandidateBatches(projectRoot);
+const archivedRelationIds = new Set(approvedBatches.flatMap((batch) => [
+  ...(batch.withdrawn_relations || []).map((item) => item.relation.id),
+  ...(batch.relations || []).map((item) => item.replaces_relation_id).filter(Boolean),
+]));
+for (const batch of approvedBatches) {
   invariant(graph.meta.refresh.applied_batch_ids.includes(batch.batch_id), `${batch.filename} has not been applied to the public snapshot.`);
-  assertCandidateBatchApplied(graph, batch);
+  assertCandidateBatchApplied(graph, batch, archivedRelationIds);
 }
 invariant(JSON.stringify(graph.meta.quality) === JSON.stringify(relationshipQuality), "meta.quality does not match the snapshot.");
 

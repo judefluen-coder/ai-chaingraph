@@ -205,6 +205,7 @@ function RelationEvidence({ headingRef, detail, locale, copy, events, unavailabl
         <strong>{localize(to, "name", locale)}</strong>
       </div>
       {relation.lifecycle_status && relation.lifecycle_status !== "active" && <p className="txHistoricalStatus" role="status">{text[relation.lifecycle_status] || relation.lifecycle_status} · {text.archived}
+        {relation.withdrawal_reason && <span> {locale === "en" ? relation.withdrawal_reason_en || relation.withdrawal_reason : relation.withdrawal_reason}</span>}
         {relation.replacement_relation_id && <button type="button" onClick={() => onSelectRelation(relation.replacement_relation_id)}>{text.replacement}</button>}
       </p>}
       {summary && <p className="txRelationSummary">{summary}</p>}
