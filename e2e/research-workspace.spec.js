@@ -6,7 +6,7 @@ test("desktop search opens a source-backed relation", async ({ page }) => {
     localStorage.setItem("ai-chaingraph-disclaimer", "ack");
     localStorage.setItem("ai-chaingraph-locale", "zh");
   });
-  await page.goto("/");
+  await page.goto("./");
 
   await expect(page.locator(".txScopeInspector")).toBeVisible();
   await page.getByRole("combobox", { name: "搜索图谱" }).fill("鸿富诚");
@@ -20,7 +20,7 @@ test("desktop search opens a source-backed relation", async ({ page }) => {
 test("mobile directory, search, and detail remain reachable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => localStorage.setItem("ai-chaingraph-locale", "zh"));
-  await page.goto("/");
+  await page.goto("./");
 
   await page.getByRole("button", { name: "进入图谱" }).click();
   const directory = page.locator(".txScopeInspector");

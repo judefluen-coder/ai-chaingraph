@@ -50,13 +50,15 @@ jobs:
       - name: Install Chromium for UI smoke test
         run: npx playwright install --with-deps --only-shell chromium
 
-      - name: Test desktop and mobile research paths
-        run: npm run test:e2e
-
       - name: Build GitHub Pages artifact
         run: npm run build
         env:
           VITE_BASE_PATH: /ai-chaingraph/
+
+      - name: Test built GitHub Pages subpath
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BASE_PATH: /ai-chaingraph/
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
