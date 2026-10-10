@@ -13,6 +13,7 @@ AI-ChainGraph uses a reviewed weekly publication cycle rather than overwriting f
 - Run `npm run update:weekly` and `npm run build:sites`; the release build includes tests, snapshot and relationship audits, semantic and search-performance checks, browser regression tests, and Sites package validation.
 - Review usage-only `issuer_integrates` relations to physical products or materials; the semantic audit blocks new unreviewed candidates and keeps the existing backlog visible rather than treating it as approved evidence.
 - Commit and push only when validation succeeds, then publish the same commit to the existing OpenAI Sites project.
+- After Pages deploys, rebuild from a clean `main` and run `npm run check:sites-release-ready`; after Sites deploys, run `npm run verify:sites-deployed`. Both commands compare the public commit fingerprint and exact graph/status hashes, not just update dates.
 - Monday 10:30 Asia/Shanghai: GitHub Actions checks that the weekly refresh is no more than eight days old and that at least 90% of issuers have a specific relationship.
 
 ## Evidence policy
