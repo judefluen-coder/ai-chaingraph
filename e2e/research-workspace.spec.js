@@ -41,6 +41,27 @@ test("closed search results cannot be activated by Enter", async ({ page }) => {
   await expect(page.locator(".txDetailPanel").getByRole("heading", { name: "鸿富诚" })).toBeVisible();
 });
 
+test("resizing the workspace preserves a manually chosen graph zoom", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./");
+
+  const viewport = page.locator(".react-flow__viewport");
+  await expect(viewport).toBeVisible();
+  await page.locator(".react-flow__controls-zoomin").click();
+  await page.locator(".react-flow__controls-zoomin").click();
+  await page.waitForTimeout(350);
+  const zoomBefore = await viewport.evaluate((element) => Number(element.style.transform.match(/scale\(([^)]+)\)/)?.[1]));
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.waitForTimeout(350);
+  const zoomAfter = await viewport.evaluate((element) => Number(element.style.transform.match(/scale\(([^)]+)\)/)?.[1]));
+  expect(zoomAfter).toBeCloseTo(zoomBefore, 2);
+});
+
 test("mobile directory, search, and detail remain reachable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => localStorage.setItem("ai-chaingraph-locale", "zh"));

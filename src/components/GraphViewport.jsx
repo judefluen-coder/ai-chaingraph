@@ -21,7 +21,6 @@ export function GraphViewport({
   onSelectRelation,
   copy,
 }) {
-  const canvasRef = useRef(null);
   const flowInstanceRef = useRef(null);
   const fitFrameRef = useRef(null);
   const isVertical = flow.nodes.some((node) => node.data?.layoutDirection === "TB");
@@ -47,15 +46,10 @@ export function GraphViewport({
   }, [fitGraph, flow.nodes, flow.meta?.mode]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return undefined;
-    const observer = new ResizeObserver(fitGraph);
-    observer.observe(canvas);
     return () => {
-      observer.disconnect();
       if (fitFrameRef.current) cancelAnimationFrame(fitFrameRef.current);
     };
-  }, [fitGraph]);
+  }, []);
 
   return (
     <section className="txGraphViewport">
@@ -90,7 +84,7 @@ export function GraphViewport({
 
       <GraphStats meta={flow.meta} copy={copy} />
 
-      <div className="txGraphCanvas" ref={canvasRef}>
+      <div className="txGraphCanvas">
         {flow.nodes.length === 0 && (
           <div className="txGraphEmpty">
             <Route size={24} strokeWidth={1.6} />
