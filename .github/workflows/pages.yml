@@ -35,8 +35,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Test weekly relationship pipeline
+        run: npm test
+
       - name: Validate public transmission snapshot
         run: npm run validate:snapshot
+
+      - name: Enforce relationship depth, listing coverage, and weekly freshness
+        run: npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8
 
       - name: Build GitHub Pages artifact
         run: npm run build

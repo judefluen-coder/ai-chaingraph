@@ -1,11 +1,16 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { historyCopy } from "../lib/releaseHistory.js";
+import { getCopy } from "../lib/i18n.js";
+import { getRefreshStatus } from "../lib/refreshStatus.js";
 import { HistoryDetails } from "./HistoryDetails.jsx";
 
 export function ReleaseDialog({ graph, locale, onClose, onSelectRelation, onRetry }) {
   const ref = useRef(null);
   const text = historyCopy(locale);
+  const copy = getCopy(locale);
+  const refresh = graph.meta.refresh;
+  const refreshStatus = getRefreshStatus(refresh);
   useEffect(() => {
     const dialog = ref.current;
     dialog.showModal();
@@ -18,7 +23,14 @@ export function ReleaseDialog({ graph, locale, onClose, onSelectRelation, onRetr
   }}>
     <header><div><h2 id="release-title">{text.updates}</h2><span>{graph.meta.data_version}</span></div><button type="button" className="txIconButton" onClick={onClose} aria-label={text.close} title={text.close}><X size={18} /></button></header>
     <div className="txReleaseBody">
-      <dl>{[[text.checked, graph.meta.refresh?.last_checked_at], [text.changed, graph.meta.refresh?.last_changed_at]].map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value?.slice(0, 10) || "—"}</dd></div>)}</dl>
+      {refreshStatus.state !== "current" && <p className="txReleaseWarning" role="status">{refreshStatus.state === "stale" ? copy.reviewOverdueWarning : copy.reviewUnknownWarning}</p>}
+      <dl>{[
+        [text.checked, refresh?.last_checked_at],
+        [copy.sourceCutoff, refresh?.source_cutoff_date],
+        [copy.listingReconciledThrough, refresh?.a_share_listing_reconciled_through],
+        [text.changed, refresh?.last_changed_at],
+        [text.next, refresh?.next_scheduled_at],
+      ].map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value?.slice(0, 10) || "—"}</dd></div>)}</dl>
       <details className="txHistoryDetails"><summary>{text.releases}</summary>
         <p>{text.provenance}</p>
         {graph.releaseHistoryError ? <p>{text.failed} <button type="button" onClick={onRetry}>{text.retry}</button></p> : !graph.release_history?.batches?.length ? <p>{text.empty}</p> :

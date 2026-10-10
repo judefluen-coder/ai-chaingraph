@@ -48,6 +48,7 @@ button.txSidebarDataState:hover { background: var(--tx-surface-strong); }
 .txReleaseDialog h2 { margin: 0 0 6px; font-size: 18px; }
 .txReleaseDialog header span { font-size: 12px; color: var(--tx-muted); }
 .txReleaseBody { padding: 4px 24px 24px; }
+.txReleaseWarning { border: 1px solid #ead39c; border-radius: var(--tx-radius-sm); color: #805011; background: #fff8e8; padding: 10px 12px; font-size: 12px; line-height: 1.5; }
 .txReleaseBody dl > div { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; font-size: 13px; }
 .txReleaseBody dd { margin: 0; }
 
@@ -635,6 +636,16 @@ button:disabled {
   padding: 2px 6px;
   font-size: 9px;
   font-style: normal;
+  font-weight: 650;
+}
+
+.txRefreshWarning {
+  border: 1px solid #ead39c;
+  border-radius: var(--tx-radius-xs);
+  color: #805011;
+  background: #fff8e8;
+  padding: 3px 6px;
+  font-size: 10px;
   font-weight: 650;
 }
 
@@ -2706,6 +2717,17 @@ textarea:focus-visible {
 .txSidebarDataState small {
   margin-left: auto;
   color: var(--tx-muted-soft);
+}
+
+.txSidebarDataState.isStale {
+  border-radius: var(--tx-radius-sm);
+  color: #805011;
+  background: #fff8e8;
+  padding: 5px;
+}
+
+.txSidebarDataState.isStale small {
+  color: #805011;
 }
 
 .txWorkspace {

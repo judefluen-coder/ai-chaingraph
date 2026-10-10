@@ -11,6 +11,8 @@ export function GraphViewport({
   subtitle,
   breadcrumbs,
   statusLabel,
+  refreshStatus,
+  onOpenUpdates,
   queryControls,
   activeRelationId,
   onSelect,
@@ -58,6 +60,11 @@ export function GraphViewport({
           <div className="txGraphContext">
             <span>{copy.graphEyebrow}</span>
             {statusLabel && <em>{statusLabel}</em>}
+            {refreshStatus && refreshStatus.state !== "current" && (
+              <button type="button" className="txRefreshWarning" onClick={onOpenUpdates}>
+                {refreshStatus?.state === "stale" ? copy.reviewOverdue : copy.reviewUnknown} · {refreshStatus?.checkedDate || "-"}
+              </button>
+            )}
           </div>
           {breadcrumbs?.length > 0 && (
             <div className="txBreadcrumbs" aria-label={copy.industryPosition}>
@@ -184,12 +191,12 @@ function GraphStats({ meta, copy }) {
   } else if (meta.mode === "path") {
     items = meta.found ? [[copy.pathHops, meta.hops], [copy.crossChainHops, meta.cross_chain_hops]] : [];
   } else {
-    items = [[copy.directNodes, meta.direct_element_count], [copy.indirectNodes, meta.indirect_element_count], [copy.chains, meta.chain_count], [copy.companies, meta.issuer_count]];
+    items = [[copy.directNodes, meta.direct_element_count], [copy.indirectNodes, meta.indirect_element_count], [copy.chains, meta.chain_count], [copy.scopeCompanies, meta.issuer_count]];
   }
   if (items.length === 0) return null;
   return (
     <div className="txGraphStats">
-      {items.map(([label, value]) => <span key={label}><strong>{Number(value || 0).toLocaleString()}</strong>{label}</span>)}
+      {items.map(([label, value]) => <span key={label} title={label === copy.scopeCompanies ? copy.scopeCompaniesHelp : undefined}><strong>{Number(value || 0).toLocaleString()}</strong>{label}</span>)}
       {meta.hidden_node_count > 0 && <em>{copy.visibleLimit} · +{meta.hidden_node_count}</em>}
     </div>
   );

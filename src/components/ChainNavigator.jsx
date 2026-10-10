@@ -25,6 +25,7 @@ export function ChainNavigator({
   dataVersion,
   dataStatus,
   dataRefresh,
+  refreshStatus,
   relationshipQuality,
   onOpenUpdates,
   onReset,
@@ -38,8 +39,10 @@ export function ChainNavigator({
 }) {
   const [openDomains, setOpenDomains] = useState(() => new Set(navigation.map(({ domain }) => domain.id)));
   const [watchlistOpen, setWatchlistOpen] = useState(true);
-  const dataStateLabel = dataStatus === "ready" ? copy.dataReady : copy.dataBuilding;
-  const checkedDate = dataRefresh?.last_checked_at?.slice(0, 10) || "-";
+  const dataStateLabel = dataStatus !== "ready" ? copy.dataBuilding
+    : refreshStatus.state === "stale" ? copy.reviewOverdue
+      : refreshStatus.state === "unknown" ? copy.reviewUnknown : copy.dataReady;
+  const checkedDate = refreshStatus.checkedDate || "-";
   const specificRate = relationshipQuality
     ? `${Math.round(relationshipQuality.specific_issuer_rate * 100)}%`
     : "-";
@@ -159,13 +162,13 @@ export function ChainNavigator({
             <a className="txUtilityButton" href="https://github.com/judefluen-coder/ai-chaingraph" target="_blank" rel="noreferrer" aria-label={copy.github} title={copy.github}><Github size={16} strokeWidth={1.8} /></a>
           </div>
           <button type="button" onClick={onOpenUpdates}
-            className="txSidebarDataState"
-            aria-label={locale === "en" ? "Data version and updates" : "数据版本与更新"}
-            title={`${dataStateLabel} · ${copy.weeklyRefresh} · ${copy.checkedOn} ${checkedDate} · ${copy.specificRelationshipRate} ${specificRate}`}
+            className={`txSidebarDataState ${refreshStatus.state !== "current" ? "isStale" : ""}`}
+            aria-label={`${dataStateLabel} · ${copy.checkedOn} ${checkedDate} · ${copy.specificRelationshipRate} ${specificRate}`}
+            title={`${dataVersion} · ${dataStateLabel} · ${copy.checkedOn} ${checkedDate} · ${copy.sourceCutoff} ${dataRefresh?.source_cutoff_date || "-"} · ${copy.specificRelationshipRate} ${specificRate}`}
           >
             <Database size={14} strokeWidth={1.8} />
-            <span>{dataStateLabel} · {copy.weeklyRefresh}</span>
-            <small>{dataVersion} · {specificRate}</small>
+            <span>{dataStateLabel}</span>
+            <small>{checkedDate}</small>
           </button>
         </footer>
       </aside>

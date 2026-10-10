@@ -31,6 +31,7 @@ import {
   traverseTransmissionGraph,
 } from "./lib/transmissionGraph.js";
 import { getCopy, translations } from "./lib/i18n.js";
+import { getRefreshStatus } from "./lib/refreshStatus.js";
 import { parseWorkspaceSearch, serializeWorkspaceSearch } from "./lib/workspaceState.js";
 import { createWatchlistRecord, downloadWatchlist, readWatchlist, writeWatchlist } from "./lib/watchlist.js";
 import "./transmission.css";
@@ -69,6 +70,7 @@ function App() {
   const [watchlistRecords, setWatchlistRecords] = useState(readWatchlist);
   const [notice, setNotice] = useState("");
   const [releaseOpen, setReleaseOpen] = useState(false);
+  const [now, setNow] = useState(Date.now);
   const isNarrow = useMediaQuery("(max-width: 760px)");
   const graph = graphState.data;
   const copy = getCopy(locale);
@@ -89,6 +91,11 @@ function App() {
     const timer = window.setTimeout(() => setNotice(""), 2800);
     return () => window.clearTimeout(timer);
   }, [notice]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -383,6 +390,7 @@ function App() {
 
   const pathStartLabel = pathStartId ? getEntityLabel(index, pathStartId, locale) : "";
   const pathTargetLabel = pathTargetId ? getEntityLabel(index, pathTargetId, locale) : "";
+  const refreshStatus = getRefreshStatus(graph.meta.refresh, now);
   const queryControls = {
     showDirection: Boolean(activeId) && !shockOverlay,
     showDepth: Boolean(activeId) && !pathTargetId && !shockOverlay,
@@ -435,6 +443,7 @@ function App() {
         dataVersion={graph.meta.data_version}
         dataStatus={graph.meta.status}
         dataRefresh={graph.meta.refresh}
+        refreshStatus={refreshStatus}
         relationshipQuality={graph.meta.quality}
         onOpenUpdates={() => { setSidebarOpen(false); setReleaseOpen(true); }}
         onReset={resetWorkspace}
@@ -453,6 +462,8 @@ function App() {
           subtitle={presentation.subtitle}
           breadcrumbs={presentation.breadcrumbs}
           statusLabel={graph.meta.status === "building" ? copy.coverageBuilding : null}
+          refreshStatus={refreshStatus}
+          onOpenUpdates={() => setReleaseOpen(true)}
           queryControls={queryControls}
           activeRelationId={activeRelationId}
           onSelect={selectEntity}
