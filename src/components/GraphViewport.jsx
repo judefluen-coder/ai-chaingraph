@@ -19,6 +19,7 @@ export function GraphViewport({
   activeRelationId,
   onSelect,
   onSelectRelation,
+  directoryOpen,
   copy,
 }) {
   const flowInstanceRef = useRef(null);
@@ -72,7 +73,7 @@ export function GraphViewport({
   }, []);
 
   return (
-    <section className="txGraphViewport">
+    <section className="txGraphViewport" inert={directoryOpen ? "" : undefined}>
       <header className="txGraphHeader">
         <div className="txGraphHeading">
           <div className="txGraphContext">

@@ -494,6 +494,7 @@ function App() {
           activeRelationId={activeRelationId}
           onSelect={selectEntity}
           onSelectRelation={selectRelation}
+          directoryOpen={isCompactDirectory && mobileDirectoryOpen && !detail}
           copy={copy}
         />
         {detail ? (
@@ -538,6 +539,8 @@ function App() {
             onSelectEntity={selectEntity}
             mobileOpen={mobileDirectoryOpen}
             onCloseMobile={() => setMobileDirectoryOpen(false)}
+            compact={isCompactDirectory}
+            interactive={acknowledged}
           />
         )}
       </main>

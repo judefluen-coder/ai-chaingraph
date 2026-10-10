@@ -125,6 +125,9 @@ test("mobile directory, search, and detail remain reachable", async ({ page }) =
   await page.getByRole("button", { name: "进入图谱" }).click();
   const directory = page.locator(".txScopeInspector");
   await expect(directory).toBeVisible();
+  await expect(directory.getByRole("button", { name: "查看图谱" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("combobox", { name: "搜索图谱" })).toBeFocused();
   const freshness = directory.locator(".txScopeFreshness");
   await expect(freshness.locator("small").first()).toHaveText("最近核验");
   await expect(freshness.locator("strong").first()).toHaveText(/\d{4}-\d{2}-\d{2}/);
@@ -167,8 +170,20 @@ test("tablet graph can open the otherwise hidden industry directory", async ({ p
 
   const directory = page.locator(".txScopeInspector");
   await expect(directory).toBeHidden();
-  await page.getByRole("button", { name: "浏览产业目录" }).click();
+  const opener = page.getByRole("button", { name: "浏览产业目录" });
+  await opener.click();
   await expect(directory).toBeVisible();
+  await expect(page.locator(".txGraphViewport")).toHaveAttribute("inert", "");
+  await expect(directory.getByRole("button", { name: "查看图谱" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect.poll(() => page.evaluate(() => document.activeElement?.closest(".txGraphViewport") === null)).toBe(true);
+  await directory.getByRole("button", { name: "查看图谱" }).focus();
+  await page.keyboard.press("Escape");
+  await expect(directory).toBeHidden();
+  await expect(page.locator(".txGraphViewport")).not.toHaveAttribute("inert");
+  await expect(opener).toBeFocused();
+
+  await opener.click();
   await directory.getByRole("button", { name: "AI芯片与IP" }).click();
   await expect(directory.getByRole("heading", { name: "产业环节" })).toBeVisible();
   await directory.getByRole("button", { name: "查看图谱" }).click();
