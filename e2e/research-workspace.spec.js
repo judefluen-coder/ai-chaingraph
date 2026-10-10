@@ -242,10 +242,38 @@ test("mobile evidence source remains readable and touch-sized", async ({ page })
 
   const panel = page.locator(".txDetailPanel");
   await expect(panel.locator(".txReviewReason")).toContainText("未证明公司生产传感器");
+  const freshness = panel.locator(".txDetailFreshness");
+  await expect(freshness).toContainText(/最近核验\s+\d{4}-\d{2}-\d{2}/);
+  await expect(freshness).toContainText(/已收录来源截止\s+\d{4}-\d{2}-\d{2}/);
+  expect((await freshness.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  await freshness.click();
+  await expect(page.getByRole("dialog", { name: "数据版本与更新" })).toBeVisible();
+  await page.keyboard.press("Escape");
   const sourceLink = panel.getByRole("link", { name: /打开原始来源/ });
   await sourceLink.scrollIntoViewIfNeeded();
   await expect(sourceLink).toHaveAttribute("href", /^https:\/\//);
   expect((await sourceLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+});
+
+test("stale mobile evidence deep links keep the review warning visible", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.route("**/snapshots/transmission-v1.1.json", async (route) => {
+    const response = await route.fetch();
+    const graph = await response.json();
+    graph.meta.refresh.last_checked_at = "2020-01-01T00:00:00.000Z";
+    await route.fulfill({ response, json: graph });
+  });
+  await page.goto("./?entity=issuer%3Acn-sh-603330&relation=relation%3Aissuer_segment_reviewed%3Atianyang-adhesives-20261010");
+
+  const warning = page.locator(".txDetailPanel .txDetailFreshness");
+  await expect(warning).toContainText("核验已过期");
+  await expect(warning).toHaveClass(/isStale/);
+  await warning.click();
+  await expect(page.getByRole("dialog", { name: "数据版本与更新" }).getByRole("status")).toContainText("重新核对原始来源");
 });
 
 test("a corrected relationship links its archived claim to the replacement evidence", async ({ page }) => {

@@ -45,6 +45,9 @@ export function GraphDetailPanel({
   onRetryHistory,
   locale,
   copy,
+  dataRefresh,
+  refreshStatus,
+  onOpenUpdates,
   pathStartId,
   shockOverlay,
   watchRecord,
@@ -88,11 +91,16 @@ export function GraphDetailPanel({
 
   return (
     <aside ref={panelRef} className="txDetailPanel" aria-label={copy.industryPosition}>
-      <header className="txDetailHeader">
+      <header className="txDetailHeader txEvidenceHeader">
         <div>
           <span>{getEntityTypeLabel(entity.entity_type, locale)}</span>
           <h2>{localize(entity, "name", locale)}</h2>
           {codes && <small>{codes}</small>}
+          <button type="button" className={`txDetailFreshness ${refreshStatus?.state === "stale" ? "isStale" : ""}`} onClick={onOpenUpdates}>
+            <span>{copy.checkedOn} <strong>{refreshStatus?.checkedDate || "-"}</strong></span>
+            <span>{copy.sourceCutoff} <strong>{dataRefresh?.source_cutoff_date || "-"}</strong></span>
+            {refreshStatus?.state !== "current" && <em>{refreshStatus?.state === "stale" ? copy.reviewOverdue : copy.reviewUnknown}</em>}
+          </button>
         </div>
         <button type="button" className="txIconButton" aria-label={copy.closeDetails} title={copy.closeDetails} onClick={onClose}>
           <X size={18} strokeWidth={1.8} />

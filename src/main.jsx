@@ -506,6 +506,9 @@ function App() {
             onRetryHistory={() => setHistoryReloadKey((value) => value + 1)}
             locale={locale}
             copy={copy}
+            dataRefresh={graph.meta.refresh}
+            refreshStatus={refreshStatus}
+            onOpenUpdates={() => setReleaseOpen(true)}
             pathStartId={pathStartId}
             shockOverlay={shockOverlay}
             watchRecord={watchRecord}
