@@ -14,6 +14,7 @@ import {
   assertCandidateBatchApplied,
   readApprovedCandidateBatches,
 } from "./lib/weekly-batches.mjs";
+import { syncReadmeSnapshotSummary } from "./lib/readme-snapshot-summary.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const snapshotPath = resolve(projectRoot, "public/snapshots/transmission-v1.1.json");
@@ -128,8 +129,18 @@ const status = {
   quality,
 };
 
+const readmeUpdates = [];
+for (const [filename, locale] of [["README.md", "zh"], ["README.en.md", "en"]]) {
+  const path = resolve(projectRoot, filename);
+  const readme = await readFile(path, "utf8");
+  readmeUpdates.push({ path, readme, updated: syncReadmeSnapshotSummary(readme, graph, locale) });
+}
+
 await writeFile(snapshotPath, `${JSON.stringify(graph)}\n`, "utf8");
 await writeFile(statusPath, `${JSON.stringify(status, null, 2)}\n`, "utf8");
+for (const { path, readme, updated } of readmeUpdates) {
+  if (updated !== readme) await writeFile(path, updated, "utf8");
+}
 
 console.log(JSON.stringify({
   snapshot: basename(snapshotPath),

@@ -9,6 +9,7 @@ import {
   assertCandidateBatchApplied,
   readApprovedCandidateBatches,
 } from "./lib/weekly-batches.mjs";
+import { assertReadmeSnapshotSummary } from "./lib/readme-snapshot-summary.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const snapshotPath = resolve(
@@ -111,6 +112,9 @@ for (const batch of approvedBatches) {
   assertCandidateBatchApplied(graph, batch, archivedRelationIds);
 }
 invariant(JSON.stringify(graph.meta.quality) === JSON.stringify(relationshipQuality), "meta.quality does not match the snapshot.");
+for (const [filename, locale] of [["README.md", "zh"], ["README.en.md", "en"]]) {
+  assertReadmeSnapshotSummary(await readFile(resolve(projectRoot, filename), "utf8"), graph, locale);
+}
 
 console.log(JSON.stringify({
   contract: graph.meta.contract_version,

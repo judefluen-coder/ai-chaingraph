@@ -37,4 +37,6 @@ npm run build
 
 `npm run update:weekly` derives the A-share reconciliation date from approved, continuous manifests; it cannot be advanced with a command-line flag. `public/snapshots/update-status.json` records the latest check, next scheduled check, reconciliation counts, source cutoff, imported batches, promotions, and current relationship-quality metrics. The A-share field is deliberately scoped: US-listed issuer reconciliation uses separate SEC and exchange-source review and is not implied by this date.
 
+The same command refreshes the marked snapshot summaries in `README.md` and `README.en.md`; `npm run validate:snapshot` rejects either summary if its counts or dates drift from the public snapshot. Text outside those markers remains hand-edited.
+
 `scripts/semantic-review-backlog.json` records unresolved candidate relation IDs captured on 2026-10-10. They are not endorsed facts or an exception to evidence review. `npm run audit:semantic-precision` fails when a new usage-only physical integration mapping appears and reports how many captured candidates have been resolved.
