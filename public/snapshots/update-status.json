@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-10-10T11:35:30.308Z",
-  "changed_at": "2026-10-10T11:32:26.289Z",
-  "next_scheduled_at": "2026-10-17T11:35:30.308Z",
+  "checked_at": "2026-10-10T11:44:07.734Z",
+  "changed_at": "2026-10-10T11:44:07.734Z",
+  "next_scheduled_at": "2026-10-17T11:44:07.734Z",
   "source_cutoff_date": "2026-10-09",
   "cadence": "weekly",
   "a_share_listing_reconciled_through": "2026-10-10",
@@ -19,15 +19,15 @@
       "a-share-2026-09-22-to-2026-10-10"
     ]
   },
-  "changed": false,
+  "changed": true,
   "imported": {
-    "batches": 0,
+    "batches": 1,
     "entities": 0,
     "issuers": 0,
     "securities": 0,
     "sources": 0,
-    "claims": 0,
-    "relations": 0,
+    "claims": 1,
+    "relations": 1,
     "withdrawn_relations": 0
   },
   "promotions": {
