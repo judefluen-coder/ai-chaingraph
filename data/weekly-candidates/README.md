@@ -19,6 +19,8 @@ When correcting an existing relation, `replaces_relation_id` must be paired with
 
 A reviewed correction may keep an issuer at segment scope when the disclosure supports participation but not production of the typed element. Such an `issuer_participates_in_segment` relation needs L1/L2 issuer evidence, `attributes.review_reason`, and `attributes.promotion_locked: true` so heuristic promotion cannot undo the correction. Newly listed issuers still require a separate specific industry relation.
 
+For physical elements, wording such as "used in" or "用于" a downstream device does not by itself establish the issuer's action on that device. The weekly updater leaves a new usage-based segment mapping broad until an approved batch verifies the issuer, action, and exact target; existing promoted mappings remain in the manual semantic-review queue.
+
 New A-share listings must also appear in an approved complete manifest under [`data/listing-reconciliations/`](../listing-reconciliations/README.md), including listings intentionally excluded from the AI ontology. Run `npm run update:weekly` after the manifest and any included-company batches are ready. The command validates listing coverage, imports unapplied batches, adds reviewed issuers and securities, reclassifies evidence-backed fallback mappings, recomputes quality metrics, and updates the weekly check timestamp. The public validator rejects broad mappings that pretend to be typed relations.
 
 Use `weekly-update.example.json` as the shape reference. Its placeholder records are not imported because only files ending in `.batch.json` are processed.
