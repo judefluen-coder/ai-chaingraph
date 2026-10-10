@@ -67,6 +67,7 @@ function App() {
   const [locale, setLocale] = useState(() => initialWorkspaceState.locale || localStorage.getItem("ai-chaingraph-locale") || (navigator.language?.toLowerCase().startsWith("zh") ? "zh" : "en"));
   const [acknowledged, setAcknowledged] = useState(() => localStorage.getItem("ai-chaingraph-disclaimer") === "ack");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileDirectoryOpen, setMobileDirectoryOpen] = useState(() => !initialWorkspaceState.activeId && !initialWorkspaceState.activeRelationId);
   const [watchlistRecords, setWatchlistRecords] = useState(readWatchlist);
   const [notice, setNotice] = useState("");
   const [releaseOpen, setReleaseOpen] = useState(false);
@@ -240,6 +241,7 @@ function App() {
     setPathStartId(null);
     setPathTargetId(null);
     setShockType(null);
+    setMobileDirectoryOpen(true);
   }
 
   function selectChain(chainId) {
@@ -255,6 +257,7 @@ function App() {
   function selectEntity(entityId) {
     const entity = index?.entitiesById.get(entityId);
     if (!entity) return;
+    setMobileDirectoryOpen(false);
     if (pathStartId && !pathTargetId && entityId !== pathStartId) {
       setPathTargetId(entityId);
       setActiveRelationId(null);
@@ -464,6 +467,8 @@ function App() {
           statusLabel={graph.meta.status === "building" ? copy.coverageBuilding : null}
           refreshStatus={refreshStatus}
           onOpenUpdates={() => setReleaseOpen(true)}
+          showMobileDirectoryToggle={isNarrow && !detail}
+          onOpenMobileDirectory={() => setMobileDirectoryOpen(true)}
           queryControls={queryControls}
           activeRelationId={activeRelationId}
           onSelect={selectEntity}
@@ -503,6 +508,8 @@ function App() {
             copy={copy}
             onSelectChain={selectChain}
             onSelectEntity={selectEntity}
+            mobileOpen={mobileDirectoryOpen}
+            onCloseMobile={() => setMobileDirectoryOpen(false)}
           />
         )}
       </main>

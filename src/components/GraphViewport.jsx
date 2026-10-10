@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import ReactFlow, { Background, Controls, Handle, MarkerType, Position } from "reactflow";
 import "reactflow/dist/style.css";
-import { ArrowRight, GitCompareArrows, Route, X } from "lucide-react";
+import { ArrowRight, GitCompareArrows, ListTree, Route, X } from "lucide-react";
 
 const nodeTypes = { transmissionNode: TransmissionNode };
 
@@ -13,6 +13,8 @@ export function GraphViewport({
   statusLabel,
   refreshStatus,
   onOpenUpdates,
+  showMobileDirectoryToggle,
+  onOpenMobileDirectory,
   queryControls,
   activeRelationId,
   onSelect,
@@ -75,6 +77,11 @@ export function GraphViewport({
           )}
           <h1>{title}</h1>
           <p>{subtitle}</p>
+          {showMobileDirectoryToggle && (
+            <button type="button" className="txMobileDirectoryButton" onClick={onOpenMobileDirectory}>
+              <ListTree size={15} strokeWidth={1.8} />{copy.browseDirectory}
+            </button>
+          )}
         </div>
         <GraphQueryControls controls={queryControls} copy={copy} />
       </header>

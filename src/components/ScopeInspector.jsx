@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, GitBranch, Layers3, Network } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, GitBranch, Layers3, Network, X } from "lucide-react";
 import { getEntityTypeLabel, localize } from "../lib/transmissionViewModel.js";
 
 export function ScopeInspector({
@@ -10,6 +10,8 @@ export function ScopeInspector({
   copy,
   onSelectChain,
   onSelectEntity,
+  mobileOpen,
+  onCloseMobile,
 }) {
   const isChain = Boolean(selectedChain);
   const metrics = isChain
@@ -26,14 +28,23 @@ export function ScopeInspector({
       ];
 
   return (
-    <aside className="txDetailPanel txScopeInspector" aria-label={copy.scopeInspector}>
+    <aside className={`txDetailPanel txScopeInspector ${mobileOpen ? "isMobileOpen" : ""}`} aria-label={copy.scopeInspector}>
       <header className="txDetailHeader">
         <div>
           <span>{copy.scopeInspector}</span>
           <h2>{isChain ? localize(selectedChain, "name", locale) : copy.overviewTitle}</h2>
           <small>{isChain ? copy.chainScope : copy.overviewScope}</small>
         </div>
+        <button type="button" className="txIconButton txScopeMobileClose" aria-label={copy.showGraph} title={copy.showGraph} onClick={onCloseMobile}>
+          <X size={18} strokeWidth={1.8} />
+        </button>
       </header>
+
+      {isChain && (
+        <button type="button" className="txScopeBackButton" onClick={() => onSelectChain(null)}>
+          <ArrowLeft size={15} strokeWidth={1.8} />{copy.backToDomains}
+        </button>
+      )}
 
       <section className="txDetailSection txScopeSummary">
         {isChain && localize(selectedChain, "description", locale) && (

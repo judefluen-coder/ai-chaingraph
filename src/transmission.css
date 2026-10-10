@@ -2077,6 +2077,12 @@ button:disabled {
   box-shadow: 0 10px 30px rgba(37, 52, 73, 0.1);
 }
 
+.txMobileDirectoryButton,
+.txScopeMobileClose,
+.txScopeBackButton {
+  display: none;
+}
+
 .txScopeInspector .txDetailHeader small {
   font-family: inherit;
 }
@@ -2268,6 +2274,91 @@ button:disabled {
 }
 
 @media (max-width: 760px) {
+  .txMobileDirectoryButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    margin-top: 8px;
+    border: 1px solid var(--tx-line);
+    border-radius: var(--tx-radius-sm);
+    background: var(--tx-surface);
+    color: var(--tx-primary);
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 680;
+  }
+
+  .txWorkspace.hasInspector .txScopeInspector.isMobileOpen {
+    display: block;
+    position: fixed;
+    z-index: calc(var(--tx-z-panel) + 5);
+    inset: 58px 0 0;
+    width: 100%;
+    max-height: calc(100dvh - 58px);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .txScopeInspector.isMobileOpen .txDetailHeader {
+    padding: 18px 18px 16px;
+  }
+
+  .txScopeInspector.isMobileOpen .txDetailHeader h2 {
+    font-size: 21px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeMobileClose {
+    display: grid;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeBackButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--tx-primary);
+    margin: 8px 12px 0;
+    padding: 0 8px;
+    font-size: 13px;
+    font-weight: 680;
+  }
+
+  .txScopeInspector.isMobileOpen .txDetailSection {
+    padding: 18px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeSummary > p {
+    font-size: 13px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeMetrics small {
+    font-size: 10px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeDomainList section > header strong,
+  .txScopeInspector.isMobileOpen .txScopeElementList strong {
+    font-size: 14px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeDomainList section > header span,
+  .txScopeInspector.isMobileOpen .txScopeElementList small {
+    font-size: 11px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeDomainList button,
+  .txScopeInspector.isMobileOpen .txScopeElementList button {
+    min-height: 48px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
   .txWorkspace.hasInspector .txDetailPanel:not(.txScopeInspector) {
     width: 100%;
   }
