@@ -25,6 +25,7 @@ const archivePath = join(sitesRoot, "ai-chaingraph-sites.tar.gz");
 const hostingSource = join(projectRoot, ".openai", "hosting.json");
 const requiredSnapshot = "snapshots/transmission-v1.1.json";
 const requiredStatus = "snapshots/update-status.json";
+const requiredHistory = "snapshots/release-history.json";
 
 const CONTENT_TYPES = {
   ".css": "text/css; charset=utf-8",
@@ -51,7 +52,7 @@ function webPath(filePath) {
 
 function cacheControl(pathname) {
   if (pathname === "/index.html") return "no-cache";
-  if (pathname === `/${requiredSnapshot}` || pathname === `/${requiredStatus}`) return "no-store";
+  if ([requiredSnapshot, requiredStatus, requiredHistory].some((file) => pathname === `/${file}`)) return "no-store";
   if (pathname.startsWith("/assets/")) return "public, max-age=31536000, immutable";
   return "public, max-age=3600";
 }
@@ -114,7 +115,11 @@ rmSync(archivePath, { force: true });
 invariant(existsSync(join(viteDist, "index.html")), "Run the Vite build before building the Sites package.");
 invariant(existsSync(join(viteDist, requiredSnapshot)), `Missing ${requiredSnapshot} in the Vite build.`);
 invariant(existsSync(join(viteDist, requiredStatus)), `Missing ${requiredStatus} in the Vite build.`);
+invariant(existsSync(join(viteDist, requiredHistory)), `Missing ${requiredHistory} in the Vite build.`);
 invariant(existsSync(hostingSource), "Missing .openai/hosting.json.");
+const snapshot = JSON.parse(readFileSync(join(viteDist, requiredSnapshot), "utf8"));
+const history = JSON.parse(readFileSync(join(viteDist, requiredHistory), "utf8"));
+invariant(history.data_updated_at === snapshot.meta.updated_at, "Release history does not match the graph snapshot.");
 
 const hosting = JSON.parse(readFileSync(hostingSource, "utf8"));
 invariant(typeof hosting.project_id === "string" && hosting.project_id, "Sites project_id is required.");
@@ -158,7 +163,7 @@ writeFileSync(
 
 execFileSync(process.execPath, ["--check", workerPath], { stdio: "inherit" });
 const worker = (await import(pathToFileURL(workerPath).href)).default;
-for (const snapshotPath of [requiredSnapshot, requiredStatus]) {
+for (const snapshotPath of [requiredSnapshot, requiredStatus, requiredHistory]) {
   const response = await worker.fetch(new Request(`https://example.com/${snapshotPath}`));
   invariant(response.status === 200, `Sites Worker cannot serve ${snapshotPath}.`);
   invariant(response.headers.get("cache-control") === "no-store", `Sites Worker must not cache ${snapshotPath}.`);

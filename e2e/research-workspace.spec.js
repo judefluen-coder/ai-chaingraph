@@ -421,6 +421,12 @@ test("retrying update history does not reload the graph snapshot", async ({ page
   await page.addInitScript(() => {
     localStorage.setItem("ai-chaingraph-disclaimer", "ack");
     localStorage.setItem("ai-chaingraph-locale", "zh");
+    window.snapshotCacheModes = [];
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = (url, options) => {
+      if (String(url).includes("/snapshots/")) window.snapshotCacheModes.push(options?.cache);
+      return originalFetch(url, options);
+    };
   });
   let graphRequests = 0;
   let historyRequests = 0;
@@ -445,4 +451,5 @@ test("retrying update history does not reload the graph snapshot", async ({ page
   await expect(dialog.locator(".txHistoryDetails .txHistoryDetails").first()).toBeVisible();
   expect(graphRequests).toBe(1);
   expect(historyRequests).toBe(2);
+  expect(await page.evaluate(() => window.snapshotCacheModes)).toEqual(["no-cache", "no-cache", "no-cache"]);
 });

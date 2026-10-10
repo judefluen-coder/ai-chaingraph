@@ -17,7 +17,8 @@ function normalizeGraphData(data) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, { cache: "default" });
+  // Fixed snapshot URLs must revalidate so a new graph is not paired with cached old history.
+  const response = await fetch(url, { cache: "no-cache" });
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
   return response.json();
 }
