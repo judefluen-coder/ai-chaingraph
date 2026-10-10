@@ -231,6 +231,23 @@ test("a semiconductor component action correction retains its original evidence 
   await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", "https://static.cninfo.com.cn/finalpage/2026-04-28/1225214620.PDF");
 });
 
+test("an AGV load-wheel correction preserves the production evidence", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem("ai-chaingraph-disclaimer", "ack");
+    localStorage.setItem("ai-chaingraph-locale", "zh");
+  });
+  await page.goto("./?entity=issuer%3Acn-sh-603037&relation=relation%3Aissuer_segment_fallback%3A03c3a644f510370394da4687");
+
+  const panel = page.locator(".txDetailPanel");
+  await expect(panel.getByRole("status")).toContainText("已被替代");
+  await expect(panel.getByRole("status")).toContainText("动作更正为生产");
+  await panel.getByRole("button", { name: "查看替代关系" }).click();
+  await expect(panel.locator(".txSelectedRelation")).toContainText("生产");
+  await expect(panel.locator(".txEvidenceList")).toContainText("聚氨酯承载轮");
+  await expect(panel.getByRole("link", { name: /打开原始来源/ })).toHaveAttribute("href", "https://static.cninfo.com.cn/finalpage/2026-03-31/1225053856.PDF");
+});
+
 test("a corrected relationship can move from equipment to battery-cell evidence", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.addInitScript(() => {

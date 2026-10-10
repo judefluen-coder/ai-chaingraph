@@ -1,0 +1,62 @@
+{
+  "batch_id": "weekly-2026-10-10-carthane-load-wheels",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T12:30:01.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:carthane-agv-load-wheels-20261010",
+      "source_document_id": "source:5d11de1d62f9f49e0719aaa0",
+      "excerpt": "2025年年报将高性能聚氨酯承载轮列为凯众股份非汽车业务产品，主要用于物流输送线、电动叉车和AGV智能仓储搬运设备等；生产模式为按订单组织产品生产。",
+      "excerpt_en": "The 2025 annual report lists high-performance polyurethane load wheels as Carthane's non-automotive products, used in conveyors, electric forklifts, and AGV warehousing equipment, and describes order-driven production.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:30:01.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:carthane-agv-load-wheels-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-603037",
+      "to_id": "component:robotics_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:carthane-agv-load-wheels-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:03c3a644f510370394da4687",
+      "attributes": {
+        "legacy_chain_id": "ai_devices_robotics",
+        "legacy_segment_id": "robotics_components"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:03c3a644f510370394da4687",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sh-603037",
+        "to_id": "component:robotics_components",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:fc3d6fa10f79c3665741155e"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "robotics_components",
+          "candidate_element_id": "component:robotics_components",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:robotics_components",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:5d11de1d62f9f49e0719aaa0",
+      "reason": "年报证明公司生产可用于AGV等设备的聚氨酯承载轮；下游用途不能证明公司集成机器人零部件，故动作更正为生产。",
+      "reason_en": "The report supports manufacturing polyurethane load wheels used in AGV equipment; downstream use does not establish integration of robotics components."
+    }
+  ]
+}
