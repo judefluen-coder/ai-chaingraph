@@ -10,7 +10,7 @@
     "predev": "node scripts/build-release-history.mjs",
     "dev": "vite --host 127.0.0.1",
     "build": "node scripts/build-release-history.mjs && vite build",
-    "prebuild:sites": "npm audit --audit-level=high && npm test && npm run validate:snapshot && npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8 && npm run audit:semantic-precision && npm run check:performance && npm run test:e2e",
+    "prebuild:sites": "node scripts/clear-sites-artifact.mjs && npm audit --audit-level=high && npm test && npm run validate:snapshot && npm run audit:relationships -- --min-specific-issuer-rate=0.9 --max-check-age-days=8 --max-a-share-listing-reconciliation-age-days=8 && npm run audit:semantic-precision && npm run check:performance && npm run test:e2e",
     "build:sites": "npm run build && node scripts/build-sites.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test",
