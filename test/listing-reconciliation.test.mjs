@@ -78,8 +78,14 @@ test("rejects non-exchange URLs in the listing ledger", () => {
 
   assert.throws(
     () => validateAshareReconciliations([manifest], graphFixture()),
-    /official SSE, SZSE, or BSE listing source/,
+    /own official exchange HTTPS listing source/,
   );
+});
+
+test("rejects an official URL from the wrong exchange", () => {
+  const manifest = manifestFixture();
+  manifest.listings[0].source_url = "https://www.szse.cn/test";
+  assert.throws(() => validateAshareReconciliations([manifest], graphFixture()), /own official exchange HTTPS listing source/);
 });
 
 test("allows a continuous empty period after all exchanges were checked", () => {
@@ -91,6 +97,11 @@ test("allows a continuous empty period after all exchanges were checked", () => 
     period_start: "2026-09-09",
     reconciled_through: "2026-09-15",
     markets: ["SH", "SZ", "BJ"],
+    market_checks: [
+      { exchange: "SH", source_url: "https://www.sse.com.cn/test", checked_at: "2026-09-15T00:00:00.000Z", method: "Checked", new_listings: 0 },
+      { exchange: "SZ", source_url: "https://www.szse.cn/test", checked_at: "2026-09-15T00:00:00.000Z", method: "Checked", new_listings: 0 },
+      { exchange: "BJ", source_url: "https://www.bse.cn/test", checked_at: "2026-09-15T00:00:00.000Z", method: "Checked", new_listings: 0 },
+    ],
     listings: [],
   };
 
@@ -104,4 +115,29 @@ test("allows a continuous empty period after all exchanges were checked", () => 
       manifest_ids: ["a-share-test", "a-share-test-empty-week"],
     },
   );
+});
+
+test("rejects missing, mismatched, or prematurely dated exchange checks", () => {
+  const followUp = {
+    manifest_id: "a-share-test-new-period",
+    review_status: "approved",
+    reviewer: "test",
+    reviewed_at: "2026-09-15T00:00:00.000Z",
+    period_start: "2026-09-09",
+    reconciled_through: "2026-09-15",
+    markets: ["SH", "SZ", "BJ"],
+    listings: [],
+  };
+  const validate = () => validateAshareReconciliations([manifestFixture(), followUp], graphFixture());
+  assert.throws(validate, /all three exchange checks/);
+  followUp.market_checks = [
+    { exchange: "SH", source_url: "https://www.sse.com.cn/test", checked_at: "2026-09-15T00:00:00.000Z", method: "Checked", new_listings: 0 },
+    { exchange: "SZ", source_url: "https://www.szse.cn/test", checked_at: "2026-09-15T00:00:00.000Z", method: "Checked", new_listings: 0 },
+    { exchange: "BJ", source_url: "https://www.bse.cn/test", checked_at: "2026-09-15T00:00:00.000Z", method: "Checked", new_listings: 0 },
+  ];
+  followUp.market_checks[0].new_listings = 1;
+  assert.throws(validate, /matching listing count/);
+  followUp.market_checks[0].new_listings = 0;
+  followUp.market_checks[0].checked_at = "2026-09-14T00:00:00.000Z";
+  assert.throws(validate, /cannot predate/);
 });

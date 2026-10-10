@@ -1,0 +1,154 @@
+{
+  "batch_id": "weekly-2026-10-10-official-listings",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-10-10T10:14:15.000Z",
+  "entities": [
+    {
+      "id": "issuer:cn-sz-301716",
+      "entity_type": "issuer",
+      "name": "鸿富诚",
+      "country": "CN",
+      "legal_name": "深圳市鸿富诚新材料股份有限公司",
+      "industry": "热管理与电磁屏蔽材料"
+    },
+    {
+      "id": "security:SZ:301716",
+      "entity_type": "security",
+      "name": "鸿富诚",
+      "aliases": ["301716.SZ", "301716"],
+      "stock_code": "301716.SZ",
+      "symbol": "301716",
+      "exchange": "SZ",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    },
+    {
+      "id": "issuer:cn-bj-920157",
+      "entity_type": "issuer",
+      "name": "宇特光电",
+      "country": "CN",
+      "legal_name": "江苏宇特光电科技股份有限公司",
+      "industry": "光连接组件"
+    },
+    {
+      "id": "security:BJ:920157",
+      "entity_type": "security",
+      "name": "宇特光电",
+      "aliases": ["920157.BJ", "920157"],
+      "stock_code": "920157.BJ",
+      "symbol": "920157",
+      "exchange": "BJ",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    }
+  ],
+  "source_documents": [
+    {
+      "id": "source:szse-hongfucheng-listing-20260928",
+      "source_type": "exchange_filing",
+      "title": "关于深圳市鸿富诚新材料股份有限公司股票上市交易的公告",
+      "url": "https://www.szse.cn/disclosure/notice/company/t20260928_623074.html",
+      "publish_date": "2026-09-28",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sz-301716"
+    },
+    {
+      "id": "source:szse-hongfucheng-prospectus-20260313",
+      "source_type": "exchange_filing",
+      "title": "深圳市鸿富诚新材料股份有限公司招股说明书（申报稿）",
+      "url": "https://reportdocs.static.szse.cn/UpFiles/rasinfodisc1/202603/RAS_202603_1315006714388DC266418AA005D477E4A82E89.pdf",
+      "publish_date": "2026-03-13",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sz-301716"
+    },
+    {
+      "id": "source:bse-yute-listing-20261009",
+      "source_type": "exchange_filing",
+      "title": "宇特光电今日在北交所上市",
+      "url": "https://www.bse.cn/issue_report_meeting/200029581.html",
+      "publish_date": "2026-10-09",
+      "language": "zh",
+      "issuer_id": "issuer:cn-bj-920157"
+    },
+    {
+      "id": "source:bse-yute-sponsor-20260703",
+      "source_type": "exchange_filing",
+      "title": "江苏宇特光电科技股份有限公司发行保荐书",
+      "url": "https://www.bse.cn/disclosure/2026/2026-07-03/1783087576_178077.pdf",
+      "publish_date": "2026-07-03",
+      "language": "zh",
+      "issuer_id": "issuer:cn-bj-920157"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim:szse-hongfucheng-listing-20260928",
+      "source_document_id": "source:szse-hongfucheng-listing-20260928",
+      "excerpt": "深交所公告鸿富诚（301716）于2026年9月29日上市交易。",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T10:14:15.000Z"
+    },
+    {
+      "id": "claim:szse-hongfucheng-thermal-materials-20260313",
+      "source_document_id": "source:szse-hongfucheng-prospectus-20260313",
+      "excerpt": "招股说明书披露公司生产导热硅胶垫片、碳基导热垫片及导热凝胶；石墨烯导热垫片终端应用包括AI高功率芯片和数据中心。",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T10:14:15.000Z"
+    },
+    {
+      "id": "claim:bse-yute-listing-20261009",
+      "source_document_id": "source:bse-yute-listing-20261009",
+      "excerpt": "北交所上市报道确认宇特光电（920157）于2026年10月9日上市。",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T10:14:15.000Z"
+    },
+    {
+      "id": "claim:bse-yute-optical-components-20260703",
+      "source_document_id": "source:bse-yute-sponsor-20260703",
+      "excerpt": "发行保荐书披露公司为数据中心高速光模块内高密度光连接开发了基于FA、MT的高速光模块连接组件。",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T10:14:15.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:security_issued_by:sz-301716",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SZ:301716",
+      "to_id": "issuer:cn-sz-301716",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:szse-hongfucheng-listing-20260928"]
+    },
+    {
+      "id": "relation:issuer_element:hongfucheng-thermal-materials",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-301716",
+      "to_id": "material:thermal_management_materials",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:szse-hongfucheng-thermal-materials-20260313"]
+    },
+    {
+      "id": "relation:security_issued_by:bj-920157",
+      "relation_type": "security_issued_by",
+      "from_id": "security:BJ:920157",
+      "to_id": "issuer:cn-bj-920157",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:bse-yute-listing-20261009"]
+    },
+    {
+      "id": "relation:issuer_element:yute-optical-components",
+      "relation_type": "issuer_develops",
+      "from_id": "issuer:cn-bj-920157",
+      "to_id": "component:optical_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:bse-yute-optical-components-20260703"]
+    }
+  ]
+}

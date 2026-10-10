@@ -4,7 +4,8 @@ import { SPECIFIC_RELATION_TYPES } from "./relationship-quality.mjs";
 
 const REQUIRED_MARKETS = ["SH", "SZ", "BJ"];
 const DECISIONS = new Set(["included", "excluded"]);
-const OFFICIAL_EXCHANGE_DOMAINS = ["sse.com.cn", "szse.cn", "bse.cn"];
+const EXCHANGE_DOMAINS = { SH: "sse.com.cn", SZ: "szse.cn", BJ: "bse.cn" };
+const MARKET_CHECK_REQUIRED_FROM = "2026-09-09";
 
 function invariant(condition, message) {
   if (!condition) throw new Error(message);
@@ -16,12 +17,11 @@ function nextDate(date) {
   return value.toISOString().slice(0, 10);
 }
 
-function isOfficialExchangeUrl(value) {
+function isOfficialExchangeUrl(value, exchange) {
   try {
     const { protocol, hostname } = new URL(value);
-    return protocol === "https:" && OFFICIAL_EXCHANGE_DOMAINS.some(
-      (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
-    );
+    const domain = EXCHANGE_DOMAINS[exchange];
+    return protocol === "https:" && Boolean(domain) && (hostname === domain || hostname.endsWith(`.${domain}`));
   } catch {
     return false;
   }
@@ -66,6 +66,17 @@ export function validateAshareReconciliations(manifests, graph) {
     invariant(manifest.reconciled_through <= manifest.reviewed_at.slice(0, 10), `${label} cannot reconcile beyond its review date.`);
     invariant(JSON.stringify(manifest.markets) === JSON.stringify(REQUIRED_MARKETS), `${label} must reconcile SH, SZ, and BJ in that order.`);
     invariant(Array.isArray(manifest.listings), `${label} must include a listings array.`);
+    // The initial historical manifest predates recorded market checks; every later period must prove all three checks.
+    if (manifest.period_start >= MARKET_CHECK_REQUIRED_FROM) {
+      invariant(Array.isArray(manifest.market_checks) && manifest.market_checks.length === 3, `${label} must record all three exchange checks.`);
+      invariant(JSON.stringify(manifest.market_checks.map((check) => check.exchange)) === JSON.stringify(REQUIRED_MARKETS), `${label} exchange checks must be ordered SH, SZ, BJ.`);
+      for (const check of manifest.market_checks) {
+        const count = manifest.listings.filter((listing) => listing.exchange === check.exchange).length;
+        invariant(isOfficialExchangeUrl(check.source_url, check.exchange), `${label}: ${check.exchange} check needs its own official HTTPS source.`);
+        invariant(check.checked_at && !Number.isNaN(Date.parse(check.checked_at)) && check.checked_at.slice(0, 10) >= manifest.reconciled_through, `${label}: ${check.exchange} check cannot predate the reconciliation period.`);
+        invariant(check.method && check.new_listings === count, `${label}: ${check.exchange} check needs a method and matching listing count.`);
+      }
+    }
     if (previousReconciledThrough) {
       invariant(manifest.period_start === nextDate(previousReconciledThrough), `${label} must start the day after the previous reconciliation.`);
     }
@@ -76,7 +87,7 @@ export function validateAshareReconciliations(manifests, graph) {
       invariant(/^\d{6}$/.test(listing.symbol || ""), `${label}: ${key} has an invalid symbol.`);
       invariant(listing.name && /^\d{4}-\d{2}-\d{2}$/.test(listing.listing_date || ""), `${label}: ${key} needs a name and listing_date.`);
       invariant(listing.listing_date >= manifest.period_start && listing.listing_date <= manifest.reconciled_through, `${label}: ${key} falls outside the reconciliation period.`);
-      invariant(isOfficialExchangeUrl(listing.source_url), `${label}: ${key} needs an official SSE, SZSE, or BSE listing source.`);
+      invariant(isOfficialExchangeUrl(listing.source_url, listing.exchange), `${label}: ${key} needs its own official exchange HTTPS listing source.`);
       invariant(DECISIONS.has(listing.decision) && listing.decision_reason, `${label}: ${key} needs an inclusion decision and reason.`);
       invariant(!seenSecurities.has(key), `${label}: ${key} was reviewed more than once.`);
       seenSecurities.add(key);

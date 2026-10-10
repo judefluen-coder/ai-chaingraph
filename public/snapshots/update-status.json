@@ -1,32 +1,33 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-09-21T02:08:07.988Z",
-  "changed_at": "2026-09-21T02:08:07.988Z",
-  "next_scheduled_at": "2026-09-28T02:08:07.988Z",
-  "source_cutoff_date": "2026-09-15",
+  "checked_at": "2026-10-10T10:16:50.839Z",
+  "changed_at": "2026-10-10T10:16:02.334Z",
+  "next_scheduled_at": "2026-10-17T10:16:50.839Z",
+  "source_cutoff_date": "2026-10-09",
   "cadence": "weekly",
-  "a_share_listing_reconciled_through": "2026-09-21",
+  "a_share_listing_reconciled_through": "2026-10-10",
   "a_share_listing_reconciliation": {
-    "reconciled_through": "2026-09-21",
-    "reviewed_listings": 37,
-    "included_listings": 12,
-    "excluded_listings": 25,
+    "reconciled_through": "2026-10-10",
+    "reviewed_listings": 45,
+    "included_listings": 14,
+    "excluded_listings": 31,
     "manifest_ids": [
       "a-share-2026-07-13-to-2026-09-08",
       "a-share-2026-09-09-to-2026-09-14",
-      "a-share-2026-09-15-to-2026-09-21"
+      "a-share-2026-09-15-to-2026-09-21",
+      "a-share-2026-09-22-to-2026-10-10"
     ]
   },
-  "changed": true,
+  "changed": false,
   "imported": {
-    "batches": 1,
+    "batches": 0,
     "entities": 0,
     "issuers": 0,
     "securities": 0,
-    "sources": 1,
-    "claims": 1,
-    "relations": 1
+    "sources": 0,
+    "claims": 0,
+    "relations": 0
   },
   "promotions": {
     "promotedRelations": 0,
@@ -37,12 +38,12 @@
   "last_change_summary": {
     "imported": {
       "batches": 1,
-      "entities": 0,
-      "issuers": 0,
-      "securities": 0,
-      "sources": 1,
-      "claims": 1,
-      "relations": 1
+      "entities": 4,
+      "issuers": 2,
+      "securities": 2,
+      "sources": 4,
+      "claims": 4,
+      "relations": 4
     },
     "promotions": {
       "promotedRelations": 0,
@@ -52,18 +53,18 @@
     }
   },
   "quality": {
-    "issuers_total": 4549,
-    "issuers_mapped": 4549,
+    "issuers_total": 4551,
+    "issuers_mapped": 4551,
     "issuers_unmapped": 0,
-    "issuers_with_specific_relations": 4245,
+    "issuers_with_specific_relations": 4247,
     "issuers_generic_only": 304,
     "specific_issuer_rate": 0.9332,
-    "issuer_relations_total": 6623,
-    "specific_relations": 5998,
+    "issuer_relations_total": 6625,
+    "specific_relations": 6000,
     "generic_relations": 625,
-    "specific_relation_rate": 0.9056,
+    "specific_relation_rate": 0.9057,
     "evidence_levels": {
-      "L1": 6579,
+      "L1": 6581,
       "L2": 44
     },
     "segments_total": 111,
