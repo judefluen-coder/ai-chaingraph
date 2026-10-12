@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import ReactFlow, { Background, Controls, Handle, MarkerType, Position } from "reactflow";
+import ReactFlow, { Background, Controls, Handle, MarkerType, MiniMap, Position } from "reactflow";
 import "reactflow/dist/style.css";
-import { ArrowRight, GitCompareArrows, Route, X } from "lucide-react";
+import { ArrowRight, GitCompareArrows, ListTree, Route, X } from "lucide-react";
 
 const nodeTypes = { transmissionNode: TransmissionNode };
 
@@ -11,22 +11,48 @@ export function GraphViewport({
   subtitle,
   breadcrumbs,
   statusLabel,
+  refreshStatus,
+  onOpenUpdates,
+  showMobileDirectoryToggle,
+  onOpenMobileDirectory,
   queryControls,
   activeRelationId,
   onSelect,
   onSelectRelation,
+  directoryOpen,
   copy,
 }) {
-  const canvasRef = useRef(null);
   const flowInstanceRef = useRef(null);
   const fitFrameRef = useRef(null);
   const isVertical = flow.nodes.some((node) => node.data?.layoutDirection === "TB");
   const fitViewOptions = useMemo(() => ({ padding: isVertical ? 0.1 : 0.16, minZoom: isVertical ? 0.58 : 0.2, maxZoom: 1.04 }), [isVertical]);
-  const renderedEdges = useMemo(() => flow.edges.map((edge) => ({
-    ...edge,
-    className: `${edge.className || ""}${edge.id === activeRelationId ? " isSelected" : ""}`.trim(),
-    markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15 },
-  })), [flow.edges, activeRelationId]);
+  const allViewOptions = useMemo(() => ({ padding: 0.1, minZoom: 0.16, maxZoom: 1.04 }), []);
+  const renderedEdges = useMemo(() => {
+    const names = new Map(flow.nodes.map((node) => [node.id, node.data?.title || node.id]));
+    return flow.edges.map((edge) => {
+      const canOpenEvidence = Boolean(edge.data?.relationId);
+      const description = [names.get(edge.source) || edge.source, edge.label, names.get(edge.target) || edge.target].filter(Boolean).join(" · ");
+      return {
+        ...edge,
+        ariaLabel: canOpenEvidence ? `${description} · ${copy.evidence}` : description,
+        focusable: canOpenEvidence,
+        className: `${edge.className || ""}${edge.id === activeRelationId ? " isSelected" : ""}`.trim(),
+        markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15 },
+      };
+    });
+  }, [flow.edges, flow.nodes, activeRelationId, copy.evidence]);
+  const hasPendingEdges = flow.edges.some((edge) => edge.data?.semanticReviewPending);
+
+  function openFocusedEdge(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    // React Flow selects focused edges on these keys but does not invoke onEdgeClick.
+    const edgeTestId = event.target.closest?.(".react-flow__edge")?.getAttribute("data-testid");
+    const relationId = renderedEdges.find((edge) => edgeTestId === `rf__edge-${edge.id}`)?.data?.relationId;
+    if (!relationId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    onSelectRelation(relationId);
+  }
 
   const fitGraph = useCallback(() => {
     if (!flowInstanceRef.current || flow.nodes.length === 0) return;
@@ -41,23 +67,23 @@ export function GraphViewport({
   }, [fitGraph, flow.nodes, flow.meta?.mode]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return undefined;
-    const observer = new ResizeObserver(fitGraph);
-    observer.observe(canvas);
     return () => {
-      observer.disconnect();
       if (fitFrameRef.current) cancelAnimationFrame(fitFrameRef.current);
     };
-  }, [fitGraph]);
+  }, []);
 
   return (
-    <section className="txGraphViewport">
+    <section className="txGraphViewport" inert={directoryOpen ? "" : undefined}>
       <header className="txGraphHeader">
         <div className="txGraphHeading">
           <div className="txGraphContext">
             <span>{copy.graphEyebrow}</span>
             {statusLabel && <em>{statusLabel}</em>}
+            {refreshStatus && refreshStatus.state !== "current" && (
+              <button type="button" className="txRefreshWarning" onClick={onOpenUpdates}>
+                {refreshStatus?.state === "stale" ? copy.reviewOverdue : copy.reviewUnknown} · {refreshStatus?.checkedDate || "-"}
+              </button>
+            )}
           </div>
           {breadcrumbs?.length > 0 && (
             <div className="txBreadcrumbs" aria-label={copy.industryPosition}>
@@ -68,13 +94,18 @@ export function GraphViewport({
           )}
           <h1>{title}</h1>
           <p>{subtitle}</p>
+          {showMobileDirectoryToggle && (
+            <button type="button" className="txMobileDirectoryButton" onClick={onOpenMobileDirectory}>
+              <ListTree size={15} strokeWidth={1.8} />{copy.browseDirectory}
+            </button>
+          )}
         </div>
         <GraphQueryControls controls={queryControls} copy={copy} />
       </header>
 
       <GraphStats meta={flow.meta} copy={copy} />
 
-      <div className="txGraphCanvas" ref={canvasRef}>
+      <div className="txGraphCanvas" onKeyDownCapture={openFocusedEdge}>
         {flow.nodes.length === 0 && (
           <div className="txGraphEmpty">
             <Route size={24} strokeWidth={1.6} />
@@ -106,11 +137,13 @@ export function GraphViewport({
           defaultEdgeOptions={{ markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15 } }}
         >
           <Background color="#d8dee8" gap={24} size={1} />
-          <Controls position="bottom-left" showInteractive={false} fitViewOptions={fitViewOptions} />
+          <Controls position="bottom-left" showInteractive={false} fitViewOptions={allViewOptions} />
+          {isVertical && <MiniMap position="top-right" style={{ width: 112, height: 84 }} pannable zoomable ariaLabel={copy.graphMiniMap} maskColor="rgba(61, 89, 148, 0.18)" />}
         </ReactFlow>
         <div className="txGraphLegend" aria-label={copy.factDirection}>
           <span><i className="isFact" />{copy.factDirection}</span>
           <span><i className="isCross" />{copy.crossChain}</span>
+          {hasPendingEdges && <span><i className="isPending" />{copy.semanticReviewPending}</span>}
           {flow.meta?.mode === "shock" && <span><i className="isConditional" />{copy.conditionalLayer}</span>}
         </div>
       </div>
@@ -184,12 +217,12 @@ function GraphStats({ meta, copy }) {
   } else if (meta.mode === "path") {
     items = meta.found ? [[copy.pathHops, meta.hops], [copy.crossChainHops, meta.cross_chain_hops]] : [];
   } else {
-    items = [[copy.directNodes, meta.direct_element_count], [copy.indirectNodes, meta.indirect_element_count], [copy.chains, meta.chain_count], [copy.companies, meta.issuer_count]];
+    items = [[copy.directNodes, meta.direct_element_count], [copy.indirectNodes, meta.indirect_element_count], [copy.chains, meta.chain_count], [copy.scopeCompanies, meta.issuer_count]];
   }
   if (items.length === 0) return null;
   return (
     <div className="txGraphStats">
-      {items.map(([label, value]) => <span key={label}><strong>{Number(value || 0).toLocaleString()}</strong>{label}</span>)}
+      {items.map(([label, value]) => <span key={label} title={label === copy.scopeCompanies ? copy.scopeCompaniesHelp : undefined}><strong>{Number(value || 0).toLocaleString()}</strong>{label}</span>)}
       {meta.hidden_node_count > 0 && <em>{copy.visibleLimit} · +{meta.hidden_node_count}</em>}
     </div>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Database, RefreshCw } from "lucide-react";
-import { loadGraphData } from "./data/loadGraphData.js";
+import { loadGraphData, loadReleaseHistory } from "./data/loadGraphData.js";
 import { ChainNavigator } from "./components/ChainNavigator.jsx";
 import { GraphDetailPanel } from "./components/GraphDetailPanel.jsx";
 import { GraphViewport } from "./components/GraphViewport.jsx";
@@ -31,6 +31,7 @@ import {
   traverseTransmissionGraph,
 } from "./lib/transmissionGraph.js";
 import { getCopy, translations } from "./lib/i18n.js";
+import { getRefreshStatus } from "./lib/refreshStatus.js";
 import { parseWorkspaceSearch, serializeWorkspaceSearch } from "./lib/workspaceState.js";
 import { createWatchlistRecord, downloadWatchlist, readWatchlist, writeWatchlist } from "./lib/watchlist.js";
 import "./transmission.css";
@@ -53,6 +54,8 @@ const initialWorkspaceState = parseWorkspaceSearch(typeof window === "undefined"
 function App() {
   const [graphState, setGraphState] = useState({ data: null, error: null });
   const [reloadKey, setReloadKey] = useState(0);
+  const [historyState, setHistoryState] = useState({ data: null, error: false, loading: true });
+  const [historyReloadKey, setHistoryReloadKey] = useState(0);
   const [query, setQuery] = useState(initialWorkspaceState.query);
   const [activeId, setActiveId] = useState(initialWorkspaceState.activeId);
   const [activeRelationId, setActiveRelationId] = useState(initialWorkspaceState.activeRelationId);
@@ -66,10 +69,13 @@ function App() {
   const [locale, setLocale] = useState(() => initialWorkspaceState.locale || localStorage.getItem("ai-chaingraph-locale") || (navigator.language?.toLowerCase().startsWith("zh") ? "zh" : "en"));
   const [acknowledged, setAcknowledged] = useState(() => localStorage.getItem("ai-chaingraph-disclaimer") === "ack");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileDirectoryOpen, setMobileDirectoryOpen] = useState(() => window.matchMedia("(max-width: 760px)").matches && !initialWorkspaceState.activeId && !initialWorkspaceState.activeRelationId);
   const [watchlistRecords, setWatchlistRecords] = useState(readWatchlist);
   const [notice, setNotice] = useState("");
   const [releaseOpen, setReleaseOpen] = useState(false);
+  const [now, setNow] = useState(Date.now);
   const isNarrow = useMediaQuery("(max-width: 760px)");
+  const isCompactDirectory = useMediaQuery("(max-width: 980px)");
   const graph = graphState.data;
   const copy = getCopy(locale);
   const layoutDirection = isNarrow ? "TB" : "LR";
@@ -91,8 +97,14 @@ function App() {
   }, [notice]);
 
   useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     let alive = true;
     setGraphState({ data: null, error: null });
+    setHistoryState({ data: null, error: false, loading: true });
     loadGraphData()
       .then((data) => {
         if (alive) setGraphState({ data, error: null });
@@ -104,6 +116,22 @@ function App() {
       alive = false;
     };
   }, [reloadKey]);
+
+  useEffect(() => {
+    if (!graph) return undefined;
+    let alive = true;
+    setHistoryState({ data: null, error: false, loading: true });
+    loadReleaseHistory(graph)
+      .then((data) => {
+        if (alive) setHistoryState({ data, error: false, loading: false });
+      })
+      .catch(() => {
+        if (alive) setHistoryState({ data: null, error: true, loading: false });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [graph, historyReloadKey]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -150,7 +178,7 @@ function App() {
   const selectedChain = selectedChainId ? index?.entitiesById.get(selectedChainId) : null;
   const chainElements = selectedChainId ? index?.elementsByChain.get(selectedChainId) || [] : [];
   const detail = useMemo(() => graph && activeId ? buildDetailModel(graph, activeId, { locale, market: marketFilter }) : null, [graph, activeId, locale, marketFilter]);
-  const relationDetail = useMemo(() => graph && activeRelationId ? buildRelationDetailModel(graph, activeRelationId) : null, [graph, activeRelationId]);
+  const relationDetail = useMemo(() => graph && activeRelationId ? buildRelationDetailModel(graph, activeRelationId, historyState.data) : null, [graph, activeRelationId, historyState.data]);
   useEffect(() => {
     if (relationDetail && !activeId) setActiveId(relationDetail.relation.from_id);
   }, [relationDetail, activeId]);
@@ -233,6 +261,7 @@ function App() {
     setPathStartId(null);
     setPathTargetId(null);
     setShockType(null);
+    setMobileDirectoryOpen(true);
   }
 
   function selectChain(chainId) {
@@ -248,6 +277,7 @@ function App() {
   function selectEntity(entityId) {
     const entity = index?.entitiesById.get(entityId);
     if (!entity) return;
+    setMobileDirectoryOpen(false);
     if (pathStartId && !pathTargetId && entityId !== pathStartId) {
       setPathTargetId(entityId);
       setActiveRelationId(null);
@@ -286,7 +316,7 @@ function App() {
   }
 
   function selectRelation(relationId) {
-    const relation = index?.relationsById.get(relationId) || historicalRelation(graph?.release_history, relationId);
+    const relation = index?.relationsById.get(relationId) || historicalRelation(historyState.data, relationId);
     if (!relation) return;
     setActiveRelationId(relationId);
     if (!activeId) {
@@ -383,6 +413,7 @@ function App() {
 
   const pathStartLabel = pathStartId ? getEntityLabel(index, pathStartId, locale) : "";
   const pathTargetLabel = pathTargetId ? getEntityLabel(index, pathTargetId, locale) : "";
+  const refreshStatus = getRefreshStatus(graph.meta.refresh, now);
   const queryControls = {
     showDirection: Boolean(activeId) && !shockOverlay,
     showDepth: Boolean(activeId) && !pathTargetId && !shockOverlay,
@@ -410,7 +441,7 @@ function App() {
   return (
     <div className="txAppShell">
       {!acknowledged && <DisclaimerModal copy={copy} onAccept={acknowledgeDisclaimer} />}
-      {releaseOpen && <ReleaseDialog graph={graph} locale={locale} onClose={() => setReleaseOpen(false)} onSelectRelation={openRecordedRelation} onRetry={() => setReloadKey((value) => value + 1)} />}
+      {releaseOpen && <ReleaseDialog graph={graph} history={historyState.data} historyLoading={historyState.loading} historyUnavailable={historyState.error} locale={locale} onClose={() => setReleaseOpen(false)} onSelectRelation={openRecordedRelation} onRetry={() => setHistoryReloadKey((value) => value + 1)} />}
       {notice && <p className="txStatusToast" role="status" aria-live="polite">{notice}</p>}
       <TopBar
         query={query}
@@ -424,6 +455,7 @@ function App() {
       />
       <ChainNavigator
         navigation={navigation}
+        isNarrow={isNarrow}
         activeChainId={selectedChainId}
         activeEntityId={activeId}
         onOverview={() => selectChain(null)}
@@ -435,6 +467,7 @@ function App() {
         dataVersion={graph.meta.data_version}
         dataStatus={graph.meta.status}
         dataRefresh={graph.meta.refresh}
+        refreshStatus={refreshStatus}
         relationshipQuality={graph.meta.quality}
         onOpenUpdates={() => { setSidebarOpen(false); setReleaseOpen(true); }}
         onReset={resetWorkspace}
@@ -453,22 +486,31 @@ function App() {
           subtitle={presentation.subtitle}
           breadcrumbs={presentation.breadcrumbs}
           statusLabel={graph.meta.status === "building" ? copy.coverageBuilding : null}
+          refreshStatus={refreshStatus}
+          onOpenUpdates={() => setReleaseOpen(true)}
+          showMobileDirectoryToggle={isCompactDirectory && !detail}
+          onOpenMobileDirectory={() => setMobileDirectoryOpen(true)}
           queryControls={queryControls}
           activeRelationId={activeRelationId}
           onSelect={selectEntity}
           onSelectRelation={selectRelation}
+          directoryOpen={isCompactDirectory && mobileDirectoryOpen && !detail}
           copy={copy}
         />
         {detail ? (
           <GraphDetailPanel
             detail={detail}
             relationDetail={relationDetail}
-            relationHistory={relationEvents(graph.release_history, activeRelationId)}
-            companyHistory={issuerEvents(graph.release_history, detail.entity.id)}
-            historyUnavailable={graph.releaseHistoryError}
-            onRetryHistory={() => setReloadKey((value) => value + 1)}
+            relationHistory={relationEvents(historyState.data, activeRelationId)}
+            companyHistory={issuerEvents(historyState.data, detail.entity.id)}
+            historyLoading={historyState.loading}
+            historyUnavailable={historyState.error}
+            onRetryHistory={() => setHistoryReloadKey((value) => value + 1)}
             locale={locale}
             copy={copy}
+            dataRefresh={graph.meta.refresh}
+            refreshStatus={refreshStatus}
+            onOpenUpdates={() => setReleaseOpen(true)}
             pathStartId={pathStartId}
             shockOverlay={shockOverlay}
             watchRecord={watchRecord}
@@ -481,6 +523,7 @@ function App() {
             onRunShock={runShock}
             onClearShock={() => setShockType(null)}
             onClose={closeDetail}
+            interactive={acknowledged}
           />
         ) : (
           <ScopeInspector
@@ -488,10 +531,17 @@ function App() {
             chainElements={chainElements}
             navigation={navigation}
             meta={flow.meta}
+            dataRefresh={graph.meta.refresh}
+            refreshStatus={refreshStatus}
             locale={locale}
             copy={copy}
+            onOpenUpdates={() => setReleaseOpen(true)}
             onSelectChain={selectChain}
             onSelectEntity={selectEntity}
+            mobileOpen={mobileDirectoryOpen}
+            onCloseMobile={() => setMobileDirectoryOpen(false)}
+            compact={isCompactDirectory}
+            interactive={acknowledged}
           />
         )}
       </main>

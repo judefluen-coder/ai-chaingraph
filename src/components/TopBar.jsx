@@ -70,7 +70,9 @@ export function TopBar({
                 event.preventDefault();
                 setActiveIndex((index) => Math.max(index - 1, 0));
               }
-              if (event.key === "Enter") selectResult(searchResults[activeIndex] || (searchResults.length === 1 ? searchResults[0] : null));
+              if (event.key === "Enter" && showResults) {
+                selectResult(searchResults[activeIndex] || (searchResults.length === 1 ? searchResults[0] : null));
+              }
               if (event.key === "Escape") {
                 setSearchOpen(false);
                 setActiveIndex(-1);

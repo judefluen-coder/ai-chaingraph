@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { buildRelationshipQuality, maxSourceDate } from "./lib/relationship-quality.mjs";
+import { assertQualityBaseline } from "./lib/quality-baseline.mjs";
+import { assertNoFutureReleaseDates } from "./lib/release-dates.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const snapshotPath = resolve(projectRoot, process.argv.find((argument) => argument.endsWith(".json")) || "public/snapshots/transmission-v1.1.json");
@@ -11,8 +13,17 @@ const minimumRate = Number(minimumRateArgument?.split("=")[1] || 0);
 const maximumAgeDays = Number(maximumAgeArgument?.split("=")[1] || 0);
 const maximumListingAgeDays = Number(maximumListingAgeArgument?.split("=")[1] || 0);
 const graph = JSON.parse(await readFile(snapshotPath, "utf8"));
+const baseline = JSON.parse(await readFile(resolve(projectRoot, "scripts/quality-baseline.json"), "utf8"));
 const quality = buildRelationshipQuality(graph);
 const checkedAt = graph.meta.refresh?.last_checked_at || graph.meta.updated_at;
+
+assertNoFutureReleaseDates({
+  checkedAt,
+  listingThrough: graph.meta.refresh?.a_share_listing_reconciled_through,
+  sourceCutoffDate: maxSourceDate(graph),
+});
+
+assertQualityBaseline(quality, baseline);
 
 if (minimumRate && quality.specific_issuer_rate < minimumRate) {
   throw new Error(`Specific issuer rate ${quality.specific_issuer_rate} is below ${minimumRate}.`);

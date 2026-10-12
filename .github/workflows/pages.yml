@@ -20,7 +20,7 @@ jobs:
     name: Build static app
     if: github.repository_visibility == 'public'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Check out repository
@@ -35,13 +35,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate public transmission snapshot
-        run: npm run validate:snapshot
+      - name: Install Chromium for UI smoke test
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: Validate graph, UI, performance, and Sites package
+        run: npm run build:sites
 
       - name: Build GitHub Pages artifact
         run: npm run build
         env:
           VITE_BASE_PATH: /ai-chaingraph/
+
+      - name: Test built GitHub Pages subpath
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BASE_PATH: /ai-chaingraph/
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6

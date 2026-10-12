@@ -1,4 +1,5 @@
 import dagre from "@dagrejs/dagre";
+import { isSemanticReviewPending } from "./semanticReview.js";
 import {
   createTransmissionIndex,
   dependencyRelationTypes,
@@ -195,16 +196,15 @@ export function searchTransmissionGraph(graph, query, options = {}) {
   const normalized = normalizeSearchText(query);
   if (!normalized) return [];
   const index = createGraphViewIndex(graph);
+  const searchEntries = index.searchEntries || (index.searchEntries = buildSearchEntries(index));
   const locale = options.locale || "zh";
   const market = options.market || "all";
   const limit = options.limit || 10;
   const results = [];
 
-  for (const issuer of index.issuers) {
+  for (const { issuer, securities, fields, exactValues } of searchEntries.issuers) {
     if (!issuerMatchesMarket(issuer.id, market, index)) continue;
-    const securities = index.securitiesByIssuer.get(issuer.id) || [];
-    const fields = [issuer.name, issuer.name_en, issuer.industry, issuer.industry_en, ...(issuer.aliases || []), ...securities.flatMap((security) => [security.stock_code, security.symbol, security.name, security.name_en, ...(security.aliases || [])])];
-    const score = searchScore(normalized, fields, securities.flatMap((security) => [security.stock_code, security.symbol]));
+    const score = searchScore(normalized, fields, exactValues);
     if (score === 0) continue;
     results.push({
       id: issuer.id,
@@ -217,8 +217,7 @@ export function searchTransmissionGraph(graph, query, options = {}) {
     });
   }
 
-  for (const entity of [...index.domains, ...index.chains, ...index.elements]) {
-    const fields = [entity.name, entity.name_en, ...(entity.aliases || [])];
+  for (const { entity, fields } of searchEntries.entities) {
     const score = searchScore(normalized, fields);
     if (score === 0) continue;
     const chainId = getEntityChainId(graph, entity.id);
@@ -237,6 +236,24 @@ export function searchTransmissionGraph(graph, query, options = {}) {
   return results
     .sort((left, right) => right.score - left.score || left.primary.localeCompare(right.primary, locale === "zh" ? "zh-CN" : "en"))
     .slice(0, limit);
+}
+
+function buildSearchEntries(index) {
+  return {
+    issuers: index.issuers.map((issuer) => {
+      const securities = index.securitiesByIssuer.get(issuer.id) || [];
+      return {
+        issuer,
+        securities,
+        fields: normalizeSearchValues([issuer.name, issuer.name_en, issuer.industry, issuer.industry_en, ...(issuer.aliases || []), ...securities.flatMap((security) => [security.stock_code, security.symbol, security.name, security.name_en, ...(security.aliases || [])])]),
+        exactValues: normalizeSearchValues(securities.flatMap((security) => [security.stock_code, security.symbol])),
+      };
+    }),
+    entities: [...index.domains, ...index.chains, ...index.elements].map((entity) => ({
+      entity,
+      fields: normalizeSearchValues([entity.name, entity.name_en, ...(entity.aliases || [])]),
+    })),
+  };
 }
 
 export function buildOverviewFlow(graph, options = {}) {
@@ -516,22 +533,22 @@ export function buildDetailModel(graph, entityId, options = {}) {
   };
 }
 
-export function buildRelationDetailModel(graph, relationId) {
+export function buildRelationDetailModel(graph, relationId, history = graph.release_history) {
   if (!relationId) return null;
   const index = createGraphViewIndex(graph);
-  const relation = index.relationsById.get(relationId) || graph.release_history?.archived_relations?.find((record) => record.id === relationId);
+  const relation = index.relationsById.get(relationId) || history?.archived_relations?.find((record) => record.id === relationId);
   if (!relation) return null;
   return {
     relation,
     from: index.entitiesById.get(relation.from_id),
     to: index.entitiesById.get(relation.to_id),
-    evidence: getRelationEvidence(graph, relation.id),
+    evidence: getRelationEvidence(graph, relation.id, history),
   };
 }
 
-export function getRelationEvidence(graph, relationId) {
+export function getRelationEvidence(graph, relationId, history = graph.release_history) {
   const index = createGraphViewIndex(graph);
-  const relation = index.relationsById.get(relationId) || graph.release_history?.archived_relations?.find((record) => record.id === relationId);
+  const relation = index.relationsById.get(relationId) || history?.archived_relations?.find((record) => record.id === relationId);
   return (relation?.claim_ids || []).map((claimId) => {
     const claim = index.claimsById.get(claimId);
     return claim ? { claim, source: index.sourcesById.get(claim.source_document_id) } : null;
@@ -659,6 +676,7 @@ function buildElementNode(entity, options) {
 
 function buildRelationEdge(relation, locale, options = {}) {
   const target = options.targetOverride || relation.to_id;
+  const semanticReviewPending = isSemanticReviewPending(relation);
   return {
     id: relation.id,
     source: relation.from_id,
@@ -672,6 +690,7 @@ function buildRelationEdge(relation, locale, options = {}) {
       mapping: Boolean(options.mapping),
       path: Boolean(options.path),
       conditional: Boolean(options.conditional),
+      semanticReviewPending,
     },
     className: [
       "txFlowEdge",
@@ -680,6 +699,7 @@ function buildRelationEdge(relation, locale, options = {}) {
       options.path ? "isPath" : "",
       options.conditional ? "isConditional" : "",
       relation.relation_type === "issuer_participates_in_segment" ? "isFallback" : "",
+      semanticReviewPending ? "isPending" : "",
     ].filter(Boolean).join(" "),
   };
 }
@@ -776,17 +796,18 @@ function relationOrder(relation) {
 }
 
 function searchScore(query, values, exactValues = []) {
-  const exact = exactValues.map(normalizeSearchText).filter(Boolean);
-  if (exact.includes(query)) return 140;
+  if (exactValues.includes(query)) return 140;
   let best = 0;
-  for (const rawValue of values) {
-    const value = normalizeSearchText(rawValue);
-    if (!value) continue;
+  for (const value of values) {
     if (value === query) best = Math.max(best, 120);
     else if (value.startsWith(query)) best = Math.max(best, 90 - Math.min(20, value.length - query.length));
     else if (value.includes(query)) best = Math.max(best, 65 - Math.min(20, value.length - query.length));
   }
   return best;
+}
+
+function normalizeSearchValues(values) {
+  return values.map(normalizeSearchText).filter(Boolean);
 }
 
 function normalizeSearchText(value) {

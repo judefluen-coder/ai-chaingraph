@@ -1,0 +1,112 @@
+{
+  "manifest_id": "a-share-2026-09-22-to-2026-10-10",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-10-10T10:14:15.000Z",
+  "period_start": "2026-09-22",
+  "reconciled_through": "2026-10-10",
+  "markets": ["SH", "SZ", "BJ"],
+  "market_checks": [
+    {
+      "exchange": "SH",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/s_list.shtml",
+      "checked_at": "2026-10-10T10:14:15.000Z",
+      "method": "实时读取上交所首发上市公告专栏；最新为9月16日沈鼓集团公告、9月17日上市，本期无新增首发A股。",
+      "new_listings": 0
+    },
+    {
+      "exchange": "SZ",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/index.html",
+      "checked_at": "2026-10-10T10:14:15.000Z",
+      "method": "实时读取深交所上市公司公告目录至10月9日，逐条核实9月21日中塑股份、9月28日鸿富诚、9月29日力勤资源公告中的实际上市日期；排除终止上市公告。",
+      "new_listings": 3
+    },
+    {
+      "exchange": "BJ",
+      "source_url": "https://www.bse.cn/index.html",
+      "checked_at": "2026-10-10T10:14:15.000Z",
+      "method": "浏览器实时读取北交所官网近期上市列表，确认9月22日世纪数码、23日凯达重工、24日百瑞吉、29日安达股份及10月9日宇特光电，并逐一打开官方上市报道。",
+      "new_listings": 5
+    }
+  ],
+  "listings": [
+    {
+      "exchange": "SZ",
+      "symbol": "301686",
+      "name": "中塑股份",
+      "listing_date": "2026-09-22",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/t20260921_622945.html",
+      "decision": "excluded",
+      "decision_reason": "深交所上市报道披露主营改性工程塑料研发、生产与销售；未核得与现有AI产业链具体要素直接对应的官方业务证据，不将通用工程塑料推断为AI材料。"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301716",
+      "name": "鸿富诚",
+      "listing_date": "2026-09-29",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/t20260928_623074.html",
+      "decision": "included",
+      "decision_reason": "深交所招股说明书明确披露生产导热界面材料，石墨烯导热垫片终端应用包括AI高功率芯片与数据中心，对应热管理材料要素。",
+      "batch_id": "weekly-2026-10-10-official-listings",
+      "issuer_id": "issuer:cn-sz-301716",
+      "security_id": "security:SZ:301716"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "001246",
+      "name": "力勤资源",
+      "listing_date": "2026-09-30",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/t20260929_623106.html",
+      "decision": "excluded",
+      "decision_reason": "深交所上市报道披露主营镍产品贸易、生产与销售；未核得对应现有AI产业链具体要素的官方业务证据，不由通用镍资源推断AI关系。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920229",
+      "name": "世纪数码",
+      "listing_date": "2026-09-22",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029489.html",
+      "decision": "excluded",
+      "decision_reason": "北交所上市报道披露主营纺织印花、广告标识及包装数码喷印设备；未支持现有AI产业链中的具体关系。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920025",
+      "name": "凯达重工",
+      "listing_date": "2026-09-23",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029494.html",
+      "decision": "excluded",
+      "decision_reason": "北交所上市报道披露主营钢材轧制用轧辊、辊环及相关设计服务；未支持现有AI产业链中的具体关系。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920201",
+      "name": "百瑞吉",
+      "listing_date": "2026-09-24",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029498.html",
+      "decision": "excluded",
+      "decision_reason": "北交所上市报道披露主营生物医用组织修复和再生材料；不能把医用材料直接视为医疗AI。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920202",
+      "name": "安达股份",
+      "listing_date": "2026-09-29",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029503.html",
+      "decision": "excluded",
+      "decision_reason": "北交所上市报道披露主营汽车铝合金压铸件，含动力传动与新能源三电系统零部件；未支持AI终端、机器人或数据中心具体要素，不能按通用汽车零部件纳入。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920157",
+      "name": "宇特光电",
+      "listing_date": "2026-10-09",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029581.html",
+      "decision": "included",
+      "decision_reason": "北交所发行保荐书明确披露为数据中心高速光模块开发FA、MT光连接组件，对应光芯片与光器件中的光模块器件要素。",
+      "batch_id": "weekly-2026-10-10-official-listings",
+      "issuer_id": "issuer:cn-bj-920157",
+      "security_id": "security:BJ:920157"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "batch_id": "weekly-2026-10-10-fore-robotics-correction",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T11:24:35.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:fore-robotics-components-20261010",
+      "source_document_id": "source:d1b3cbea7d88fce496fff2df",
+      "excerpt": "2025年年报披露，公司从事小模数齿轮、精密减速器及零部件的研发、生产与销售；产品表列示用于机器人灵巧手的直锥齿轮、螺旋锥齿轮及粉末冶金传动组件。",
+      "excerpt_en": "The 2025 annual report states that Fore Intelligent develops, manufactures, and sells gears and precision reducer components, including bevel gears and powder-metallurgy transmission components for robot dexterous hands.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T11:24:35.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:fore-robotics-components-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-301368",
+      "to_id": "component:robotics_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:fore-robotics-components-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:002d0b4bb03ecbed1fbd3897",
+      "attributes": {
+        "legacy_chain_id": "ai_devices_robotics",
+        "legacy_segment_id": "robotics_components"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:002d0b4bb03ecbed1fbd3897",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-301368",
+        "to_id": "component:robotics_components",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:5e977de5e62b7d6f1f3bcc09"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "robotics_components",
+          "candidate_element_id": "component:robotics_components",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:robotics_components",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:d1b3cbea7d88fce496fff2df",
+      "reason": "年报证明公司生产供机器人灵巧手使用的齿轮及传动部件，未证明公司将机器人部件集成到自身产品；动作由“集成”更正为“生产”。",
+      "reason_en": "The report supports manufactured gears and transmission components for robot dexterous hands, not integration of robotics components into the company's own product."
+    }
+  ]
+}

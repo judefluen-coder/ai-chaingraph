@@ -14,6 +14,9 @@ import {
   assertCandidateBatchApplied,
   readApprovedCandidateBatches,
 } from "./lib/weekly-batches.mjs";
+import { syncReadmeSnapshotSummary } from "./lib/readme-snapshot-summary.mjs";
+import { assertNoFutureReleaseDates } from "./lib/release-dates.mjs";
+import { nextWeeklyCheckAt } from "./lib/weekly-schedule.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const snapshotPath = resolve(projectRoot, "public/snapshots/transmission-v1.1.json");
@@ -43,11 +46,12 @@ function recomputeCounts(graph, quality) {
 }
 
 const graph = JSON.parse(await readFile(snapshotPath, "utf8"));
+const previousStatus = JSON.parse(await readFile(statusPath, "utf8"));
 const previousRefresh = graph.meta.refresh || {};
 const appliedBatchIds = new Set(graph.meta.refresh?.applied_batch_ids || []);
 const approvedBatches = await readApprovedCandidateBatches(projectRoot);
 const batches = approvedBatches.filter((batch) => !appliedBatchIds.has(batch.batch_id));
-const imported = { batches: 0, entities: 0, issuers: 0, securities: 0, sources: 0, claims: 0, relations: 0 };
+const imported = { batches: 0, entities: 0, issuers: 0, securities: 0, sources: 0, claims: 0, relations: 0, withdrawn_relations: 0 };
 
 for (const batch of batches) {
   const result = applyCandidateBatch(graph, batch);
@@ -58,9 +62,14 @@ for (const batch of batches) {
   imported.sources += result.sourcesAdded;
   imported.claims += result.claimsAdded;
   imported.relations += result.relationsAdded;
+  imported.withdrawn_relations += result.relationsWithdrawn;
   appliedBatchIds.add(batch.batch_id);
 }
-for (const batch of approvedBatches) assertCandidateBatchApplied(graph, batch);
+const archivedRelationIds = new Set(approvedBatches.flatMap((batch) => [
+  ...(batch.withdrawn_relations || []).map((item) => item.relation.id),
+  ...(batch.relations || []).map((item) => item.replaces_relation_id).filter(Boolean),
+]));
+for (const batch of approvedBatches) assertCandidateBatchApplied(graph, batch, archivedRelationIds);
 
 graph.meta.refresh = {
   ...previousRefresh,
@@ -78,12 +87,16 @@ const changed = imported.entities
   + imported.sources
   + imported.claims
   + imported.relations
+  + imported.withdrawn_relations
   + promotions.promotedRelations
   + promotions.reclassifiedRelations
   + promotions.revertedRelations > 0;
+const replayedCheck = !changed && previousRefresh.last_checked_at === checkedAt && previousStatus.checked_at === checkedAt;
+const reported = replayedCheck
+  ? { changed: previousStatus.changed, imported: previousStatus.imported, promotions: previousStatus.promotions }
+  : { changed, imported, promotions };
 const currentChangeSummary = { imported, promotions };
-const nextScheduledAt = new Date(now);
-nextScheduledAt.setUTCDate(nextScheduledAt.getUTCDate() + 7);
+const nextScheduledAt = nextWeeklyCheckAt(now);
 
 if (changed) {
   graph.meta.updated_at = checkedAt;
@@ -94,7 +107,7 @@ graph.meta.refresh = {
   cadence: "weekly",
   last_checked_at: checkedAt,
   last_changed_at: changed ? checkedAt : previousRefresh.last_changed_at || graph.meta.updated_at,
-  next_scheduled_at: nextScheduledAt.toISOString(),
+  next_scheduled_at: nextScheduledAt,
   source_cutoff_date: maxSourceDate(graph),
   mechanism: "reviewed_incremental_batches",
   a_share_listing_reconciled_through: listingReconciliation.reconciled_through,
@@ -104,6 +117,11 @@ graph.meta.refresh = {
 };
 graph.meta.quality = quality;
 recomputeCounts(graph, quality);
+assertNoFutureReleaseDates({
+  checkedAt,
+  listingThrough: graph.meta.refresh.a_share_listing_reconciled_through,
+  sourceCutoffDate: graph.meta.refresh.source_cutoff_date,
+});
 
 const status = {
   schema_version: "1.0.0",
@@ -115,23 +133,30 @@ const status = {
   cadence: graph.meta.refresh.cadence,
   a_share_listing_reconciled_through: graph.meta.refresh.a_share_listing_reconciled_through,
   a_share_listing_reconciliation: graph.meta.refresh.a_share_listing_reconciliation,
-  changed,
-  imported,
-  promotions,
+  ...reported,
   last_change_summary: graph.meta.refresh.last_change_summary,
   quality,
 };
 
+const readmeUpdates = [];
+for (const [filename, locale] of [["README.md", "zh"], ["README.en.md", "en"]]) {
+  const path = resolve(projectRoot, filename);
+  const readme = await readFile(path, "utf8");
+  readmeUpdates.push({ path, readme, updated: syncReadmeSnapshotSummary(readme, graph, locale) });
+}
+
 await writeFile(snapshotPath, `${JSON.stringify(graph)}\n`, "utf8");
 await writeFile(statusPath, `${JSON.stringify(status, null, 2)}\n`, "utf8");
+for (const { path, readme, updated } of readmeUpdates) {
+  if (updated !== readme) await writeFile(path, updated, "utf8");
+}
 
 console.log(JSON.stringify({
   snapshot: basename(snapshotPath),
   status: basename(statusPath),
   dataVersion: graph.meta.data_version,
-  changed,
-  imported,
-  promotions,
+  ...reported,
+  replayedCheck,
   quality: {
     issuers: quality.issuers_total,
     specificIssuers: quality.issuers_with_specific_relations,

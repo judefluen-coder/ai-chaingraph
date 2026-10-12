@@ -1,4 +1,5 @@
-import { ArrowRight, Building2, GitBranch, Layers3, Network } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { ArrowLeft, ArrowRight, Building2, GitBranch, Layers3, Network, X } from "lucide-react";
 import { getEntityTypeLabel, localize } from "../lib/transmissionViewModel.js";
 
 export function ScopeInspector({
@@ -6,11 +7,60 @@ export function ScopeInspector({
   chainElements,
   navigation,
   meta,
+  dataRefresh,
+  refreshStatus,
   locale,
   copy,
+  onOpenUpdates,
   onSelectChain,
   onSelectEntity,
+  mobileOpen,
+  onCloseMobile,
+  compact,
+  interactive,
 }) {
+  const panelRef = useRef(null);
+  const closeRef = useRef(null);
+  const headingRef = useRef(null);
+  const openerRef = useRef(null);
+  const previousChainIdRef = useRef(selectedChain?.id || null);
+  const onCloseRef = useRef(onCloseMobile);
+  onCloseRef.current = onCloseMobile;
+  const overlayOpen = compact && mobileOpen && interactive;
+
+  useEffect(() => {
+    if (!overlayOpen) return undefined;
+    openerRef.current = document.activeElement;
+    closeRef.current?.focus();
+
+    function handleKeyDown(event) {
+      if (!panelRef.current?.contains(event.target)) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeOverlay();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [overlayOpen]);
+
+  useEffect(() => {
+    const chainId = selectedChain?.id || null;
+    if (overlayOpen && previousChainIdRef.current !== chainId) headingRef.current?.focus({ preventScroll: true });
+    previousChainIdRef.current = chainId;
+  }, [overlayOpen, selectedChain?.id]);
+
+  function closeOverlay() {
+    onCloseRef.current();
+    requestAnimationFrame(() => {
+      const opener = openerRef.current;
+      const fallback = document.querySelector(".txMobileDirectoryButton");
+      const target = opener instanceof HTMLElement && opener !== document.body && opener.isConnected && opener.getClientRects().length ? opener : fallback;
+      target?.focus();
+    });
+  }
+
   const isChain = Boolean(selectedChain);
   const metrics = isChain
     ? [
@@ -26,14 +76,23 @@ export function ScopeInspector({
       ];
 
   return (
-    <aside className="txDetailPanel txScopeInspector" aria-label={copy.scopeInspector}>
+    <aside ref={panelRef} className={`txDetailPanel txScopeInspector ${mobileOpen ? "isMobileOpen" : ""}`} aria-label={copy.scopeInspector} inert={compact && !mobileOpen ? "" : undefined}>
       <header className="txDetailHeader">
         <div>
           <span>{copy.scopeInspector}</span>
-          <h2>{isChain ? localize(selectedChain, "name", locale) : copy.overviewTitle}</h2>
+          <h2 ref={headingRef} tabIndex={-1}>{isChain ? localize(selectedChain, "name", locale) : copy.overviewTitle}</h2>
           <small>{isChain ? copy.chainScope : copy.overviewScope}</small>
         </div>
+        <button ref={closeRef} type="button" className="txIconButton txScopeMobileClose" aria-label={copy.showGraph} title={copy.showGraph} onClick={closeOverlay}>
+          <X size={18} strokeWidth={1.8} />
+        </button>
       </header>
+
+      {isChain && (
+        <button type="button" className="txScopeBackButton" onClick={() => onSelectChain(null)}>
+          <ArrowLeft size={15} strokeWidth={1.8} />{copy.backToDomains}
+        </button>
+      )}
 
       <section className="txDetailSection txScopeSummary">
         {isChain && localize(selectedChain, "description", locale) && (
@@ -48,6 +107,11 @@ export function ScopeInspector({
             </span>
           ))}
         </div>
+        <button type="button" className={`txScopeFreshness ${refreshStatus?.state === "stale" ? "isStale" : ""}`} onClick={onOpenUpdates}>
+          <span><small>{copy.checkedOn}</small><strong>{refreshStatus?.checkedDate || "-"}</strong></span>
+          <span><small>{copy.sourceCutoff}</small><strong>{dataRefresh?.source_cutoff_date || "-"}</strong></span>
+          {refreshStatus?.state !== "current" && <em>{refreshStatus?.state === "stale" ? copy.reviewOverdue : copy.reviewUnknown}</em>}
+        </button>
       </section>
 
       {isChain ? (

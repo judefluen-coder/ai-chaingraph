@@ -1,0 +1,62 @@
+{
+  "batch_id": "weekly-2026-10-10-wote-packaging-correction",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T11:43:53.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:wote-ptfe-packaging-material-20261010",
+      "source_document_id": "source:553a7ed2f7c176a03c40df4b",
+      "excerpt": "2025年年报披露公司生产PTFE薄膜；在“芯片先进封装材料”领域，其PTFE薄膜已获得国内外头部客户认证，并用于半导体芯片后端封装的热封制程。",
+      "excerpt_en": "The 2025 annual report states that WOTE manufactures PTFE film and places it in advanced chip-packaging materials; the film has leading-customer certifications and is used in back-end packaging heat-sealing processes.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T11:43:53.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:wote-ptfe-packaging-material-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-002886",
+      "to_id": "material:packaging_materials",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:wote-ptfe-packaging-material-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:0a119c63e7d5bf51823b632f",
+      "attributes": {
+        "legacy_chain_id": "advanced_packaging_memory",
+        "legacy_segment_id": "packaging_materials"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:0a119c63e7d5bf51823b632f",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-002886",
+        "to_id": "material:packaging_materials",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:052decc63920dfdc00ff9743"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "advanced_packaging_memory",
+          "legacy_segment_id": "packaging_materials",
+          "candidate_element_id": "material:packaging_materials",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:packaging_materials",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:553a7ed2f7c176a03c40df4b",
+      "reason": "年报明确公司生产PTFE薄膜，并将其列入芯片先进封装材料领域；用于后端热封制程是产品用途，不表示公司集成封装材料。关系动作更正为“生产”。",
+      "reason_en": "The report identifies company-manufactured PTFE film in advanced chip-packaging materials. Its use in heat sealing does not mean the company integrates packaging materials; the action is corrected to production."
+    }
+  ]
+}

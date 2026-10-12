@@ -22,15 +22,18 @@ Trace directed industry relationships from materials, chips, and compute infrast
 
 ## Current Snapshot
 
+<!-- snapshot-summary:start -->
 | Listed issuers | Chains / segments | Company mappings | Specific mappings | Public sources |
 | ---: | ---: | ---: | ---: | ---: |
-| **4,548** | **12 / 111** | **6,621** | **5,996 (93.3% of issuers)** | **4,636** |
+| **4,551** | **12 / 111** | **6,623** | **5,998 (93.3% of issuers)** | **4,643** |
 
 - Data version: **v1.2.0**
-- Relationship layer last changed: **2026-09-08**
-- Included sources run through: **2026-09-04**
-- New A-share listings reconciled through: **2026-09-08**
+- Last checked: **2026-10-12**
+- Data last changed: **2026-10-10**
+- Included sources run through: **2026-10-09**
+- New A-share listings reconciled through: **2026-10-12**
 - Markets: A-shares and US-listed securities
+<!-- snapshot-summary:end -->
 
 Companies may appear in multiple segments, so chain-level company counts are not unique-company totals. Check time, actual data-change time, and listing-reconciliation coverage are tracked separately in [`update-status.json`](public/snapshots/update-status.json).
 
@@ -79,7 +82,7 @@ Search by company or ticker to inspect its positions across chains, products, an
 
 ## Evidence and Data Boundaries
 
-Coverage only matters when relationships are specific and reviewable. v1.2 increased issuers with specific action relationships from **1,149 (25.3%)** to **4,244 (93.3%)**. The remaining 304 issuers stay broad where the available evidence does not support a narrower claim.
+Coverage only matters when relationships are specific and reviewable. v1.2 raised the share of issuers with specific action relationships above 90%. Issuers without sufficient evidence remain broadly mapped rather than being assigned a guessed product claim. Current totals are in the snapshot quality statistics.
 
 | Semantic | Meaning |
 | --- | --- |
@@ -91,8 +94,8 @@ Coverage only matters when relationships are specific and reviewable. v1.2 incre
 
 Known boundaries:
 
-- 304 issuers still have broad mappings only and require more specific, verifiable disclosure.
-- The median segment has 22 company mappings; seven segments, including HBM and PCB base laminates, have fewer than five.
+- Some issuers still have broad mappings only and require more specific, verifiable disclosure.
+- A few segments, including HBM, have fewer than five company mappings; see the snapshot quality statistics for current counts and names.
 - New A-share listings have an explicit reconciliation manifest; US listing coverage still requires a separate SEC and exchange-source reconciliation.
 - The product reads a versioned static snapshot. It is not a real-time filing, market-data, or trading system.
 

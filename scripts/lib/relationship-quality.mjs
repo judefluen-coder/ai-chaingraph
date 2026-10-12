@@ -6,6 +6,8 @@ const SPECIFIC_RELATION_TYPES = new Set([
   "issuer_produces",
   "issuer_provides",
 ]);
+const PHYSICAL_TARGET_TYPES = new Set(["component", "equipment", "material", "product"]);
+const DOWNSTREAM_USAGE = /用于|应用于|\b(?:used in|used for|for use in|applied to)\b/i;
 
 const ACTION_RULES = [
   {
@@ -98,6 +100,7 @@ export function promoteEvidenceBackedFallbacks(graph) {
     const isRulePromoted = relation.attributes?.promoted_from_relation_type === "issuer_participates_in_segment"
       && relation.attributes?.promoted_from_target_id;
     if (!isBroadMapping && !isRulePromoted) return relation;
+    if (relation.attributes?.promotion_locked) return relation;
 
     const claims = (relation.claim_ids || []).map((claimId) => claimsById.get(claimId)).filter(Boolean);
     const hasReviewableEvidence = claims.length > 0 && claims.every((claim) => {
@@ -108,8 +111,13 @@ export function promoteEvidenceBackedFallbacks(graph) {
     const targetId = anchorBySegment.get(sourceSegmentId);
     if (!hasReviewableEvidence || !targetId) return relation;
 
+    const claimText = claims.map((claim) => claim.excerpt || claim.excerpt_en || "").join(" ");
+    if (PHYSICAL_TARGET_TYPES.has(entityTypesById.get(targetId)) && DOWNSTREAM_USAGE.test(claimText)) {
+      return relation;
+    }
+
     const action = inferSpecificRelation(
-      claims.map((claim) => claim.excerpt || claim.excerpt_en || "").join(" "),
+      claimText,
       entityTypesById.get(targetId),
     );
     if (!action) {

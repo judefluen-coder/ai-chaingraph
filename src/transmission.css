@@ -48,6 +48,7 @@ button.txSidebarDataState:hover { background: var(--tx-surface-strong); }
 .txReleaseDialog h2 { margin: 0 0 6px; font-size: 18px; }
 .txReleaseDialog header span { font-size: 12px; color: var(--tx-muted); }
 .txReleaseBody { padding: 4px 24px 24px; }
+.txReleaseWarning { border: 1px solid #ead39c; border-radius: var(--tx-radius-sm); color: #805011; background: #fff8e8; padding: 10px 12px; font-size: 12px; line-height: 1.5; }
 .txReleaseBody dl > div { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; font-size: 13px; }
 .txReleaseBody dd { margin: 0; }
 
@@ -638,6 +639,16 @@ button:disabled {
   font-weight: 650;
 }
 
+.txRefreshWarning {
+  border: 1px solid #ead39c;
+  border-radius: var(--tx-radius-xs);
+  color: #805011;
+  background: #fff8e8;
+  padding: 3px 6px;
+  font-size: 10px;
+  font-weight: 650;
+}
+
 .txBreadcrumbs {
   min-width: 0;
   display: flex;
@@ -847,6 +858,13 @@ button:disabled {
   background: var(--tx-primary-soft);
 }
 
+.txGraphCanvas .react-flow__minimap {
+  border: 1px solid var(--tx-line);
+  border-radius: var(--tx-radius-sm);
+  box-shadow: 0 5px 16px rgba(42, 56, 76, 0.1);
+  background: rgba(255, 255, 255, 0.96);
+}
+
 .react-flow__node.txFlowNode {
   width: 220px;
   height: 90px;
@@ -1028,6 +1046,11 @@ button:disabled {
   stroke-dasharray: 4 4;
 }
 
+.react-flow__edge.txFlowEdge.isPending .react-flow__edge-path {
+  stroke: #a8791a;
+  stroke-dasharray: 6 3;
+}
+
 .react-flow__edge.txFlowEdge.isPath .react-flow__edge-path {
   stroke: var(--tx-primary);
   stroke-width: 2.6;
@@ -1082,6 +1105,11 @@ button:disabled {
 .txGraphLegend i.isCross {
   border-top-style: dashed;
   border-top-color: #536c94;
+}
+
+.txGraphLegend i.isPending {
+  border-top-style: dashed;
+  border-top-color: #a8791a;
 }
 
 .txGraphLegend i.isConditional {
@@ -1141,6 +1169,10 @@ button:disabled {
   min-width: 0;
 }
 
+.txEvidenceHeader > div {
+  flex: 1;
+}
+
 .txDetailHeader span,
 .txDetailHeader small {
   display: block;
@@ -1162,6 +1194,47 @@ button:disabled {
   font-size: 19px;
   font-weight: 720;
   line-height: 1.24;
+}
+
+.txDetailFreshness {
+  width: 100%;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+  border: 1px solid var(--tx-line-soft);
+  border-radius: var(--tx-radius-sm);
+  background: var(--tx-primary-soft);
+  padding: 5px 8px;
+  text-align: left;
+}
+
+.txDetailHeader .txDetailFreshness span {
+  display: grid;
+  gap: 2px;
+  color: var(--tx-muted);
+  font-size: 9px;
+  white-space: normal;
+}
+
+.txDetailFreshness strong {
+  color: var(--tx-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.txDetailFreshness em {
+  grid-column: 1 / -1;
+  color: #805011;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.txDetailFreshness.isStale {
+  border-color: #ead39c;
+  background: #fff8e8;
 }
 
 .txDetailActions {
@@ -1288,6 +1361,18 @@ button:disabled {
   line-height: 1.55;
 }
 
+.txReviewReason {
+  margin: 10px 0 0;
+  padding: 9px 10px;
+  border-left: 2px solid #d5a64b;
+  color: var(--tx-body);
+  background: var(--tx-inference-soft);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.txReviewReason strong { color: var(--tx-ink); }
+
 .txEvidenceBadge {
   display: inline-flex;
   min-height: 20px;
@@ -1312,6 +1397,12 @@ button:disabled {
 
 .txEvidenceBadge.isFallback {
   border-color: #ead39c;
+  color: var(--tx-inference);
+  background: var(--tx-inference-soft);
+}
+
+.txEvidenceBadge.isPending {
+  border-color: #d5a64b;
   color: var(--tx-inference);
   background: var(--tx-inference-soft);
 }
@@ -1979,7 +2070,7 @@ button:disabled {
   }
 
   .txDetailHeader h2 {
-    font-size: 17px;
+    font-size: 18px;
   }
 
   .txDetailActions,
@@ -1989,15 +2080,62 @@ button:disabled {
   }
 
   .txDetailActions button {
-    min-height: 42px;
+    min-height: 44px;
+    font-size: 11px;
+  }
+
+  .txEvidenceSection h3 {
+    font-size: 14px;
+  }
+
+  .txEvidenceBadge {
+    min-height: 24px;
+    font-size: 10px;
+  }
+
+  .txSelectedRelation strong,
+  .txReviewReason,
+  .txEvidenceList article strong,
+  .txEvidenceList article p {
+    font-size: 12px;
+  }
+
+  .txSelectedRelation span {
+    font-size: 10px;
+  }
+
+  .txEvidenceList time {
+    font-size: 10px;
+  }
+
+  .txEvidenceList a {
+    min-height: 44px;
+    flex-basis: 100%;
+    justify-content: center;
+    margin-left: 0;
+    border: 1px solid #c5d6f3;
+    border-radius: var(--tx-radius-sm);
+    background: var(--tx-primary-soft);
+    font-size: 11px;
+  }
+
+  .txRelationMain strong,
+  .txCompanyRows strong {
+    font-size: 12px;
+  }
+
+  .txRelationMain small,
+  .txCompanyRows small {
+    font-size: 10px;
   }
 
   .txRelationTarget {
-    width: 42px;
+    width: 44px;
+    min-height: 44px;
   }
 
   .txRelationRows article {
-    grid-template-columns: minmax(0, 1fr) 42px;
+    grid-template-columns: minmax(0, 1fr) 44px;
   }
 
   .txConditionalSection summary {
@@ -2066,6 +2204,12 @@ button:disabled {
   box-shadow: 0 10px 30px rgba(37, 52, 73, 0.1);
 }
 
+.txMobileDirectoryButton,
+.txScopeMobileClose,
+.txScopeBackButton {
+  display: none;
+}
+
 .txScopeInspector .txDetailHeader small {
   font-family: inherit;
 }
@@ -2126,6 +2270,49 @@ button:disabled {
   line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.txScopeFreshness {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+  border: 1px solid var(--tx-line-soft);
+  border-radius: var(--tx-radius-sm);
+  background: var(--tx-primary-soft);
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.txScopeFreshness > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.txScopeFreshness small {
+  color: var(--tx-muted);
+  font-size: 9px;
+}
+
+.txScopeFreshness strong {
+  color: var(--tx-ink);
+  font-size: 11px;
+  font-weight: 680;
+}
+
+.txScopeFreshness em {
+  grid-column: 1 / -1;
+  color: #805011;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.txScopeFreshness.isStale {
+  border-color: #ead39c;
+  background: #fff8e8;
 }
 
 .txScopeDirectory {
@@ -2256,7 +2443,104 @@ button:disabled {
   }
 }
 
+@media (max-width: 980px) {
+  .txTopbar {
+    z-index: calc(var(--tx-z-panel) + 10);
+  }
+
+  .txMobileDirectoryButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    margin-top: 8px;
+    border: 1px solid var(--tx-line);
+    border-radius: var(--tx-radius-sm);
+    background: var(--tx-surface);
+    color: var(--tx-primary);
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 680;
+  }
+
+  .txWorkspace.hasInspector .txScopeInspector.isMobileOpen {
+    display: block;
+    position: fixed;
+    z-index: calc(var(--tx-z-panel) + 5);
+    inset: 68px 0 0 224px;
+    width: calc(100% - 224px);
+    max-height: calc(100dvh - 68px);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .txScopeInspector.isMobileOpen .txDetailHeader {
+    padding: 18px 18px 16px;
+  }
+
+  .txScopeInspector.isMobileOpen .txDetailHeader h2 {
+    font-size: 21px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeMobileClose {
+    display: grid;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeBackButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--tx-primary);
+    margin: 8px 12px 0;
+    padding: 0 8px;
+    font-size: 13px;
+    font-weight: 680;
+  }
+
+  .txScopeInspector.isMobileOpen .txDetailSection {
+    padding: 18px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeSummary > p {
+    font-size: 13px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeMetrics small {
+    font-size: 10px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeDomainList section > header strong,
+  .txScopeInspector.isMobileOpen .txScopeElementList strong {
+    font-size: 14px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeDomainList section > header span,
+  .txScopeInspector.isMobileOpen .txScopeElementList small {
+    font-size: 11px;
+  }
+
+  .txScopeInspector.isMobileOpen .txScopeDomainList button,
+  .txScopeInspector.isMobileOpen .txScopeElementList button {
+    min-height: 48px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
 @media (max-width: 760px) {
+  .txWorkspace.hasInspector .txScopeInspector.isMobileOpen {
+    inset: 58px 0 0;
+    width: 100%;
+    max-height: calc(100dvh - 58px);
+  }
+
   .txWorkspace.hasInspector .txDetailPanel:not(.txScopeInspector) {
     width: 100%;
   }
@@ -2686,26 +2970,41 @@ textarea:focus-visible {
 .txSidebarDataState {
   min-width: 0;
   display: flex;
-  gap: 5px;
-  align-items: center;
+  gap: 8px;
+  align-items: flex-start;
   color: var(--tx-muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 
-.txSidebarDataState span,
-.txSidebarDataState small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.txSidebarDataState svg { flex: 0 0 auto; margin-top: 2px; }
 
-.txSidebarDataState span {
+.txSidebarDataCopy {
   min-width: 0;
+  display: grid;
+  gap: 2px;
 }
 
-.txSidebarDataState small {
-  margin-left: auto;
+.txSidebarDataCopy strong {
+  font-weight: 680;
+}
+
+.txSidebarDataCopy small {
+  display: grid;
+  gap: 1px;
   color: var(--tx-muted-soft);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.txSidebarDataState.isStale {
+  border-radius: var(--tx-radius-sm);
+  color: #805011;
+  background: #fff8e8;
+  padding: 5px;
+}
+
+.txSidebarDataState.isStale .txSidebarDataCopy small {
+  color: #805011;
 }
 
 .txWorkspace {

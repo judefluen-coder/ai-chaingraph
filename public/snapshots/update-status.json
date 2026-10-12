@@ -1,32 +1,35 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-09-21T02:08:07.988Z",
-  "changed_at": "2026-09-21T02:08:07.988Z",
-  "next_scheduled_at": "2026-09-28T02:08:07.988Z",
-  "source_cutoff_date": "2026-09-15",
+  "checked_at": "2026-10-12T02:12:30.443Z",
+  "changed_at": "2026-10-10T12:34:44.135Z",
+  "next_scheduled_at": "2026-10-19T01:00:00.000Z",
+  "source_cutoff_date": "2026-10-09",
   "cadence": "weekly",
-  "a_share_listing_reconciled_through": "2026-09-21",
+  "a_share_listing_reconciled_through": "2026-10-12",
   "a_share_listing_reconciliation": {
-    "reconciled_through": "2026-09-21",
-    "reviewed_listings": 37,
-    "included_listings": 12,
-    "excluded_listings": 25,
+    "reconciled_through": "2026-10-12",
+    "reviewed_listings": 45,
+    "included_listings": 14,
+    "excluded_listings": 31,
     "manifest_ids": [
       "a-share-2026-07-13-to-2026-09-08",
       "a-share-2026-09-09-to-2026-09-14",
-      "a-share-2026-09-15-to-2026-09-21"
+      "a-share-2026-09-15-to-2026-09-21",
+      "a-share-2026-09-22-to-2026-10-10",
+      "a-share-2026-10-11-to-2026-10-12"
     ]
   },
-  "changed": true,
+  "changed": false,
   "imported": {
-    "batches": 1,
+    "batches": 0,
     "entities": 0,
     "issuers": 0,
     "securities": 0,
-    "sources": 1,
-    "claims": 1,
-    "relations": 1
+    "sources": 0,
+    "claims": 0,
+    "relations": 0,
+    "withdrawn_relations": 0
   },
   "promotions": {
     "promotedRelations": 0,
@@ -40,9 +43,10 @@
       "entities": 0,
       "issuers": 0,
       "securities": 0,
-      "sources": 1,
-      "claims": 1,
-      "relations": 1
+      "sources": 0,
+      "claims": 2,
+      "relations": 2,
+      "withdrawn_relations": 0
     },
     "promotions": {
       "promotedRelations": 0,
@@ -52,10 +56,10 @@
     }
   },
   "quality": {
-    "issuers_total": 4549,
-    "issuers_mapped": 4549,
+    "issuers_total": 4551,
+    "issuers_mapped": 4551,
     "issuers_unmapped": 0,
-    "issuers_with_specific_relations": 4245,
+    "issuers_with_specific_relations": 4247,
     "issuers_generic_only": 304,
     "specific_issuer_rate": 0.9332,
     "issuer_relations_total": 6623,
@@ -76,11 +80,6 @@
         "mapping_count": 1
       },
       {
-        "segment_id": "segment:pcb_base_laminates",
-        "name": "PCB基础覆铜板",
-        "mapping_count": 1
-      },
-      {
         "segment_id": "segment:laminate_functional_fillers",
         "name": "覆铜板功能填料",
         "mapping_count": 2
@@ -98,6 +97,11 @@
       {
         "segment_id": "segment:data_center_facility_components",
         "name": "数据中心机电与设施部件",
+        "mapping_count": 4
+      },
+      {
+        "segment_id": "segment:pcb_base_laminates",
+        "name": "PCB基础覆铜板",
         "mapping_count": 4
       },
       {
@@ -130,7 +134,7 @@
       {
         "segment_id": "segment:ai_sensors",
         "name": "AI传感器与机器视觉",
-        "mapping_count": 276
+        "mapping_count": 274
       }
     ]
   }

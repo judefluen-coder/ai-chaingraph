@@ -18,6 +18,8 @@ dist/
 !/public/snapshots/transmission-v1.1.json
 !/public/snapshots/update-status.json
 .playwright-cli/
+playwright-report/
+test-results/
 .DS_Store
 *.log
 *.sqlite

@@ -11,7 +11,9 @@ import {
   writeFileSync,
 } from "node:fs";
 import { extname, join, relative, resolve, sep } from "node:path";
-import { gzipSync } from "node:zlib";
+import { pathToFileURL } from "node:url";
+import { gunzipSync, gzipSync } from "node:zlib";
+import { assertReleaseRevision, createReleaseRevision } from "./lib/release-revision.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const viteDist = join(projectRoot, "dist");
@@ -23,6 +25,9 @@ const workerPath = join(packageDist, "server", "index.js");
 const archivePath = join(sitesRoot, "ai-chaingraph-sites.tar.gz");
 const hostingSource = join(projectRoot, ".openai", "hosting.json");
 const requiredSnapshot = "snapshots/transmission-v1.1.json";
+const requiredStatus = "snapshots/update-status.json";
+const requiredHistory = "snapshots/release-history.json";
+const requiredRevision = "release-revision.json";
 
 const CONTENT_TYPES = {
   ".css": "text/css; charset=utf-8",
@@ -49,7 +54,7 @@ function webPath(filePath) {
 
 function cacheControl(pathname) {
   if (pathname === "/index.html") return "no-cache";
-  if (pathname === `/${requiredSnapshot}`) return "no-store";
+  if ([requiredSnapshot, requiredStatus, requiredHistory, requiredRevision].some((file) => pathname === `/${file}`)) return "no-store";
   if (pathname.startsWith("/assets/")) return "public, max-age=31536000, immutable";
   return "public, max-age=3600";
 }
@@ -108,9 +113,23 @@ export default {
 `;
 }
 
+rmSync(archivePath, { force: true });
 invariant(existsSync(join(viteDist, "index.html")), "Run the Vite build before building the Sites package.");
 invariant(existsSync(join(viteDist, requiredSnapshot)), `Missing ${requiredSnapshot} in the Vite build.`);
+invariant(existsSync(join(viteDist, requiredStatus)), `Missing ${requiredStatus} in the Vite build.`);
+invariant(existsSync(join(viteDist, requiredHistory)), `Missing ${requiredHistory} in the Vite build.`);
+invariant(existsSync(join(viteDist, requiredRevision)), `Missing ${requiredRevision} in the Vite build.`);
 invariant(existsSync(hostingSource), "Missing .openai/hosting.json.");
+const snapshot = JSON.parse(readFileSync(join(viteDist, requiredSnapshot), "utf8"));
+const history = JSON.parse(readFileSync(join(viteDist, requiredHistory), "utf8"));
+invariant(history.data_updated_at === snapshot.meta.updated_at, "Release history does not match the graph snapshot.");
+const revision = JSON.parse(readFileSync(join(viteDist, requiredRevision), "utf8"));
+assertReleaseRevision(revision, createReleaseRevision({
+  commit: revision.commit,
+  dirty: revision.dirty,
+  snapshot: readFileSync(join(viteDist, requiredSnapshot)),
+  status: readFileSync(join(viteDist, requiredStatus)),
+}), "Vite build");
 
 const hosting = JSON.parse(readFileSync(hostingSource, "utf8"));
 invariant(typeof hosting.project_id === "string" && hosting.project_id, "Sites project_id is required.");
@@ -153,7 +172,14 @@ writeFileSync(
 );
 
 execFileSync(process.execPath, ["--check", workerPath], { stdio: "inherit" });
-rmSync(archivePath, { force: true });
+const worker = (await import(pathToFileURL(workerPath).href)).default;
+for (const snapshotPath of [requiredSnapshot, requiredStatus, requiredHistory, requiredRevision]) {
+  const response = await worker.fetch(new Request(`https://example.com/${snapshotPath}`));
+  invariant(response.status === 200, `Sites Worker cannot serve ${snapshotPath}.`);
+  invariant(response.headers.get("cache-control") === "no-store", `Sites Worker must not cache ${snapshotPath}.`);
+  const packaged = gunzipSync(Buffer.from(await response.arrayBuffer()));
+  invariant(packaged.equals(readFileSync(join(viteDist, snapshotPath))), `Sites Worker ${snapshotPath} differs from the Vite build.`);
+}
 execFileSync("tar", ["-C", packageRoot, "-czf", archivePath, "dist"], { stdio: "inherit" });
 
 const workerSize = statSync(workerPath).size;

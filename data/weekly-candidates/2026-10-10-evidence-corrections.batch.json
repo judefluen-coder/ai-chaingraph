@@ -1,0 +1,72 @@
+{
+  "batch_id": "weekly-2026-10-10-evidence-corrections",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T10:45:15.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [],
+  "relations": [],
+  "withdrawn_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_element:361af42b5b52c7fa6347f095",
+        "relation_type": "issuer_produces",
+        "from_id": "issuer:cn-sh-688519",
+        "to_id": "component:ai_sensors",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:334acc2e322a7fb4834fde13"],
+        "attributes": {
+          "mapping_precision": "typed_segment_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "ai_sensors",
+          "migration_resolution": "typed_element_resolved"
+        }
+      },
+      "source_document_id": "source:7cb098a4eb68d2616ebd92a5",
+      "reason": "年报披露的是覆铜板及基材的产品与应用，不支持南亚新材生产激光雷达或机器视觉传感器。",
+      "reason_en": "The annual report describes laminate materials and their applications, not Nanya manufacturing lidar or machine-vision sensors."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_element:3fd70ffe65e50c5c2c787a18",
+        "relation_type": "issuer_produces",
+        "from_id": "issuer:cn-sh-688519",
+        "to_id": "component:package_substrates",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:41eb2aecfe9912f6941ed9b1"],
+        "attributes": {
+          "mapping_precision": "typed_segment_anchor",
+          "legacy_chain_id": "advanced_packaging_memory",
+          "legacy_segment_id": "package_substrates",
+          "migration_resolution": "typed_element_resolved"
+        }
+      },
+      "source_document_id": "source:7cb098a4eb68d2616ebd92a5",
+      "reason": "年报所述为IC封装基材和相关覆铜板材料，不能据此认定公司生产封装基板成品。",
+      "reason_en": "The report discusses IC packaging base materials and related laminates, not production of finished package substrates."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_element:5ed7eaa20385b11e10b938c5",
+        "relation_type": "issuer_produces",
+        "from_id": "issuer:cn-sh-688519",
+        "to_id": "product:ai_pc_smartphones",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:9eaa902b259f161c64cdfb10"],
+        "attributes": {
+          "mapping_precision": "typed_segment_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "ai_pc_smartphones",
+          "migration_resolution": "typed_element_resolved"
+        }
+      },
+      "source_document_id": "source:7cb098a4eb68d2616ebd92a5",
+      "reason": "年报将AI PC列为覆铜板材料的下游应用，不能据此认定公司生产AI PC或智能手机。",
+      "reason_en": "The report identifies AI PCs as downstream uses for laminate materials, not products manufactured by Nanya."
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   Database,
@@ -25,6 +25,7 @@ export function ChainNavigator({
   dataVersion,
   dataStatus,
   dataRefresh,
+  refreshStatus,
   relationshipQuality,
   onOpenUpdates,
   onReset,
@@ -33,13 +34,21 @@ export function ChainNavigator({
   onSelectWatchlist,
   onExportWatchlist,
   open,
+  isNarrow,
   onClose,
   copy,
 }) {
   const [openDomains, setOpenDomains] = useState(() => new Set(navigation.map(({ domain }) => domain.id)));
   const [watchlistOpen, setWatchlistOpen] = useState(true);
-  const dataStateLabel = dataStatus === "ready" ? copy.dataReady : copy.dataBuilding;
-  const checkedDate = dataRefresh?.last_checked_at?.slice(0, 10) || "-";
+  const sidebarRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const dataStateLabel = dataStatus !== "ready" ? copy.dataBuilding
+    : refreshStatus.state === "stale" ? copy.reviewOverdue
+      : refreshStatus.state === "unknown" ? copy.reviewUnknown : copy.dataReady;
+  const checkedDate = refreshStatus.checkedDate || "-";
+  const sourceCutoffDate = dataRefresh?.source_cutoff_date || "-";
   const specificRate = relationshipQuality
     ? `${Math.round(relationshipQuality.specific_issuer_rate * 100)}%`
     : "-";
@@ -51,6 +60,38 @@ export function ChainNavigator({
       return next;
     });
   }, [navigation]);
+
+  useEffect(() => {
+    if (!isNarrow || !open) return undefined;
+    const opener = document.activeElement;
+    closeButtonRef.current?.focus();
+
+    function handleKeyDown(event) {
+      if (!sidebarRef.current.contains(event.target)) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [...sidebarRef.current.querySelectorAll('a[href], button:not([disabled])')];
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      if (opener?.isConnected && opener.getClientRects().length) opener.focus();
+    };
+  }, [isNarrow, open]);
 
   function selectChain(chainId) {
     onSelect(chainId);
@@ -68,14 +109,14 @@ export function ChainNavigator({
 
   return (
     <>
-      <button className={`txSidebarBackdrop ${open ? "isVisible" : ""}`} type="button" aria-label={copy.closeNavigation} onClick={onClose} />
-      <aside className={`txSidebar ${open ? "isOpen" : ""}`} aria-label={copy.workspaceNavigation}>
+      <button className={`txSidebarBackdrop ${open ? "isVisible" : ""}`} type="button" tabIndex={-1} aria-hidden="true" onClick={onClose} />
+      <aside ref={sidebarRef} className={`txSidebar ${open ? "isOpen" : ""}`} role={isNarrow ? "dialog" : undefined} aria-modal={isNarrow && open ? "true" : undefined} aria-label={copy.workspaceNavigation} inert={isNarrow && !open ? "" : undefined}>
         <header className="txSidebarHeader">
           <button className="txSidebarBrand" type="button" onClick={() => { onReset(); onClose(); }}>
             <span><GitFork size={18} strokeWidth={1.8} /></span>
             <span><strong>{copy.brand}</strong><small>{copy.brandTagline}</small></span>
           </button>
-          <button className="txSidebarClose" type="button" aria-label={copy.closeNavigation} title={copy.closeNavigation} onClick={onClose}>
+          <button ref={closeButtonRef} className="txSidebarClose" type="button" aria-label={copy.closeNavigation} title={copy.closeNavigation} onClick={onClose}>
             <X size={18} strokeWidth={1.8} />
           </button>
         </header>
@@ -159,13 +200,18 @@ export function ChainNavigator({
             <a className="txUtilityButton" href="https://github.com/judefluen-coder/ai-chaingraph" target="_blank" rel="noreferrer" aria-label={copy.github} title={copy.github}><Github size={16} strokeWidth={1.8} /></a>
           </div>
           <button type="button" onClick={onOpenUpdates}
-            className="txSidebarDataState"
-            aria-label={locale === "en" ? "Data version and updates" : "数据版本与更新"}
-            title={`${dataStateLabel} · ${copy.weeklyRefresh} · ${copy.checkedOn} ${checkedDate} · ${copy.specificRelationshipRate} ${specificRate}`}
+            className={`txSidebarDataState ${refreshStatus.state !== "current" ? "isStale" : ""}`}
+            aria-label={`${dataStateLabel} · ${copy.checkedOn} ${checkedDate} · ${copy.sourceCutoff} ${sourceCutoffDate} · ${copy.specificRelationshipRate} ${specificRate}`}
+            title={`${dataVersion} · ${dataStateLabel} · ${copy.checkedOn} ${checkedDate} · ${copy.sourceCutoff} ${sourceCutoffDate} · ${copy.specificRelationshipRate} ${specificRate}`}
           >
             <Database size={14} strokeWidth={1.8} />
-            <span>{dataStateLabel} · {copy.weeklyRefresh}</span>
-            <small>{dataVersion} · {specificRate}</small>
+            <span className="txSidebarDataCopy">
+              <strong>{dataStateLabel}</strong>
+              <small>
+                <span>{copy.checkedOn} {checkedDate}</span>
+                <span>{copy.sourceCutoff} {sourceCutoffDate}</span>
+              </small>
+            </span>
           </button>
         </footer>
       </aside>

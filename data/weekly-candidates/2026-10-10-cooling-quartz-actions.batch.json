@@ -1,0 +1,110 @@
+{
+  "batch_id": "weekly-2026-10-10-cooling-quartz-actions",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T12:07:53.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:speed-wireless-cooling-products-20261010",
+      "source_document_id": "source:7b4109893acc80eb7f4a25cd",
+      "excerpt": "2025年年报披露，硕贝德控股子公司东莞合众及惠州硕众从事散热产品的研发、生产与销售，主要产品包括热管、VC、液冷板和散热模组，可用于AI数据中心等领域。",
+      "excerpt_en": "The 2025 annual report says Speed Wireless's controlled subsidiaries develop, manufacture, and sell thermal products including cold plates and cooling modules, which can be used in AI data centers.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:07:53.000Z"
+    },
+    {
+      "id": "claim:feilihua-semiconductor-quartz-20261010",
+      "source_document_id": "source:4c07c14b9cb293e598aad1df",
+      "excerpt": "2025年年报披露，菲利华制造并销售石英玻璃材料与制品；其合成石英玻璃材料用于半导体高端制程以及IC光掩模基板材料，不代表公司生产掩模或量检测设备。",
+      "excerpt_en": "The 2025 annual report states that Feilihua manufactures and sells quartz-glass materials, with synthetic quartz used in advanced semiconductor processes and IC photomask-substrate materials; it does not establish production of masks or metrology equipment.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:07:53.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:speed-wireless-cooling-products-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-300322",
+      "to_id": "component:cooling_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:speed-wireless-cooling-products-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:6a2cedb7f4f2925d41bafe2b",
+      "attributes": {
+        "legacy_chain_id": "data_center_power_cooling",
+        "legacy_segment_id": "cooling_components"
+      }
+    },
+    {
+      "id": "relation:issuer_element:feilihua-semiconductor-quartz-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-300395",
+      "to_id": "material:semiconductor_materials",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:feilihua-semiconductor-quartz-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:a75c77e01783a42aedcf58ae",
+      "attributes": {
+        "legacy_chain_id": "semiconductor_manufacturing",
+        "legacy_segment_id": "semiconductor_materials"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:6a2cedb7f4f2925d41bafe2b",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-300322",
+        "to_id": "component:cooling_components",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:f515dd1bd3e415ebf4b840ab"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "data_center_power_cooling",
+          "legacy_segment_id": "cooling_components",
+          "candidate_element_id": "component:cooling_components",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:cooling_components",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:7b4109893acc80eb7f4a25cd",
+      "reason": "年报明确控股子公司生产并销售液冷板等散热产品；“可用于AI数据中心”是产品用途，不能据此判定公司集成液冷部件，关系动作更正为“生产”。",
+      "reason_en": "The report identifies controlled subsidiaries as manufacturers and sellers of cold plates. Possible AI-data-center use does not establish integration, so the action is corrected to production."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:a75c77e01783a42aedcf58ae",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-300395",
+        "to_id": "equipment:photomask_metrology",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:168f5a744b768deba1747e54"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "semiconductor_manufacturing",
+          "legacy_segment_id": "photomask_metrology",
+          "candidate_element_id": "equipment:photomask_metrology",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:photomask_metrology",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:4c07c14b9cb293e598aad1df",
+      "reason": "年报证明公司制造石英玻璃半导体材料，供IC光掩模基板等用途；原关系把材料用途误映射为掩模与量检测设备的集成，故更正对象为半导体材料、动作为“生产”。",
+      "reason_en": "The report supports manufacturing semiconductor quartz-glass materials used in IC photomask substrates. The former edge mistook material use for integration of mask or metrology equipment; the target and action are corrected."
+    }
+  ]
+}

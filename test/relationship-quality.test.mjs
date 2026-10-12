@@ -80,3 +80,88 @@ test("retains broad mappings when the claim has no explicit action", () => {
   assert.equal(promoteEvidenceBackedFallbacks(graph).promotedRelations, 0);
   assert.equal(graph.relations[1].relation_type, "issuer_participates_in_segment");
 });
+
+test("does not auto-promote downstream use of a physical product", () => {
+  for (const excerpt of [
+    "公司材料用于传感器。",
+    "公司生产用于传感器的胶黏剂。",
+    "The company's adhesives are used in sensors.",
+  ]) {
+    const graph = {
+      entities: [
+        { id: "issuer:test", entity_type: "issuer" },
+        { id: "segment:sensors", entity_type: "segment" },
+        { id: "component:sensors", entity_type: "component" },
+      ],
+      relations: [
+        { id: "anchor", relation_type: "segment_has_element", from_id: "segment:sensors", to_id: "component:sensors" },
+        { id: "mapping", relation_type: "issuer_participates_in_segment", from_id: "issuer:test", to_id: "segment:sensors", claim_ids: ["claim:test"] },
+      ],
+      claims: [{ id: "claim:test", source_document_id: "source:test", excerpt }],
+      source_documents: [{ id: "source:test", url: "https://example.com/filing" }],
+    };
+
+    assert.equal(promoteEvidenceBackedFallbacks(graph).promotedRelations, 0);
+    assert.equal(graph.relations[1].relation_type, "issuer_participates_in_segment");
+  }
+});
+
+test("keeps an existing usage-based promotion unchanged for manual review", () => {
+  const mapping = {
+    id: "mapping",
+    relation_type: "issuer_integrates",
+    from_id: "issuer:test",
+    to_id: "component:sensors",
+    claim_ids: ["claim:test"],
+    attributes: {
+      promoted_from_relation_type: "issuer_participates_in_segment",
+      promoted_from_target_id: "segment:sensors",
+      promotion_rule: "integration-action-v1",
+      promotion_version: "2",
+    },
+  };
+  const graph = {
+    entities: [
+      { id: "issuer:test", entity_type: "issuer" },
+      { id: "segment:sensors", entity_type: "segment" },
+      { id: "component:sensors", entity_type: "component" },
+    ],
+    relations: [
+      { id: "anchor", relation_type: "segment_has_element", from_id: "segment:sensors", to_id: "component:sensors" },
+      mapping,
+    ],
+    claims: [{ id: "claim:test", source_document_id: "source:test", excerpt: "公司生产用于传感器的胶黏剂。" }],
+    source_documents: [{ id: "source:test", url: "https://example.com/filing" }],
+  };
+
+  const result = promoteEvidenceBackedFallbacks(graph);
+  assert.equal(result.reclassifiedRelations, 0);
+  assert.equal(result.revertedRelations, 0);
+  assert.deepEqual(graph.relations[1], mapping);
+});
+
+test("does not re-promote a manually reviewed broad correction", () => {
+  const graph = {
+    entities: [
+      { id: "issuer:test", entity_type: "issuer" },
+      { id: "segment:sensors", entity_type: "segment" },
+      { id: "component:sensors", entity_type: "component" },
+    ],
+    relations: [
+      { id: "anchor", relation_type: "segment_has_element", from_id: "segment:sensors", to_id: "component:sensors" },
+      {
+        id: "reviewed",
+        relation_type: "issuer_participates_in_segment",
+        from_id: "issuer:test",
+        to_id: "segment:sensors",
+        claim_ids: ["claim:adhesives"],
+        attributes: { promotion_locked: true, review_reason: "Adhesives used in sensors are not sensors." },
+      },
+    ],
+    claims: [{ id: "claim:adhesives", source_document_id: "source:filing", excerpt: "公司生产用于传感器的胶黏剂。" }],
+    source_documents: [{ id: "source:filing", url: "https://example.com/filing" }],
+  };
+
+  assert.equal(promoteEvidenceBackedFallbacks(graph).promotedRelations, 0);
+  assert.equal(graph.relations[1].relation_type, "issuer_participates_in_segment");
+});

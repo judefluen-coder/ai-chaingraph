@@ -53,7 +53,7 @@ export async function readApprovedCandidateBatches(projectRoot) {
   return batches;
 }
 
-export function assertCandidateBatchApplied(graph, batch) {
+export function assertCandidateBatchApplied(graph, batch, archivedRelationIds = new Set()) {
   const filename = batch.filename || batch.batch_id;
   const collections = [
     [graph.entities, batch.entities || [], "entity"],
@@ -70,10 +70,24 @@ export function assertCandidateBatchApplied(graph, batch) {
 
   const relationsById = new Map(graph.relations.map((relation) => [relation.id, relation]));
   for (const relation of batch.relations || []) {
+    if (archivedRelationIds.has(relation.id)) {
+      invariant(!relationsById.has(relation.id), `${filename}: archived relation ${relation.id} is still published.`);
+      continue;
+    }
     invariant(
       sameRecord(relationsById.get(relation.id), publishedRelation(relation, batch.batch_id)),
       `${filename}: applied relation ${relation.id} differs from its approved batch.`,
     );
+  }
+  for (const withdrawal of batch.withdrawn_relations || []) {
+    invariant(!relationsById.has(withdrawal.relation.id), `${filename}: withdrawn relation ${withdrawal.relation.id} is still published.`);
+  }
+  for (const replacement of batch.replaced_relations || []) {
+    invariant(!relationsById.has(replacement.relation.id), `${filename}: replaced relation ${replacement.relation.id} is still published.`);
+    invariant((batch.relations || []).some((relation) => relation.replaces_relation_id === replacement.relation.id && relation.from_id === replacement.relation.from_id), `${filename}: replaced relation ${replacement.relation.id} has no same-issuer successor.`);
+    const source = graph.source_documents.find((item) => item.id === replacement.source_document_id);
+    invariant(replacement.reason && source?.issuer_id === replacement.relation.from_id, `${filename}: replaced relation ${replacement.relation.id} needs its issuer's review source and reason.`);
+    invariant(replacement.relation.claim_ids?.some((id) => graph.claims.find((claim) => claim.id === id)?.source_document_id === source.id), `${filename}: replaced relation ${replacement.relation.id} must retain its original evidence.`);
   }
 }
 
@@ -83,6 +97,8 @@ export function applyCandidateBatch(graph, batch) {
   const pendingSources = batch.source_documents || [];
   const pendingClaims = batch.claims || [];
   const pendingRelations = batch.relations || [];
+  const replacements = batch.replaced_relations || [];
+  const withdrawals = batch.withdrawn_relations || [];
   const entityTypes = new Map(graph.entities.map((entity) => [entity.id, entity.entity_type]));
   const existingEntities = new Map(graph.entities.map((entity) => [entity.id, entity]));
 
@@ -127,11 +143,46 @@ export function applyCandidateBatch(graph, batch) {
     }
 
     const targetType = entityTypes.get(relation.to_id);
+    if (relation.relation_type === "issuer_participates_in_segment") {
+      invariant(entityTypes.get(relation.from_id) === "issuer" && targetType === "segment", `${filename}: broad relation ${relation.id} must link an issuer to a segment.`);
+      invariant(relation.attributes?.promotion_locked === true && relation.attributes?.review_reason, `${filename}: broad relation ${relation.id} needs a reviewed reason and promotion lock.`);
+      invariant(["L1", "L2"].includes(relation.evidence_level), `${filename}: broad relation ${relation.id} must use L1 or L2 evidence.`);
+      invariant(relation.claim_ids.every((claimId) => sourcesById.get(claimsById.get(claimId)?.source_document_id)?.issuer_id === relation.from_id), `${filename}: broad relation ${relation.id} must cite evidence for its issuer.`);
+      continue;
+    }
     invariant(SPECIFIC_RELATION_TYPES.has(relation.relation_type), `${filename}: relation ${relation.id} must use a specific issuer action.`);
     invariant(entityTypes.get(relation.from_id) === "issuer", `${filename}: relation ${relation.id} must start at an issuer.`);
     invariant(!["domain", "chain", "segment", "issuer", "security"].includes(targetType), `${filename}: relation ${relation.id} must target a typed industry element.`);
     invariant(["L1", "L2"].includes(relation.evidence_level), `${filename}: relation ${relation.id} must use L1 or L2 evidence.`);
     invariant(relation.claim_ids.every((claimId) => sourcesById.get(claimsById.get(claimId)?.source_document_id)?.issuer_id === relation.from_id), `${filename}: relation ${relation.id} must cite evidence for its issuer.`);
+  }
+  const replacedIds = new Set();
+  for (const replacement of replacements) {
+    const original = replacement.relation;
+    const current = graph.relations.find((relation) => relation.id === original?.id);
+    invariant(original?.id && !replacedIds.has(original.id), `${filename}: replaced relations need unique ids.`);
+    invariant(current && sameRecord(current, original), `${filename}: replaced relation ${original.id} must match the published record.`);
+    invariant(pendingRelations.some((relation) => relation.replaces_relation_id === original.id && relation.from_id === original.from_id), `${filename}: replaced relation ${original.id} needs a same-issuer successor.`);
+    invariant(replacement.reason && replacement.source_document_id, `${filename}: replaced relation ${original.id} needs a reason and review source.`);
+    invariant(sourcesById.get(replacement.source_document_id)?.issuer_id === original.from_id, `${filename}: replaced relation ${original.id} needs a source for its issuer.`);
+    invariant(original.claim_ids?.some((id) => claimsById.get(id)?.source_document_id === replacement.source_document_id), `${filename}: replaced relation ${original.id} must review its original evidence.`);
+    replacedIds.add(original.id);
+  }
+  for (const relation of pendingRelations) {
+    if (relation.replaces_relation_id) invariant(replacedIds.has(relation.replaces_relation_id), `${filename}: replacement ${relation.id} needs the exact original relation.`);
+  }
+  const withdrawnIds = new Set();
+  for (const withdrawal of withdrawals) {
+    const relation = withdrawal.relation;
+    const current = graph.relations.find((item) => item.id === relation?.id);
+    invariant(relation?.id && !withdrawnIds.has(relation.id), `${filename}: withdrawn relations need unique ids.`);
+    invariant(current && sameRecord(current, relation), `${filename}: withdrawn relation ${relation.id} must match the published record.`);
+    invariant(relation.relation_type.startsWith("issuer_") && entityTypes.get(relation.from_id) === "issuer", `${filename}: only issuer mappings can be withdrawn.`);
+    invariant(withdrawal.reason && withdrawal.source_document_id, `${filename}: withdrawal ${relation.id} needs a reason and review source.`);
+    invariant(sourcesById.get(withdrawal.source_document_id)?.issuer_id === relation.from_id, `${filename}: withdrawal ${relation.id} needs a source for its issuer.`);
+    invariant(relation.claim_ids?.some((claimId) => claimsById.get(claimId)?.source_document_id === withdrawal.source_document_id), `${filename}: withdrawal ${relation.id} must review its original evidence.`);
+    invariant(!pendingRelations.some((item) => item.replaces_relation_id === relation.id), `${filename}: relation ${relation.id} cannot be replaced and withdrawn together.`);
+    withdrawnIds.add(relation.id);
   }
 
   const newIssuers = pendingEntities.filter((entity) => entity.entity_type === "issuer");
@@ -149,6 +200,7 @@ export function applyCandidateBatch(graph, batch) {
   let sourcesAdded = 0;
   let claimsAdded = 0;
   let relationsAdded = 0;
+  let relationsWithdrawn = 0;
   for (const entity of pendingEntities) {
     const added = addOrConfirm(graph.entities, entity, "entity");
     entitiesAdded += Number(added);
@@ -163,5 +215,12 @@ export function applyCandidateBatch(graph, batch) {
     }
     relationsAdded += Number(addOrConfirm(graph.relations, publishedRelation(relation, batch.batch_id), "relation"));
   }
-  return { entitiesAdded, issuersAdded, securitiesAdded, sourcesAdded, claimsAdded, relationsAdded };
+  if (withdrawnIds.size) {
+    graph.relations = graph.relations.filter((relation) => {
+      if (!withdrawnIds.has(relation.id)) return true;
+      relationsWithdrawn += 1;
+      return false;
+    });
+  }
+  return { entitiesAdded, issuersAdded, securitiesAdded, sourcesAdded, claimsAdded, relationsAdded, relationsWithdrawn };
 }

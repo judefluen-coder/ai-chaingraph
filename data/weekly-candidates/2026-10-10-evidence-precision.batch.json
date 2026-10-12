@@ -1,0 +1,144 @@
+{
+  "batch_id": "weekly-2026-10-10-evidence-precision",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T10:56:47.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:olive-sensors-20261010",
+      "source_document_id": "source:8c74a66731c8f640505731ee",
+      "excerpt": "2025年年报披露，公司传感器产品线实现商业化突破；电涡流位置传感器推进规模化应用，空悬温度传感器已稳定供货，压差传感器取得项目订单。",
+      "excerpt_en": "The 2025 annual report describes commercialized sensor products, scaled use of eddy-current position sensors, stable supply of air-suspension temperature sensors, and orders for differential-pressure sensors.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T10:56:47.000Z"
+    },
+    {
+      "id": "claim:wintech-testing-20261010",
+      "source_document_id": "source:8dfc5fe314ba80f3d2db75cd",
+      "excerpt": "2025年年报披露，公司向半导体产业链客户提供失效分析、材料分析和可靠性分析等第三方检测分析服务，并通过提供该类服务实现收入。",
+      "excerpt_en": "The 2025 annual report states that the company provides third-party semiconductor failure, materials, and reliability analysis services and earns revenue from those services.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T10:56:47.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:olive-sensors-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-300507",
+      "to_id": "component:ai_sensors",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:olive-sensors-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:9121a74b155ae3bdf681facb",
+      "attributes": {
+        "legacy_chain_id": "ai_devices_robotics",
+        "legacy_segment_id": "ai_sensors"
+      }
+    },
+    {
+      "id": "relation:issuer_element:wintech-testing-20261010",
+      "relation_type": "issuer_provides",
+      "from_id": "issuer:cn-sh-688757",
+      "to_id": "service:semiconductor_test",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:wintech-testing-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:1757e2ae225709b58f286d4a",
+      "attributes": {
+        "legacy_chain_id": "semiconductor_manufacturing",
+        "legacy_segment_id": "semiconductor_test"
+      }
+    },
+    {
+      "id": "relation:issuer_segment_reviewed:tianyang-adhesives-20261010",
+      "relation_type": "issuer_participates_in_segment",
+      "from_id": "issuer:cn-sh-603330",
+      "to_id": "segment:ai_sensors",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:7dd4a9fa7d0da862a948efed"],
+      "attributes": {
+        "mapping_precision": "reviewed_segment_only",
+        "legacy_chain_id": "ai_devices_robotics",
+        "legacy_segment_id": "ai_sensors",
+        "promotion_locked": true,
+        "review_reason": "年报仅证明公司电子胶黏剂用于视觉传感器和激光雷达，未证明公司生产传感器；现有类型化节点也不能准确表示电子胶黏剂。"
+      }
+    }
+  ],
+  "withdrawn_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_element:061546a475a77d65bd6a6b21",
+        "relation_type": "issuer_produces",
+        "from_id": "issuer:cn-sh-603330",
+        "to_id": "component:ai_sensors",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:7dd4a9fa7d0da862a948efed"],
+        "attributes": {
+          "mapping_precision": "typed_segment_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "ai_sensors",
+          "migration_resolution": "typed_element_resolved"
+        }
+      },
+      "source_document_id": "source:13ec407cc2bf6dcae6df748d",
+      "reason": "年报披露公司生产的是电子胶黏剂，仅用于视觉传感器及激光雷达等下游产品；不能据此认定生产传感器。",
+      "reason_en": "The annual report identifies electronic adhesives used in sensors and LiDAR, not sensor manufacturing."
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:9121a74b155ae3bdf681facb",
+        "relation_type": "issuer_participates_in_segment",
+        "from_id": "issuer:cn-sz-300507",
+        "to_id": "segment:ai_sensors",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": [
+          "claim:af390ecbb1b0a4e22733b587"
+        ],
+        "attributes": {
+          "mapping_precision": "segment_fallback",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "ai_sensors",
+          "candidate_element_id": "component:ai_sensors",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "segment_fallback"
+        }
+      },
+      "source_document_id": "source:8c74a66731c8f640505731ee",
+      "reason": "年报披露奥联电子已实现传感器产品商业化及供货，原宽口径关系由生产传感器的具体关系替代。",
+      "reason_en": "The annual report supports commercialized and supplied sensor products, so the broad mapping is replaced by a specific production relationship."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:1757e2ae225709b58f286d4a",
+        "relation_type": "issuer_participates_in_segment",
+        "from_id": "issuer:cn-sh-688757",
+        "to_id": "segment:semiconductor_test",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": [
+          "claim:c9529242113a7000695263f9"
+        ],
+        "attributes": {
+          "mapping_precision": "segment_fallback",
+          "legacy_chain_id": "semiconductor_manufacturing",
+          "legacy_segment_id": "semiconductor_test",
+          "candidate_element_id": "service:semiconductor_test",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "segment_fallback"
+        }
+      },
+      "source_document_id": "source:8dfc5fe314ba80f3d2db75cd",
+      "reason": "年报明确公司向客户提供半导体检测分析服务，原宽口径关系由提供服务的具体关系替代。",
+      "reason_en": "The annual report explicitly supports semiconductor testing services, so the broad mapping is replaced by a specific service relationship."
+    }
+  ]
+}

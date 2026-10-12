@@ -1,14 +1,17 @@
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import {
   readAshareReconciliations,
   validateAshareReconciliations,
 } from "./lib/listing-reconciliation.mjs";
-import { buildRelationshipQuality, SPECIFIC_RELATION_TYPES } from "./lib/relationship-quality.mjs";
+import { buildRelationshipQuality, maxSourceDate, SPECIFIC_RELATION_TYPES } from "./lib/relationship-quality.mjs";
 import {
   assertCandidateBatchApplied,
   readApprovedCandidateBatches,
 } from "./lib/weekly-batches.mjs";
+import { assertReadmeSnapshotSummary } from "./lib/readme-snapshot-summary.mjs";
+import { assertNoFutureReleaseDates } from "./lib/release-dates.mjs";
+import { nextWeeklyCheckAt } from "./lib/weekly-schedule.mjs";
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const snapshotPath = resolve(
@@ -31,6 +34,7 @@ function uniqueIds(items, label) {
 }
 
 const graph = JSON.parse(await readFile(snapshotPath, "utf8"));
+const status = JSON.parse(await readFile(resolve(dirname(snapshotPath), "update-status.json"), "utf8"));
 for (const key of ["entities", "relations", "source_documents", "claims", "shock_events"]) {
   invariant(Array.isArray(graph[key]), `${key} must be an array.`);
 }
@@ -94,6 +98,22 @@ for (const source of graph.source_documents) {
 invariant(graph.meta?.refresh?.cadence === "weekly", "The public snapshot must declare its weekly refresh cadence.");
 invariant(!Number.isNaN(Date.parse(graph.meta.refresh.last_checked_at)), "meta.refresh.last_checked_at must be an ISO timestamp.");
 invariant(!Number.isNaN(Date.parse(graph.meta.refresh.next_scheduled_at)), "meta.refresh.next_scheduled_at must be an ISO timestamp.");
+invariant(graph.meta.refresh.next_scheduled_at === nextWeeklyCheckAt(new Date(graph.meta.refresh.last_checked_at)), "The next weekly check must be Monday 09:00 Asia/Shanghai.");
+invariant(graph.meta.refresh.source_cutoff_date === maxSourceDate(graph), "The source cutoff must match the latest source document date.");
+assertNoFutureReleaseDates({
+  checkedAt: graph.meta.refresh.last_checked_at,
+  listingThrough: graph.meta.refresh.a_share_listing_reconciled_through,
+  sourceCutoffDate: graph.meta.refresh.source_cutoff_date,
+});
+for (const [statusKey, refreshKey] of [
+  ["checked_at", "last_checked_at"],
+  ["changed_at", "last_changed_at"],
+  ["next_scheduled_at", "next_scheduled_at"],
+  ["source_cutoff_date", "source_cutoff_date"],
+  ["a_share_listing_reconciled_through", "a_share_listing_reconciled_through"],
+]) {
+  invariant(status[statusKey] === graph.meta.refresh[refreshKey], `update-status.${statusKey} does not match the graph snapshot.`);
+}
 invariant(/^\d{4}-\d{2}-\d{2}$/.test(graph.meta.refresh.a_share_listing_reconciled_through || ""), "meta.refresh.a_share_listing_reconciled_through must use YYYY-MM-DD.");
 const listingReconciliation = validateAshareReconciliations(
   await readAshareReconciliations(projectRoot),
@@ -101,11 +121,19 @@ const listingReconciliation = validateAshareReconciliations(
 );
 invariant(graph.meta.refresh.a_share_listing_reconciled_through === listingReconciliation.reconciled_through, "The stored A-share reconciliation date does not match the approved manifests.");
 invariant(JSON.stringify(graph.meta.refresh.a_share_listing_reconciliation) === JSON.stringify(listingReconciliation), "The stored A-share reconciliation summary does not match the approved manifests.");
-for (const batch of await readApprovedCandidateBatches(projectRoot)) {
+const approvedBatches = await readApprovedCandidateBatches(projectRoot);
+const archivedRelationIds = new Set(approvedBatches.flatMap((batch) => [
+  ...(batch.withdrawn_relations || []).map((item) => item.relation.id),
+  ...(batch.relations || []).map((item) => item.replaces_relation_id).filter(Boolean),
+]));
+for (const batch of approvedBatches) {
   invariant(graph.meta.refresh.applied_batch_ids.includes(batch.batch_id), `${batch.filename} has not been applied to the public snapshot.`);
-  assertCandidateBatchApplied(graph, batch);
+  assertCandidateBatchApplied(graph, batch, archivedRelationIds);
 }
 invariant(JSON.stringify(graph.meta.quality) === JSON.stringify(relationshipQuality), "meta.quality does not match the snapshot.");
+for (const [filename, locale] of [["README.md", "zh"], ["README.en.md", "en"]]) {
+  assertReadmeSnapshotSummary(await readFile(resolve(projectRoot, filename), "utf8"), graph, locale);
+}
 
 console.log(JSON.stringify({
   contract: graph.meta.contract_version,

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HistoryDetails } from "./HistoryDetails.jsx";
 import { historyCopy } from "../lib/releaseHistory.js";
+import { isSemanticReviewPending } from "../lib/semanticReview.js";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -39,10 +40,14 @@ export function GraphDetailPanel({
   relationDetail,
   relationHistory,
   companyHistory,
+  historyLoading,
   historyUnavailable,
   onRetryHistory,
   locale,
   copy,
+  dataRefresh,
+  refreshStatus,
+  onOpenUpdates,
   pathStartId,
   shockOverlay,
   watchRecord,
@@ -55,13 +60,37 @@ export function GraphDetailPanel({
   onRunShock,
   onClearShock,
   onClose,
+  interactive,
 }) {
   const [showAllCompanies, setShowAllCompanies] = useState(false);
   const [eventType, setEventType] = useState("demand_up");
+  const panelRef = useRef(null);
+  const headingRef = useRef(null);
+  const evidenceRef = useRef(null);
 
   useEffect(() => {
     setShowAllCompanies(false);
   }, [detail?.entity?.id]);
+
+  useEffect(() => {
+    if (!interactive || relationDetail) return;
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+    headingRef.current?.focus({ preventScroll: true });
+  }, [detail?.entity?.id, interactive, relationDetail?.relation.id]);
+
+  useEffect(() => {
+    if (!relationDetail) return;
+    const panel = panelRef.current;
+    const heading = evidenceRef.current;
+    if (!panel || !heading) return;
+    heading.focus({ preventScroll: true });
+    const panelBounds = panel.getBoundingClientRect();
+    const headingBounds = heading.getBoundingClientRect();
+    const headerHeight = panel.querySelector(".txDetailHeader")?.getBoundingClientRect().height || 0;
+    const top = panel.scrollTop + headingBounds.top - panelBounds.top - headerHeight - 12;
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    panel.scrollTo({ top, behavior });
+  }, [relationDetail?.relation.id]);
 
   if (!detail) return null;
   const { entity } = detail;
@@ -69,12 +98,17 @@ export function GraphDetailPanel({
   const codes = securities.map(formatSecurityCode).filter(Boolean).join(" · ");
 
   return (
-    <aside className="txDetailPanel" aria-label={copy.industryPosition}>
-      <header className="txDetailHeader">
+    <aside ref={panelRef} className="txDetailPanel" aria-label={copy.industryPosition}>
+      <header className="txDetailHeader txEvidenceHeader">
         <div>
           <span>{getEntityTypeLabel(entity.entity_type, locale)}</span>
-          <h2>{localize(entity, "name", locale)}</h2>
+          <h2 ref={headingRef} tabIndex={-1}>{localize(entity, "name", locale)}</h2>
           {codes && <small>{codes}</small>}
+          <button type="button" className={`txDetailFreshness ${refreshStatus?.state === "stale" ? "isStale" : ""}`} onClick={onOpenUpdates}>
+            <span>{copy.checkedOn} <strong>{refreshStatus?.checkedDate || "-"}</strong></span>
+            <span>{copy.sourceCutoff} <strong>{dataRefresh?.source_cutoff_date || "-"}</strong></span>
+            {refreshStatus?.state !== "current" && <em>{refreshStatus?.state === "stale" ? copy.reviewOverdue : copy.reviewUnknown}</em>}
+          </button>
         </div>
         <button type="button" className="txIconButton" aria-label={copy.closeDetails} title={copy.closeDetails} onClick={onClose}>
           <X size={18} strokeWidth={1.8} />
@@ -100,7 +134,7 @@ export function GraphDetailPanel({
       </div>
 
       {detail.kind !== "issuer" && detail.context && <ContextSection context={detail.context} locale={locale} copy={copy} />}
-      {relationDetail && <RelationEvidence key={relationDetail.relation.id} detail={relationDetail} locale={locale} copy={copy} events={relationHistory} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />}
+      {relationDetail && <RelationEvidence key={relationDetail.relation.id} headingRef={evidenceRef} detail={relationDetail} locale={locale} copy={copy} events={relationHistory} loading={historyLoading} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />}
 
       {detail.kind === "issuer" ? (
         <IssuerPositions
@@ -131,7 +165,7 @@ export function GraphDetailPanel({
       )}
 
       {detail.kind === "issuer" && watchRecord && (
-        <ResearchNote key={watchRecord.issuer_id} record={watchRecord} copy={copy} onUpdate={onUpdateWatchlist} events={companyHistory} locale={locale} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />
+        <ResearchNote key={watchRecord.issuer_id} record={watchRecord} copy={copy} onUpdate={onUpdateWatchlist} events={companyHistory} locale={locale} loading={historyLoading} unavailable={historyUnavailable} onRetry={onRetryHistory} onSelectRelation={onSelectRelation} />
       )}
 
       <details className="txConditionalSection" open={Boolean(shockOverlay)}>
@@ -173,14 +207,16 @@ function ContextSection({ context, locale, copy }) {
   );
 }
 
-function RelationEvidence({ detail, locale, copy, events, unavailable, onRetry, onSelectRelation }) {
+function RelationEvidence({ headingRef, detail, locale, copy, events, loading, unavailable, onRetry, onSelectRelation }) {
   const { relation, from, to, evidence } = detail;
   const text = historyCopy(locale);
   const summary = localize(relation, "relation_summary", locale);
+  const pendingSemanticReview = isSemanticReviewPending(relation);
+  const sourceLevel = relation.evidence_level === "L1" ? copy.evidenceL1 : relation.evidence_level === "L2" ? copy.evidenceL2 : copy.industryReference;
   return (
     <section className="txDetailSection txEvidenceSection">
       <div className="txSectionHeading">
-        <h3>{copy.evidence}</h3>
+        <h3 ref={headingRef} tabIndex={-1}>{copy.evidence}</h3>
         <EvidenceBadge relation={relation} copy={copy} />
       </div>
       <div className="txSelectedRelation">
@@ -188,7 +224,11 @@ function RelationEvidence({ detail, locale, copy, events, unavailable, onRetry, 
         <span>{getRelationLabel(relation.relation_type, locale)}<ChevronRight size={13} strokeWidth={1.8} /></span>
         <strong>{localize(to, "name", locale)}</strong>
       </div>
+      {pendingSemanticReview && <p className="txReviewReason" role="status"><strong>{copy.semanticReviewPending}：</strong> {copy.semanticReviewNotice} {sourceLevel}</p>}
+      {relation.attributes?.review_reason && <p className="txReviewReason"><strong>{copy.reviewReason}</strong> {locale === "en" ? relation.attributes.review_reason_en || relation.attributes.review_reason : relation.attributes.review_reason}</p>}
       {relation.lifecycle_status && relation.lifecycle_status !== "active" && <p className="txHistoricalStatus" role="status">{text[relation.lifecycle_status] || relation.lifecycle_status} · {text.archived}
+        {relation.withdrawal_reason && <span> {locale === "en" ? relation.withdrawal_reason_en || relation.withdrawal_reason : relation.withdrawal_reason}</span>}
+        {relation.replacement_reason && <span> {locale === "en" ? relation.replacement_reason_en || relation.replacement_reason : relation.replacement_reason}</span>}
         {relation.replacement_relation_id && <button type="button" onClick={() => onSelectRelation(relation.replacement_relation_id)}>{text.replacement}</button>}
       </p>}
       {summary && <p className="txRelationSummary">{summary}</p>}
@@ -208,7 +248,7 @@ function RelationEvidence({ detail, locale, copy, events, unavailable, onRetry, 
           </article>
         ))}
       </div>
-      <HistoryDetails events={events || []} locale={locale} unavailable={unavailable} onRetry={onRetry} />
+      <HistoryDetails events={events || []} locale={locale} loading={loading} unavailable={unavailable} onRetry={onRetry} />
     </section>
   );
 }
@@ -286,7 +326,7 @@ function RelatedCompanies({ items, showAll, onToggle, onSelect, locale, copy }) 
             <button type="button" key={issuer.id} onClick={() => onSelect(issuer.id)}>
               <Building2 size={15} strokeWidth={1.8} />
               <span><strong>{localize(issuer, "name", locale)}</strong><small>{securities.map(formatSecurityCode).filter(Boolean).join(" · ")}</small></span>
-              <em>{mapping?.relation_type === "issuer_participates_in_segment" ? copy.evidenceFallback : copy.typedMapping}</em>
+              <em>{isSemanticReviewPending(mapping) ? copy.semanticReviewPending : mapping?.relation_type === "issuer_participates_in_segment" ? copy.evidenceFallback : copy.typedMapping}</em>
             </button>
           ))}
         </div>
@@ -299,7 +339,10 @@ function RelatedCompanies({ items, showAll, onToggle, onSelect, locale, copy }) 
 function EvidenceBadge({ relation, copy }) {
   let label = copy.industryReference;
   let className = "isReference";
-  if (relation.relation_type === "issuer_participates_in_segment") {
+  if (isSemanticReviewPending(relation)) {
+    label = copy.semanticReviewPending;
+    className = "isPending";
+  } else if (relation.relation_type === "issuer_participates_in_segment") {
     label = copy.evidenceFallback;
     className = "isFallback";
   } else if (relation.evidence_level === "L1") {
@@ -314,7 +357,7 @@ function EvidenceBadge({ relation, copy }) {
   return <em className={`txEvidenceBadge ${className}`}>{label}</em>;
 }
 
-function ResearchNote({ record, copy, onUpdate, events, locale, unavailable, onRetry, onSelectRelation }) {
+function ResearchNote({ record, copy, onUpdate, events, locale, loading, unavailable, onRetry, onSelectRelation }) {
   return (
     <section className="txDetailSection txResearchNote">
       <div className="txSectionHeading">
@@ -343,7 +386,7 @@ function ResearchNote({ record, copy, onUpdate, events, locale, unavailable, onR
           <textarea value={record.thesis} placeholder={copy.thesisPlaceholder} rows={4} onChange={(event) => onUpdate({ thesis: event.target.value })} />
         </label>
       </div>
-      <HistoryDetails title={historyCopy(locale).recent} events={events || []} locale={locale} unavailable={unavailable} onRetry={onRetry} onSelectRelation={onSelectRelation} />
+      <HistoryDetails title={historyCopy(locale).recent} events={events || []} locale={locale} loading={loading} unavailable={unavailable} onRetry={onRetry} onSelectRelation={onSelectRelation} />
     </section>
   );
 }

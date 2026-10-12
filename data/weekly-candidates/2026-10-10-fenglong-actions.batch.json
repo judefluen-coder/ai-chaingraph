@@ -1,0 +1,110 @@
+{
+  "batch_id": "weekly-2026-10-10-fenglong-actions",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T12:25:59.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:fenglong-semiconductor-valve-components-20261010",
+      "source_document_id": "source:6d7c185b1f858fddb1326d2e",
+      "excerpt": "2025年年报披露，公司研发、生产和销售工程、工业及半导体设备用高端液压控制零部件，并展示部分半导体阀零部件产品；这不代表公司集成半导体设备。",
+      "excerpt_en": "The 2025 annual report says Fenglong develops, manufactures, and sells high-end hydraulic-control components for engineering, industrial, and semiconductor equipment and shows semiconductor-valve components; it does not establish equipment integration.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:25:59.000Z"
+    },
+    {
+      "id": "claim:fenglong-robotic-mower-controls-20261010",
+      "source_document_id": "source:6d7c185b1f858fddb1326d2e",
+      "excerpt": "2025年年报披露，公司研发、生产和销售园林机械零部件，在主要产品图中列示割草机器人电控模块；该披露支持生产零部件，不证明公司制造割草机器人整机。",
+      "excerpt_en": "The 2025 annual report says Fenglong develops, manufactures, and sells garden-equipment components and depicts electronic-control modules for robotic lawn mowers among its products; it does not establish mower assembly.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T12:25:59.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:fenglong-semiconductor-valve-components-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-002931",
+      "to_id": "component:semiconductor_equipment_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:fenglong-semiconductor-valve-components-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:0207ea9e3f8da493ea0ac5aa",
+      "attributes": {
+        "legacy_chain_id": "semiconductor_manufacturing",
+        "legacy_segment_id": "semiconductor_equipment_components"
+      }
+    },
+    {
+      "id": "relation:issuer_element:fenglong-robotic-mower-controls-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-002931",
+      "to_id": "component:robotics_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:fenglong-robotic-mower-controls-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:3a65faaa9c0dc7646941b9ac",
+      "attributes": {
+        "legacy_chain_id": "ai_devices_robotics",
+        "legacy_segment_id": "robotics_components"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:0207ea9e3f8da493ea0ac5aa",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-002931",
+        "to_id": "component:semiconductor_equipment_components",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:d8590f7cbb8b2d0bc700d638"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "semiconductor_manufacturing",
+          "legacy_segment_id": "semiconductor_equipment_components",
+          "candidate_element_id": "component:semiconductor_equipment_components",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:semiconductor_equipment_components",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:6d7c185b1f858fddb1326d2e",
+      "reason": "年报说明公司生产用于半导体设备的液压控制及阀零部件，原关系将零部件用途误记为公司集成半导体设备零部件；动作更正为生产。",
+      "reason_en": "The report supports manufacturing hydraulic-control and valve components used in semiconductor equipment, not integrating those components."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:3a65faaa9c0dc7646941b9ac",
+        "relation_type": "issuer_provides",
+        "from_id": "issuer:cn-sz-002931",
+        "to_id": "component:robotics_components",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:21b076e157bb7bb6c1855804"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "robotics_components",
+          "candidate_element_id": "component:robotics_components",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:robotics_components",
+          "promotion_rule": "provision-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:6d7c185b1f858fddb1326d2e",
+      "reason": "年报将割草机器人电控模块列为公司产品，并说明公司生产园林机械零部件；原关系的宽泛“提供”动作更正为有直接证据的“生产”，不延伸至机器人整机。",
+      "reason_en": "The report lists robotic-mower control modules among Fenglong's products and says it manufactures garden-equipment components; the action is corrected to production, not whole-robot assembly."
+    }
+  ]
+}

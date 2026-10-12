@@ -1,0 +1,110 @@
+{
+  "batch_id": "weekly-2026-10-10-liquid-cooling-actions",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T11:47:27.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:gian-liquid-cooling-products-20261010",
+      "source_document_id": "source:0206eed570e24020ad4c7b8a",
+      "excerpt": "2025年年报披露，散热部品板块为客户提供液冷模组、液冷板等散热产品，应用于边缘计算服务器等领域；公司正推进散热产品的验证和量产转化。",
+      "excerpt_en": "The 2025 annual report says Gian supplies liquid-cooling modules and cold plates for edge-computing servers while advancing validation and conversion to volume production.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T11:47:27.000Z"
+    },
+    {
+      "id": "claim:hongfuhan-liquid-cooling-products-20261010",
+      "source_document_id": "source:d96c302eb63164ca7a542902",
+      "excerpt": "2025年年报将液冷板和液冷散热模组列入已实现收入的散热产品业务，说明铜基液冷板采用铲齿结合钎焊工艺制造，冷板式液冷模组等产品用于数据中心AI服务器。",
+      "excerpt_en": "The 2025 annual report lists cold plates and liquid-cooling modules in Hongfuhan's revenue-generating thermal-products business, describes manufacturing copper cold plates, and identifies data-center AI servers as an application.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T11:47:27.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:gian-liquid-cooling-products-20261010",
+      "relation_type": "issuer_provides",
+      "from_id": "issuer:cn-sz-300709",
+      "to_id": "component:cooling_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:gian-liquid-cooling-products-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:4d115b7b350635a1b78d0b23",
+      "attributes": {
+        "legacy_chain_id": "data_center_power_cooling",
+        "legacy_segment_id": "cooling_components"
+      }
+    },
+    {
+      "id": "relation:issuer_element:hongfuhan-liquid-cooling-products-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-301086",
+      "to_id": "component:cooling_components",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:hongfuhan-liquid-cooling-products-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:cfd5315bfe502b54d02a8788",
+      "attributes": {
+        "legacy_chain_id": "data_center_power_cooling",
+        "legacy_segment_id": "cooling_components"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:4d115b7b350635a1b78d0b23",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-300709",
+        "to_id": "component:cooling_components",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:d617230ca3dd0323023be973"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "data_center_power_cooling",
+          "legacy_segment_id": "cooling_components",
+          "candidate_element_id": "component:cooling_components",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:cooling_components",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:0206eed570e24020ad4c7b8a",
+      "reason": "年报称公司提供液冷板和液冷模组，但仍推进验证与量产转化；产品应用于边缘计算服务器不表示公司集成服务器散热系统，因此改为“提供”。",
+      "reason_en": "The report says Gian supplies cold plates and modules while progressing toward volume production. Their use in servers does not establish system integration, so the action is corrected to provision."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:cfd5315bfe502b54d02a8788",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-301086",
+        "to_id": "component:cooling_components",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:a975a92deb35f3719bc4ae76"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "data_center_power_cooling",
+          "legacy_segment_id": "cooling_components",
+          "candidate_element_id": "component:cooling_components",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:cooling_components",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:d96c302eb63164ca7a542902",
+      "reason": "年报将液冷板列为公司散热产品并说明制造工艺；应用于AI服务器是产品用途，不是公司集成该部件，故改为“生产”。",
+      "reason_en": "The report lists cold plates among company thermal products and describes how they are manufactured. AI-server use is an application, not evidence of integration, so the action is corrected to production."
+    }
+  ]
+}

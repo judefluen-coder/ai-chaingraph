@@ -1,0 +1,62 @@
+{
+  "batch_id": "weekly-2026-10-10-shengyi-laminates-correction",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T11:29:51.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:shengyi-high-speed-laminates-20261010",
+      "source_document_id": "source:7d9129b6b1ec9edc85246717",
+      "excerpt": "2025年年报披露，公司设计、生产和销售覆铜板与粘结片，已开发不同介电损耗的高速产品全系列及多技术路线高频产品，并实现多品种批量应用。",
+      "excerpt_en": "The 2025 annual report states that Shengyi designs, manufactures, and sells copper-clad laminates and bonding sheets, and has developed a full range of high-speed products and multiple high-frequency technology routes with batch applications.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T11:29:51.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:shengyi-high-speed-laminates-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sh-600183",
+      "to_id": "material:high_speed_laminates",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:shengyi-high-speed-laminates-20261010"],
+      "replaces_relation_id": "relation:issuer_segment_fallback:0a632bf3a9d2f9fdd40c2aa9",
+      "attributes": {
+        "legacy_chain_id": "pcb_electronic_materials",
+        "legacy_segment_id": "high_speed_laminates"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_segment_fallback:0a632bf3a9d2f9fdd40c2aa9",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sh-600183",
+        "to_id": "material:high_speed_laminates",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": ["claim:ddbb18ec9da6917293284740"],
+        "attributes": {
+          "mapping_precision": "evidence_typed_anchor",
+          "legacy_chain_id": "pcb_electronic_materials",
+          "legacy_segment_id": "high_speed_laminates",
+          "candidate_element_id": "material:high_speed_laminates",
+          "typed_resolution_status": "unresolved_no_direct_term",
+          "migration_resolution": "evidence_action_resolved",
+          "promoted_from_relation_type": "issuer_participates_in_segment",
+          "promoted_from_target_id": "segment:high_speed_laminates",
+          "promotion_rule": "integration-action-v1",
+          "promotion_version": "2"
+        }
+      },
+      "source_document_id": "source:7d9129b6b1ec9edc85246717",
+      "reason": "年报证明公司生产覆铜板及高速产品系列，原声明中的“应用于AI服务器”描述的是下游用途，不能据此将公司动作记为“集成覆铜板”；关系更正为“生产”。",
+      "reason_en": "The report supports manufacturing copper-clad laminates and a high-speed product series; downstream use in AI servers does not establish that the company integrates laminates."
+    }
+  ]
+}

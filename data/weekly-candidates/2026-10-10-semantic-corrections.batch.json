@@ -1,0 +1,102 @@
+{
+  "batch_id": "weekly-2026-10-10-semantic-corrections",
+  "review_status": "approved",
+  "reviewer": "codex:official-evidence-audit",
+  "reviewed_at": "2026-10-10T11:17:51.000Z",
+  "entities": [],
+  "source_documents": [],
+  "claims": [
+    {
+      "id": "claim:newland-ai-server-development-20261010",
+      "source_document_id": "source:49a07e867c64e5f698c12484",
+      "excerpt": "2025年年报披露，公司基于智能终端能力孵化出LAND大模型一体机、边缘侧一体智算服务器等硬件产品，应用于运营商、政府和网安场景。",
+      "excerpt_en": "The 2025 annual report says Newland developed LAND model appliances and edge AI servers as hardware products for telecom, government, and cybersecurity uses.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T11:17:51.000Z"
+    },
+    {
+      "id": "claim:inovance-industrial-robots-20261010",
+      "source_document_id": "source:1fea8bffdb347c43ae199203",
+      "excerpt": "2025年年报将SCARA、六关节及协作机器人列为公司工业机器人产品，披露SCARA和六关节机器人放量，并列出相关自动化产线。",
+      "excerpt_en": "The 2025 annual report lists SCARA, six-axis, and collaborative robots as company products, describes scaled sales, and reports automated robot production lines.",
+      "language": "zh",
+      "reviewed_at": "2026-10-10T11:17:51.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:issuer_element:newland-ai-server-development-20261010",
+      "relation_type": "issuer_develops",
+      "from_id": "issuer:cn-sz-000997",
+      "to_id": "product:ai_servers",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:newland-ai-server-development-20261010"],
+      "replaces_relation_id": "relation:issuer_element:5e704f96cb7afaf2414fc8a9",
+      "attributes": {
+        "legacy_chain_id": "compute_systems",
+        "legacy_segment_id": "ai_servers"
+      }
+    },
+    {
+      "id": "relation:issuer_element:inovance-industrial-robots-20261010",
+      "relation_type": "issuer_produces",
+      "from_id": "issuer:cn-sz-300124",
+      "to_id": "product:industrial_service_robots",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:inovance-industrial-robots-20261010"],
+      "replaces_relation_id": "relation:issuer_element:58896ef4478cc1c7ec17b3b9",
+      "attributes": {
+        "legacy_chain_id": "ai_devices_robotics",
+        "legacy_segment_id": "industrial_service_robots"
+      }
+    }
+  ],
+  "replaced_relations": [
+    {
+      "relation": {
+        "id": "relation:issuer_element:5e704f96cb7afaf2414fc8a9",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-000997",
+        "to_id": "product:ai_servers",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": [
+          "claim:5649b2bafd222dc665d003fe"
+        ],
+        "attributes": {
+          "mapping_precision": "typed_segment_anchor",
+          "legacy_chain_id": "compute_systems",
+          "legacy_segment_id": "ai_servers",
+          "migration_resolution": "typed_element_resolved"
+        }
+      },
+      "source_document_id": "source:49a07e867c64e5f698c12484",
+      "reason": "年报证明公司孵化一体智算服务器硬件产品，而不是将服务器作为外部要素集成；动作由“集成”更正为“研发”。",
+      "reason_en": "The report describes developing AI server hardware, not integrating servers as an external input; the action is corrected to develops."
+    },
+    {
+      "relation": {
+        "id": "relation:issuer_element:58896ef4478cc1c7ec17b3b9",
+        "relation_type": "issuer_integrates",
+        "from_id": "issuer:cn-sz-300124",
+        "to_id": "product:industrial_service_robots",
+        "relation_basis": "official_disclosure",
+        "evidence_level": "L1",
+        "claim_ids": [
+          "claim:83b4872460133dd98319eaee"
+        ],
+        "attributes": {
+          "mapping_precision": "typed_segment_anchor",
+          "legacy_chain_id": "ai_devices_robotics",
+          "legacy_segment_id": "industrial_service_robots",
+          "migration_resolution": "typed_element_resolved"
+        }
+      },
+      "source_document_id": "source:1fea8bffdb347c43ae199203",
+      "reason": "年报列示公司工业机器人产品、出货及产线，动作应为“生产”，而不是“集成”工业机器人。",
+      "reason_en": "The report identifies company industrial-robot products, shipments, and production lines; the action is corrected to produces."
+    }
+  ]
+}
