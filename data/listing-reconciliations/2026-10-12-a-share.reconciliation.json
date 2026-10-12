@@ -1,0 +1,33 @@
+{
+  "manifest_id": "a-share-2026-10-11-to-2026-10-12",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-10-12T02:12:09.000Z",
+  "period_start": "2026-10-11",
+  "reconciled_through": "2026-10-12",
+  "markets": ["SH", "SZ", "BJ"],
+  "market_checks": [
+    {
+      "exchange": "SH",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/s_list.shtml",
+      "checked_at": "2026-10-12T02:12:09.000Z",
+      "method": "实时读取上交所首发A股上市公告列表，最新公告仍为9月16日沈鼓集团；10月11日至12日无新增上市。",
+      "new_listings": 0
+    },
+    {
+      "exchange": "SZ",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/index.html",
+      "checked_at": "2026-10-12T02:12:09.000Z",
+      "method": "实时读取深交所上市交易公告目录，并打开10月12日粤芯半导体公告，确认其实际上市日为10月13日，不在本期10月11日至12日上市范围；10月9日瓦房店轴承公告为终止上市。",
+      "new_listings": 0
+    },
+    {
+      "exchange": "BJ",
+      "source_url": "https://www.bse.cn/index.html",
+      "checked_at": "2026-10-12T02:12:09.000Z",
+      "method": "实时读取北交所官网近期上市公司列表，最新上市日期仍为10月9日宇特光电；10月11日至12日无新增上市。",
+      "new_listings": 0
+    }
+  ],
+  "listings": []
+}

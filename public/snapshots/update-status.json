@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-10-10T12:34:44.135Z",
+  "checked_at": "2026-10-12T02:12:30.443Z",
   "changed_at": "2026-10-10T12:34:44.135Z",
-  "next_scheduled_at": "2026-10-12T01:00:00.000Z",
+  "next_scheduled_at": "2026-10-19T01:00:00.000Z",
   "source_cutoff_date": "2026-10-09",
   "cadence": "weekly",
-  "a_share_listing_reconciled_through": "2026-10-10",
+  "a_share_listing_reconciled_through": "2026-10-12",
   "a_share_listing_reconciliation": {
-    "reconciled_through": "2026-10-10",
+    "reconciled_through": "2026-10-12",
     "reviewed_listings": 45,
     "included_listings": 14,
     "excluded_listings": 31,
@@ -16,18 +16,19 @@
       "a-share-2026-07-13-to-2026-09-08",
       "a-share-2026-09-09-to-2026-09-14",
       "a-share-2026-09-15-to-2026-09-21",
-      "a-share-2026-09-22-to-2026-10-10"
+      "a-share-2026-09-22-to-2026-10-10",
+      "a-share-2026-10-11-to-2026-10-12"
     ]
   },
-  "changed": true,
+  "changed": false,
   "imported": {
-    "batches": 1,
+    "batches": 0,
     "entities": 0,
     "issuers": 0,
     "securities": 0,
     "sources": 0,
-    "claims": 2,
-    "relations": 2,
+    "claims": 0,
+    "relations": 0,
     "withdrawn_relations": 0
   },
   "promotions": {

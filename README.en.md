@@ -28,10 +28,10 @@ Trace directed industry relationships from materials, chips, and compute infrast
 | **4,551** | **12 / 111** | **6,623** | **5,998 (93.3% of issuers)** | **4,643** |
 
 - Data version: **v1.2.0**
-- Last checked: **2026-10-10**
+- Last checked: **2026-10-12**
 - Data last changed: **2026-10-10**
 - Included sources run through: **2026-10-09**
-- New A-share listings reconciled through: **2026-10-10**
+- New A-share listings reconciled through: **2026-10-12**
 - Markets: A-shares and US-listed securities
 <!-- snapshot-summary:end -->
 
