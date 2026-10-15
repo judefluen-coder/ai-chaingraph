@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-label="AI-ChainGraph social preview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10223b"/>
+      <stop offset="1" stop-color="#0a3440"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5aaee3"/>
+      <stop offset="1" stop-color="#52d6b0"/>
+    </linearGradient>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#ffffff" stroke-opacity=".055"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#03101e" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
+  <circle cx="1120" cy="-40" r="360" fill="#2ca987" opacity=".09"/>
+  <circle cx="770" cy="610" r="360" fill="#4aa9e7" opacity=".075"/>
+
+  <rect x="66" y="58" width="310" height="38" rx="19" fill="#214458" stroke="#5dd6b5" stroke-opacity=".55"/>
+  <text x="88" y="84" fill="#a7f5d9" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700" letter-spacing="1.2">OPEN DATA · EVIDENCE FIRST</text>
+  <text x="66" y="191" fill="#ffffff" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="62" font-weight="750">AI-ChainGraph</text>
+  <text x="67" y="252" fill="#d9f4ee" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="30" font-weight="600">把产业链、上市公司和原始证据</text>
+  <text x="67" y="296" fill="#d9f4ee" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="30" font-weight="600">放进同一张可交互关系图</text>
+
+  <rect x="66" y="365" width="500" height="106" rx="18" fill="#183b4e" stroke="#3d7080"/>
+  <circle cx="95" cy="399" r="6" fill="#64d9b7"/>
+  <text x="113" y="406" fill="#f3fbff" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="600">沿上下游追踪产业传导</text>
+  <circle cx="95" cy="443" r="6" fill="#63bff0"/>
+  <text x="113" y="450" fill="#f3fbff" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="600">逐条关系返回公开来源</text>
+  <text x="68" y="565" fill="#9ec0c9" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="18">A 股 + 美股  ·  可分享研究视图  ·  非投资建议</text>
+
+  <g filter="url(#shadow)">
+    <rect x="682" y="94" width="536" height="446" rx="25" fill="#f7fbfc"/>
+    <rect x="682" y="94" width="536" height="54" rx="25" fill="#e9f3f6"/>
+    <rect x="682" y="125" width="536" height="23" fill="#e9f3f6"/>
+    <circle cx="710" cy="121" r="6" fill="#ff7772"/>
+    <circle cx="731" cy="121" r="6" fill="#f8c65e"/>
+    <circle cx="752" cy="121" r="6" fill="#6bd6a8"/>
+    <text x="788" y="127" fill="#4b6b78" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="700">RESEARCH MAP</text>
+
+    <path d="M778 294C821 294 822 220 866 220M778 294C819 294 828 379 866 379M941 220C979 220 981 294 1024 294M941 379C979 379 980 294 1024 294" fill="none" stroke="url(#edge)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M1102 294C1130 294 1130 393 1140 393" fill="none" stroke="#79bdcf" stroke-width="4" stroke-dasharray="8 8"/>
+    <rect x="706" y="251" width="124" height="85" rx="16" fill="#dceffd" stroke="#92c9ec"/>
+    <text x="768" y="284" text-anchor="middle" fill="#1d5875" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700">产业要素</text>
+    <text x="768" y="311" text-anchor="middle" fill="#517d91" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="14">CHAIN</text>
+    <rect x="858" y="179" width="126" height="83" rx="16" fill="#e5f5ea" stroke="#a4d7ba"/>
+    <text x="921" y="212" text-anchor="middle" fill="#266a53" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700">上游公司</text>
+    <text x="921" y="238" text-anchor="middle" fill="#5c8a73" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="14">ISSUER</text>
+    <rect x="858" y="337" width="126" height="83" rx="16" fill="#e5f5ea" stroke="#a4d7ba"/>
+    <text x="921" y="370" text-anchor="middle" fill="#266a53" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700">下游公司</text>
+    <text x="921" y="396" text-anchor="middle" fill="#5c8a73" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="14">ISSUER</text>
+    <rect x="1018" y="251" width="154" height="85" rx="16" fill="#fff0d7" stroke="#efcf8c"/>
+    <text x="1095" y="284" text-anchor="middle" fill="#805823" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700">关系与证据</text>
+    <text x="1095" y="311" text-anchor="middle" fill="#a08052" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="14">SOURCE</text>
+    <rect x="716" y="466" width="465" height="45" rx="10" fill="#edf5f6"/>
+    <circle cx="741" cy="489" r="8" fill="#48b99a"/>
+    <text x="761" y="495" fill="#4c6b79" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="17">每条边都能回到来源，而非只看一张图</text>
+  </g>
+</svg>
