@@ -8,6 +8,7 @@ import { GraphViewport } from "./components/GraphViewport.jsx";
 import { ScopeInspector } from "./components/ScopeInspector.jsx";
 import { TopBar } from "./components/TopBar.jsx";
 import { ReleaseDialog } from "./components/ReleaseDialog.jsx";
+import { ComparisonDialog } from "./components/ComparisonDialog.jsx";
 import { historicalRelation, issuerEvents, relationEvents } from "./lib/releaseHistory.js";
 import {
   buildChainFlow,
@@ -73,6 +74,8 @@ function App() {
   const [watchlistRecords, setWatchlistRecords] = useState(readWatchlist);
   const [notice, setNotice] = useState("");
   const [releaseOpen, setReleaseOpen] = useState(false);
+  const [comparisonIds, setComparisonIds] = useState(initialWorkspaceState.comparisonIds);
+  const [comparisonOpen, setComparisonOpen] = useState(initialWorkspaceState.comparisonIds.length > 0);
   const [now, setNow] = useState(Date.now);
   const isNarrow = useMediaQuery("(max-width: 760px)");
   const isCompactDirectory = useMediaQuery("(max-width: 980px)");
@@ -136,6 +139,8 @@ function App() {
   useEffect(() => {
     const handlePopState = () => {
       const next = parseWorkspaceSearch(window.location.search);
+      setComparisonIds(next.comparisonIds);
+      setComparisonOpen(next.comparisonIds.length > 0);
       setQuery(next.query);
       setActiveId(next.activeId);
       setActiveRelationId(next.activeRelationId);
@@ -154,6 +159,7 @@ function App() {
 
   useEffect(() => {
     const search = serializeWorkspaceSearch({
+      comparisonIds: comparisonOpen ? comparisonIds : [],
       query,
       activeId,
       activeRelationId,
@@ -169,7 +175,7 @@ function App() {
     const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
     const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
     if (nextUrl !== currentUrl) window.history.replaceState(window.history.state, "", nextUrl);
-  }, [query, activeId, activeRelationId, selectedChainId, marketFilter, direction, depth, pathStartId, pathTargetId, shockType, locale]);
+  }, [query, activeId, activeRelationId, selectedChainId, marketFilter, direction, depth, pathStartId, pathTargetId, shockType, locale, comparisonIds, comparisonOpen]);
 
   const index = useMemo(() => graph ? createGraphViewIndex(graph) : null, [graph]);
   const navigation = useMemo(() => graph ? getIndustryNavigation(graph) : [], [graph]);
@@ -251,6 +257,8 @@ function App() {
   }) : null, [graph, index, locale, copy, activeId, activeEntity, detail, selectedChain, pathStartId, pathTargetId, pathResult, shockSpec]);
 
   function resetWorkspace() {
+    setComparisonIds([]);
+    setComparisonOpen(false);
     setQuery("");
     setActiveId(null);
     setActiveRelationId(null);
@@ -441,6 +449,7 @@ function App() {
   return (
     <div className="txAppShell">
       {!acknowledged && <DisclaimerModal copy={copy} onAccept={acknowledgeDisclaimer} />}
+      {comparisonOpen && acknowledged && <ComparisonDialog graph={graph} ids={comparisonIds} onChange={setComparisonIds} locale={locale} onClose={() => setComparisonOpen(false)} onSelectRelation={(id) => { setComparisonOpen(false); openRecordedRelation(id); }} />}
       {releaseOpen && <ReleaseDialog graph={graph} history={historyState.data} historyLoading={historyState.loading} historyUnavailable={historyState.error} locale={locale} onClose={() => setReleaseOpen(false)} onSelectRelation={openRecordedRelation} onRetry={() => setHistoryReloadKey((value) => value + 1)} />}
       {notice && <p className="txStatusToast" role="status" aria-live="polite">{notice}</p>}
       <TopBar
@@ -515,6 +524,10 @@ function App() {
             shockOverlay={shockOverlay}
             watchRecord={watchRecord}
             onToggleWatchlist={toggleWatchlist}
+            onCompare={() => {
+              setComparisonIds((ids) => ids.includes(detail.entity.id) || ids.length >= 4 ? ids : [...ids, detail.entity.id]);
+              setComparisonOpen(true);
+            }}
             onUpdateWatchlist={updateWatchlistRecord}
             onSelectEntity={selectEntity}
             onSelectRelation={selectRelation}

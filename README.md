@@ -21,6 +21,12 @@
 
 > AI-ChainGraph 不是“AI 概念股名单”，也不回答“应该买什么”。它回答的是：**一家公司在 AI 产业链中具体做什么、处在哪一环、上下游如何连接，以及这个判断来自哪里。**
 
+## Agent 版本
+
+除了网站，现在还提供 **本地只读 MCP + 研究 Skill**：让 Codex / WorkBuddy 查询公司、比较产业位置、追溯原始证据和已记录的变化。与网站共用数据，不开放交易、写库或发布权限。
+
+运行 `npm ci`、`npm run agent:prepare`，再用 `npm run agent:demo -- 宁德时代` 体验真实 MCP 查询。[连接教程与能力边界](docs/AGENT_GUIDE.md) · [研究 Skill](skills/ai-chaingraph-research/SKILL.md)
+
 ## 当前快照
 
 <!-- snapshot-summary:start -->
@@ -44,6 +50,7 @@
 | --- | --- |
 | 从产业寻找公司 | 从 12 条产业链进入 111 个细分环节，查看相关 A 股和美股上市公司 |
 | 从公司反查产业位置 | 按公司名称或股票代码搜索，查看产品、部件、材料、设备、服务与应用映射 |
+| 对比几家公司的业务位置 | 公司详情中打开“公司对比”，选择最多 4 家公司，比较动作、共同位置和来源日期，分享可恢复的对比链接 |
 | 追踪上下游传导 | 对任意节点进行上游、下游或双向 1 / 3 / 5 跳展开 |
 | 比较两个对象的连接 | 设置路径起点，寻找公司与产业要素之间的最短路径 |
 | 核验一条关系 | 查看动作类型、证据等级、事实摘录、发布日期和原始公开文件 |
@@ -70,6 +77,8 @@ GitHub Pages 是默认公开入口；若所在网络可以正常访问 ChatGPT S
 | 长鑫科技（688825） | [打开](https://judefluen-coder.github.io/ai-chaingraph/?entity=issuer%3Acn-sh-688825) | [备用入口](https://ai-chaingraph.judefluen.chatgpt.site/?entity=issuer%3Acn-sh-688825) |
 
 ## 核心体验
+
+公司对比不代表投资排名，共同产业位置不代表已确认的供需关系。对比链接展示当前公开快照，不包含本地笔记。产品目标和试用推广安排见 [目标模式](docs/PRODUCT_TARGET.md) 与 [GTM 实验计划](docs/GTM_PLAN.md)。
 
 ### 从产业链看公司
 

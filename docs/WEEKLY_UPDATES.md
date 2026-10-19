@@ -13,9 +13,13 @@ AI-ChainGraph uses a reviewed weekly publication cycle rather than overwriting f
 - Add approved source documents, concise claims, and typed issuer relationships as a `*.batch.json` file under `data/weekly-candidates/`.
 - Run `npm run update:weekly` and `npm run build:sites`; the release build includes tests, snapshot and relationship audits, semantic and search-performance checks, browser regression tests, and Sites package validation.
 - Review usage-only `issuer_integrates` relations to physical products or materials; the semantic audit blocks new unreviewed candidates and keeps the existing backlog visible rather than treating it as approved evidence.
-- Commit and push only when validation succeeds, then publish the same commit to the existing OpenAI Sites project.
+- Preserve local changes and unpublished commits. Start a `codex/weekly-YYYY-MM-DD` branch from current `origin/main` in a clean workspace; reuse an existing weekly PR when retrying.
+- Commit and push the work branch only when validation succeeds. Open a PR, wait for required CI, and merge under the existing branch rules. Never push directly to protected `main`, force-push, or bypass checks.
+- After merging, build from that clean main commit and wait for its Pages deployment before publishing the existing OpenAI Sites project. Do not deploy artifacts built from the pre-merge work branch.
 - After Pages deploys, rebuild from a clean `main` and run `npm run check:sites-release-ready`; after Sites deploys, run `npm run verify:sites-deployed`. Both commands compare the public commit fingerprint and exact graph/status hashes, not just update dates.
 - Monday 10:30 Asia/Shanghai: GitHub Actions checks that the weekly refresh is no more than eight days old and that at least 90% of issuers have a specific relationship.
+
+The local Monday heartbeat is configured separately from GitHub Actions. Actions validates freshness; it does not independently collect evidence or publish Sites. The heartbeat requires an available executor and working credentials. On a temporary network error, retry at most twice, retaining the failed stage and commit SHA. On a quality failure, stop publication and report it; never change review dates merely to make a gate pass. Resume from the actual PR/deployment state to avoid duplicate batches or releases.
 
 ## Evidence policy
 
