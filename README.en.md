@@ -16,6 +16,12 @@ Trace directed industry relationships from materials, chips, and compute infrast
 
 </div>
 
+## Agent Access
+
+A local, read-only MCP server and research Skill share the website's graph and evidence. Search companies, compare industry positions, inspect sources, and query recorded changes from Codex or WorkBuddy. No trading, write, or deployment tools are exposed.
+
+Run `npm ci`, `npm run agent:prepare`, then `npm run agent:demo -- NVIDIA`. See the [connection guide](docs/AGENT_GUIDE.md) and [research Skill](skills/ai-chaingraph-research/SKILL.md). Local clients need a snapshot sync and MCP restart after data updates; desktop-host acceptance is not yet verified.
+
 [![AI-ChainGraph industry transmission overview](docs/assets/ai-chaingraph-v1.1-overview.png)](https://judefluen-coder.github.io/ai-chaingraph/)
 
 > AI-ChainGraph is not another list of "AI concept stocks." It answers: **What does a company actually do in the AI value chain, where does it sit, how is it connected upstream and downstream, and which public source supports that conclusion?**
@@ -43,6 +49,7 @@ Companies may appear in multiple segments, so chain-level company counts are not
 | --- | --- |
 | Discover companies from an industry | Navigate 12 chains and 111 typed segments across A-shares and US listings |
 | Reverse-map a company | Search by name or ticker and inspect its products, components, materials, equipment, services, and applications |
+| Compare company positions | Open Compare from company details, select up to four issuers, inspect actions, shared positions and source dates, and share a restorable link |
 | Trace transmission | Traverse upstream, downstream, or both directions at 1, 3, or 5 hops |
 | Compare connections | Set any entity as a path origin and find the shortest path to another entity |
 | Verify a relationship | Inspect the action, evidence level, factual excerpt, publication date, and original document |
@@ -67,6 +74,8 @@ GitHub Pages is the default public entry point. The OpenAI Sites deployment is a
 | ChangXin Technology / CXMT (688825) | [Open](https://judefluen-coder.github.io/ai-chaingraph/?entity=issuer%3Acn-sh-688825) | [Mirror](https://ai-chaingraph.judefluen.chatgpt.site/?entity=issuer%3Acn-sh-688825) |
 
 ## Core Experience
+
+Company comparison is not an investment ranking. Shared positions do not establish supplier/customer relationships. Shared links use the current public snapshot and exclude local notes. See the [product target](docs/PRODUCT_TARGET.md) and [GTM experiment plan](docs/GTM_PLAN.md) (Chinese).
 
 ### Discover companies from a value chain
 

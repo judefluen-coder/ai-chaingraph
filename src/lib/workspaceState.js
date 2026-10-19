@@ -1,3 +1,5 @@
+import { normalizeComparisonIds } from "./companyComparison.js";
+
 const VALID_MARKETS = new Set(["all", "a_share", "us"]);
 const VALID_DIRECTIONS = new Set(["upstream", "downstream", "both"]);
 const VALID_DEPTHS = new Set([1, 3, 5]);
@@ -11,6 +13,7 @@ export function parseWorkspaceSearch(search = "") {
   const locale = params.get("lang");
 
   return {
+    comparisonIds: normalizeComparisonIds(params.getAll("compare")),
     query: params.get("q") || "",
     activeId: params.get("entity") || null,
     activeRelationId: params.get("relation") || null,
@@ -27,6 +30,7 @@ export function parseWorkspaceSearch(search = "") {
 
 export function serializeWorkspaceSearch(state) {
   const params = new URLSearchParams();
+  for (const id of normalizeComparisonIds(state.comparisonIds)) params.append("compare", id);
 
   if (state.selectedChainId) params.set("chain", state.selectedChainId);
   if (state.activeId) params.set("entity", state.activeId);

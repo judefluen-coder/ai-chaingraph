@@ -52,6 +52,7 @@ export function GraphDetailPanel({
   shockOverlay,
   watchRecord,
   onToggleWatchlist,
+  onCompare,
   onUpdateWatchlist,
   onSelectEntity,
   onSelectRelation,
@@ -116,6 +117,7 @@ export function GraphDetailPanel({
       </header>
 
       <div className="txDetailActions">
+        {detail.kind === "issuer" && <button type="button" onClick={onCompare}><GitCompareArrows size={16} />{locale === "en" ? "Compare" : "公司对比"}</button>}
         {detail.kind === "issuer" && (
           <button type="button" className={watchRecord ? "isActive" : ""} aria-pressed={Boolean(watchRecord)} onClick={onToggleWatchlist}>
             <Star size={16} strokeWidth={1.8} fill={watchRecord ? "currentColor" : "none"} />
