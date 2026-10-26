@@ -1,23 +1,24 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-10-12T02:12:30.443Z",
-  "changed_at": "2026-10-10T12:34:44.135Z",
-  "next_scheduled_at": "2026-10-19T01:00:00.000Z",
-  "source_cutoff_date": "2026-10-09",
+  "checked_at": "2026-10-26T03:42:05.096Z",
+  "changed_at": "2026-10-26T03:41:15.997Z",
+  "next_scheduled_at": "2026-11-02T01:00:00.000Z",
+  "source_cutoff_date": "2026-10-12",
   "cadence": "weekly",
-  "a_share_listing_reconciled_through": "2026-10-12",
+  "a_share_listing_reconciled_through": "2026-10-26",
   "a_share_listing_reconciliation": {
-    "reconciled_through": "2026-10-12",
-    "reviewed_listings": 45,
-    "included_listings": 14,
-    "excluded_listings": 31,
+    "reconciled_through": "2026-10-26",
+    "reviewed_listings": 51,
+    "included_listings": 15,
+    "excluded_listings": 36,
     "manifest_ids": [
       "a-share-2026-07-13-to-2026-09-08",
       "a-share-2026-09-09-to-2026-09-14",
       "a-share-2026-09-15-to-2026-09-21",
       "a-share-2026-09-22-to-2026-10-10",
-      "a-share-2026-10-11-to-2026-10-12"
+      "a-share-2026-10-11-to-2026-10-12",
+      "a-share-2026-10-13-to-2026-10-26"
     ]
   },
   "changed": false,
@@ -40,10 +41,10 @@
   "last_change_summary": {
     "imported": {
       "batches": 1,
-      "entities": 0,
-      "issuers": 0,
-      "securities": 0,
-      "sources": 0,
+      "entities": 2,
+      "issuers": 1,
+      "securities": 1,
+      "sources": 2,
       "claims": 2,
       "relations": 2,
       "withdrawn_relations": 0
@@ -56,18 +57,18 @@
     }
   },
   "quality": {
-    "issuers_total": 4551,
-    "issuers_mapped": 4551,
+    "issuers_total": 4552,
+    "issuers_mapped": 4552,
     "issuers_unmapped": 0,
-    "issuers_with_specific_relations": 4247,
+    "issuers_with_specific_relations": 4248,
     "issuers_generic_only": 304,
     "specific_issuer_rate": 0.9332,
-    "issuer_relations_total": 6623,
-    "specific_relations": 5998,
+    "issuer_relations_total": 6624,
+    "specific_relations": 5999,
     "generic_relations": 625,
     "specific_relation_rate": 0.9056,
     "evidence_levels": {
-      "L1": 6579,
+      "L1": 6580,
       "L2": 44
     },
     "segments_total": 111,
