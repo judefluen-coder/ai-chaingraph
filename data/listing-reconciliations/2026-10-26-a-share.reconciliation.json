@@ -1,0 +1,91 @@
+{
+  "manifest_id": "a-share-2026-10-13-to-2026-10-26",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-10-26T03:40:42.000Z",
+  "period_start": "2026-10-13",
+  "reconciled_through": "2026-10-26",
+  "markets": ["SH", "SZ", "BJ"],
+  "market_checks": [
+    {
+      "exchange": "SH",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/s_list.shtml",
+      "checked_at": "2026-10-26T03:40:42.000Z",
+      "method": "实时核查上交所首发A股上市公告目录；最新公告仍为2026年9月16日，本期无新增上市。",
+      "new_listings": 0
+    },
+    {
+      "exchange": "SZ",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/index.html",
+      "checked_at": "2026-10-26T03:40:42.000Z",
+      "method": "实时核查深交所上市公司公告目录，逐条打开粤芯半导体、联亚药业和通则康威上市交易公告，按公告所载实际上市日计入；终止上市公告不计入。",
+      "new_listings": 3
+    },
+    {
+      "exchange": "BJ",
+      "source_url": "https://www.bse.cn/index.html",
+      "checked_at": "2026-10-26T03:40:42.000Z",
+      "method": "实时核查北交所官网近期上市目录并逐条打开莫森泰克、南方乳业、文峰光电官方上市报道；最新上市日为10月21日。",
+      "new_listings": 3
+    }
+  ],
+  "listings": [
+    {
+      "exchange": "SZ",
+      "symbol": "301660",
+      "name": "粤芯半导体",
+      "listing_date": "2026-10-13",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/t20261012_623256.html",
+      "decision": "included",
+      "decision_reason": "深交所正式招股说明书披露公司已推出90nm SiPho工艺平台，并开展面向智算中心光互联及光电共封装的65nm硅光集成技术研发；仅映射至硅光与CPO要素的研发关系，不视为先进制程代工或光模块整机生产。",
+      "batch_id": "weekly-2026-10-26-official-listings",
+      "issuer_id": "issuer:cn-sz-301660",
+      "security_id": "security:SZ:301660"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301569",
+      "name": "联亚药业",
+      "listing_date": "2026-10-15",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/t20261014_623304.html",
+      "decision": "excluded",
+      "decision_reason": "官方披露主营复杂药物制剂，未核得其提供医疗AI产品或其他现有AI产业链具体要素的主体、动作和对象证据。"
+    },
+    {
+      "exchange": "SZ",
+      "symbol": "301718",
+      "name": "通则康威",
+      "listing_date": "2026-10-22",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/t20261021_623406.html",
+      "decision": "excluded",
+      "decision_reason": "官方招股说明书披露宽带连接终端和无线通信业务；关于AI时代通信需求的行业描述不足以证明其对现有AI产业链具体要素的直接供给关系。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920162",
+      "name": "莫森泰克",
+      "listing_date": "2026-10-15",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029603.html",
+      "decision": "excluded",
+      "decision_reason": "北交所上市报道披露主营汽车天窗、玻璃升降器和开闭控制系统；未支持现有AI产业链具体要素，不能由汽车智能化推断AI关系。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920196",
+      "name": "南方乳业",
+      "listing_date": "2026-10-16",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029606.html",
+      "decision": "excluded",
+      "decision_reason": "北交所上市报道披露主营乳制品及含乳饮料制造与销售，未对应现有AI产业链具体要素。"
+    },
+    {
+      "exchange": "BJ",
+      "symbol": "920296",
+      "name": "文峰光电",
+      "listing_date": "2026-10-21",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029630.html",
+      "decision": "excluded",
+      "decision_reason": "北交所上市报道披露特种线缆和光电组件主要应用于航空航天、军工电子等领域；未核得面向智算中心光互联或其他现有AI产业链具体要素的官方业务证据。"
+    }
+  ]
+}

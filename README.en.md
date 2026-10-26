@@ -31,13 +31,13 @@ Run `npm ci`, `npm run agent:prepare`, then `npm run agent:demo -- NVIDIA`. See 
 <!-- snapshot-summary:start -->
 | Listed issuers | Chains / segments | Company mappings | Specific mappings | Public sources |
 | ---: | ---: | ---: | ---: | ---: |
-| **4,551** | **12 / 111** | **6,623** | **5,998 (93.3% of issuers)** | **4,643** |
+| **4,552** | **12 / 111** | **6,624** | **5,999 (93.3% of issuers)** | **4,645** |
 
 - Data version: **v1.2.0**
-- Last checked: **2026-10-12**
-- Data last changed: **2026-10-10**
-- Included sources run through: **2026-10-09**
-- New A-share listings reconciled through: **2026-10-12**
+- Last checked: **2026-10-26**
+- Data last changed: **2026-10-26**
+- Included sources run through: **2026-10-12**
+- New A-share listings reconciled through: **2026-10-26**
 - Markets: A-shares and US-listed securities
 <!-- snapshot-summary:end -->
 

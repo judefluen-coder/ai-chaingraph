@@ -1,0 +1,84 @@
+{
+  "batch_id": "weekly-2026-10-26-official-listings",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-10-26T03:40:42.000Z",
+  "entities": [
+    {
+      "id": "issuer:cn-sz-301660",
+      "entity_type": "issuer",
+      "name": "粤芯半导体",
+      "country": "CN",
+      "legal_name": "粤芯半导体技术股份有限公司",
+      "industry": "硅光及特色工艺晶圆代工"
+    },
+    {
+      "id": "security:SZ:301660",
+      "entity_type": "security",
+      "name": "粤芯半导体",
+      "aliases": ["301660.SZ", "301660"],
+      "stock_code": "301660.SZ",
+      "symbol": "301660",
+      "exchange": "SZ",
+      "security_type": "ordinary_share",
+      "listing_status": "active",
+      "currency": "CNY"
+    }
+  ],
+  "source_documents": [
+    {
+      "id": "source:szse-yuexin-listing-20261012",
+      "source_type": "exchange_filing",
+      "title": "关于粤芯半导体技术股份有限公司股票上市交易的公告",
+      "url": "https://www.szse.cn/disclosure/notice/company/t20261012_623256.html",
+      "publish_date": "2026-10-12",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sz-301660"
+    },
+    {
+      "id": "source:szse-yuexin-prospectus-20261008",
+      "source_type": "exchange_filing",
+      "title": "粤芯半导体技术股份有限公司招股说明书",
+      "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-10-08/1d8816c4-305a-4ddc-836b-25ec6d2039d5.PDF",
+      "publish_date": "2026-10-08",
+      "language": "zh",
+      "issuer_id": "issuer:cn-sz-301660"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim:szse-yuexin-listing-20261012",
+      "source_document_id": "source:szse-yuexin-listing-20261012",
+      "excerpt": "深交所公告粤芯半导体（301660）于2026年10月13日上市交易。",
+      "language": "zh",
+      "reviewed_at": "2026-10-26T03:40:42.000Z"
+    },
+    {
+      "id": "claim:szse-yuexin-sipho-rd-20261008",
+      "source_document_id": "source:szse-yuexin-prospectus-20261008",
+      "excerpt": "招股说明书披露公司已推出12英寸90nm SiPho工艺技术平台，并开展65nm硅光集成、硅光芯片与电芯片的集成及光电共封装相关工艺研发，覆盖智算中心和数据中心光互联应用；不表示公司生产光模块整机。",
+      "language": "zh",
+      "reviewed_at": "2026-10-26T03:40:42.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation:security_issued_by:sz-301660",
+      "relation_type": "security_issued_by",
+      "from_id": "security:SZ:301660",
+      "to_id": "issuer:cn-sz-301660",
+      "relation_basis": "official_exchange_notice",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:szse-yuexin-listing-20261012"]
+    },
+    {
+      "id": "relation:issuer_element:yuexin-sipho-rd",
+      "relation_type": "issuer_develops",
+      "from_id": "issuer:cn-sz-301660",
+      "to_id": "component:cpo_silicon_photonics",
+      "relation_basis": "official_disclosure",
+      "evidence_level": "L1",
+      "claim_ids": ["claim:szse-yuexin-sipho-rd-20261008"]
+    }
+  ]
+}
