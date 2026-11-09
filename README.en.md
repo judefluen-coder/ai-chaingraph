@@ -34,10 +34,10 @@ Run `npm ci`, `npm run agent:prepare`, then `npm run agent:demo -- NVIDIA`. See 
 | **4,552** | **12 / 111** | **6,624** | **5,999 (93.3% of issuers)** | **4,645** |
 
 - Data version: **v1.2.0**
-- Last checked: **2026-10-26**
+- Last checked: **2026-11-09**
 - Data last changed: **2026-10-26**
 - Included sources run through: **2026-10-12**
-- New A-share listings reconciled through: **2026-10-26**
+- New A-share listings reconciled through: **2026-11-09**
 - Markets: A-shares and US-listed securities
 <!-- snapshot-summary:end -->
 

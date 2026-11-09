@@ -1,0 +1,43 @@
+{
+  "manifest_id": "a-share-2026-10-27-to-2026-11-09",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-11-09T02:15:35.000Z",
+  "period_start": "2026-10-27",
+  "reconciled_through": "2026-11-09",
+  "markets": ["SH", "SZ", "BJ"],
+  "market_checks": [
+    {
+      "exchange": "SH",
+      "source_url": "https://www.sse.com.cn/disclosure/announcement/listing/ipo/s_list.shtml",
+      "checked_at": "2026-11-09T02:15:35.000Z",
+      "method": "核查上交所首发A股上市公告目录及IPO新股发行一览；本期间未发现新增A股首发上市公告。",
+      "new_listings": 0
+    },
+    {
+      "exchange": "SZ",
+      "source_url": "https://www.szse.cn/certificate/maind/",
+      "checked_at": "2026-11-09T02:15:35.000Z",
+      "method": "核查深交所主板上市公告目录及官方上市公告书；确认皇冠新材于2026年11月3日上市，终止上市公告不计入新增上市。",
+      "new_listings": 1
+    },
+    {
+      "exchange": "BJ",
+      "source_url": "https://www.bse.cn/index.html",
+      "checked_at": "2026-11-09T02:15:35.000Z",
+      "method": "核查北交所官网近期上市目录及本期间官方上市报道；本期间未发现新增上市公司，近期上市目录可见的最新上市报道早于本期间。",
+      "new_listings": 0
+    }
+  ],
+  "listings": [
+    {
+      "exchange": "SZ",
+      "symbol": "001381",
+      "name": "皇冠新材",
+      "listing_date": "2026-11-03",
+      "source_url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-11-02/f85204b7-2475-41ad-b05e-f4bf35a0aac9.PDF",
+      "decision": "excluded",
+      "decision_reason": "深交所上市公告书确认公司于2026年11月3日上市。招股说明书虽描述功能性胶粘材料在半导体、消费电子和AIoT等行业场景中的应用，但未能确认其具体在现有AI产业链图谱中具备可准确映射的产品或服务关系；不据行业场景推断直接供给关系。"
+    }
+  ]
+}
