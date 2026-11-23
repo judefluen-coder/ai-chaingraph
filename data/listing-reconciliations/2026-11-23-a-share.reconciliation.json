@@ -1,0 +1,43 @@
+{
+  "manifest_id": "a-share-2026-11-10-to-2026-11-23",
+  "review_status": "approved",
+  "reviewer": "codex:official-listing-reconciliation",
+  "reviewed_at": "2026-11-23T02:12:30.000Z",
+  "period_start": "2026-11-10",
+  "reconciled_through": "2026-11-23",
+  "markets": ["SH", "SZ", "BJ"],
+  "market_checks": [
+    {
+      "exchange": "SH",
+      "source_url": "https://www.sse.com.cn/ipo/home/index.shtml",
+      "checked_at": "2026-11-23T02:12:30.000Z",
+      "method": "核查上交所IPO新股发行一览及上市/退市公告；截至本期末未发现实际上市日落在本期内的新增A股，傲拓科技当日申购且上市日尚未公布，不计入。",
+      "new_listings": 0
+    },
+    {
+      "exchange": "SZ",
+      "source_url": "https://www.szse.cn/disclosure/notice/company/",
+      "checked_at": "2026-11-23T02:12:30.000Z",
+      "method": "核查深交所上市公司公告目录及上市报道；本期间无新增A股股票上市。期间出现的REIT上市不属于A股公司首次上市，未计入。",
+      "new_listings": 0
+    },
+    {
+      "exchange": "BJ",
+      "source_url": "https://www.bse.cn/index.html",
+      "checked_at": "2026-11-23T02:12:30.000Z",
+      "method": "核查北交所官网近期上市目录并逐项核对本期上市公告/报道，发现菊乐股份一家新增上市公司；森峰激光的实际上市日为11月6日，已补记至前一周期。",
+      "new_listings": 1
+    }
+  ],
+  "listings": [
+    {
+      "exchange": "BJ",
+      "symbol": "920309",
+      "name": "菊乐股份",
+      "listing_date": "2026-11-17",
+      "source_url": "https://www.bse.cn/issue_report_meeting/200029849.html",
+      "decision": "excluded",
+      "decision_reason": "北交所上市报道确认公司于2026年11月17日上市，主营含乳饮料及乳制品的研发、生产和销售；未对应现有AI产业链图谱具体要素。"
+    }
+  ]
+}

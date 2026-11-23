@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0.0",
   "data_version": "1.2.0",
-  "checked_at": "2026-11-09T02:17:37.175Z",
+  "checked_at": "2026-11-23T02:18:57.085Z",
   "changed_at": "2026-10-26T03:41:15.997Z",
-  "next_scheduled_at": "2026-11-16T01:00:00.000Z",
+  "next_scheduled_at": "2026-11-30T01:00:00.000Z",
   "source_cutoff_date": "2026-10-12",
   "cadence": "weekly",
-  "a_share_listing_reconciled_through": "2026-11-09",
+  "a_share_listing_reconciled_through": "2026-11-23",
   "a_share_listing_reconciliation": {
-    "reconciled_through": "2026-11-09",
-    "reviewed_listings": 52,
+    "reconciled_through": "2026-11-23",
+    "reviewed_listings": 54,
     "included_listings": 15,
-    "excluded_listings": 37,
+    "excluded_listings": 39,
     "manifest_ids": [
       "a-share-2026-07-13-to-2026-09-08",
       "a-share-2026-09-09-to-2026-09-14",
@@ -19,7 +19,8 @@
       "a-share-2026-09-22-to-2026-10-10",
       "a-share-2026-10-11-to-2026-10-12",
       "a-share-2026-10-13-to-2026-10-26",
-      "a-share-2026-10-27-to-2026-11-09"
+      "a-share-2026-10-27-to-2026-11-09",
+      "a-share-2026-11-10-to-2026-11-23"
     ]
   },
   "changed": false,

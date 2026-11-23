@@ -2,7 +2,7 @@
   "manifest_id": "a-share-2026-10-27-to-2026-11-09",
   "review_status": "approved",
   "reviewer": "codex:official-listing-reconciliation",
-  "reviewed_at": "2026-11-09T02:15:35.000Z",
+  "reviewed_at": "2026-11-23T02:12:30.000Z",
   "period_start": "2026-10-27",
   "reconciled_through": "2026-11-09",
   "markets": ["SH", "SZ", "BJ"],
@@ -24,12 +24,21 @@
     {
       "exchange": "BJ",
       "source_url": "https://www.bse.cn/index.html",
-      "checked_at": "2026-11-09T02:15:35.000Z",
-      "method": "核查北交所官网近期上市目录及本期间官方上市报道；本期间未发现新增上市公司，近期上市目录可见的最新上市报道早于本期间。",
-      "new_listings": 0
+      "checked_at": "2026-11-23T02:12:30.000Z",
+      "method": "核查北交所官网近期上市目录及本期间官方上市报道；复核发现森峰激光于2026年11月6日上市，补记该漏项；其余本期间无新增上市。",
+      "new_listings": 1
     }
   ],
   "listings": [
+    {
+      "exchange": "BJ",
+      "symbol": "920085",
+      "name": "森峰激光",
+      "listing_date": "2026-11-06",
+      "source_url": "https://www.bse.cn/index.html",
+      "decision": "excluded",
+      "decision_reason": "北交所官网近期上市目录确认公司于2026年11月6日上市。该清单复核时补记此漏项；北交所招股说明书披露主营激光加工设备及智能制造生产线，未支持其与现有AI产业链图谱具体要素之间的直接关系，不能仅因智能制造或激光设备用途推断纳入。"
+    },
     {
       "exchange": "SZ",
       "symbol": "001381",
